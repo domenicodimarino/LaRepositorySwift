@@ -2,17 +2,20 @@ import SwiftUI
 import MapKit
 
 struct CustomMapView: UIViewRepresentable {
-    
+    @Binding var shouldCenterUser: Bool
+    @Binding var trackingState: TrackingState
+
     let configuration: MKStandardMapConfiguration
 
-    init() {
-        // Configurazione mappa con elevazione realistica
+    init(shouldCenterUser: Binding<Bool>, trackingState: Binding<TrackingState>) {
+        self._shouldCenterUser = shouldCenterUser
+        self._trackingState = trackingState
         configuration = MKStandardMapConfiguration(elevationStyle: .realistic)
         configuration.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(self)
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -22,18 +25,15 @@ struct CustomMapView: UIViewRepresentable {
         let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1300, longitudinalMeters: 1300)
         mapView.setRegion(region, animated: false)
 
-        // Applica la configurazione realistica
         mapView.preferredConfiguration = configuration
 
-        // Inclinazione 3D di default
         let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 60, heading: 0)
         mapView.setCamera(camera, animated: false)
 
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = true
-        mapView.userTrackingMode = .follow
+        mapView.userTrackingMode = .none // di default non segue l'utente
 
-        // Aggiungi un marker
         let annotation = MKPointAnnotation()
         annotation.coordinate = CLLocationCoordinate2D(latitude: 40.707, longitude: 14.708)
         annotation.title = "Punto di interesse"
@@ -43,19 +43,39 @@ struct CustomMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Nessun aggiornamento dinamico necessario
+        if shouldCenterUser {
+            uiView.userTrackingMode = .follow
+            if shouldCenterUser {
+                DispatchQueue.main.async {
+                    self.shouldCenterUser = false
+                }
+            }
+        }
     }
 
     class Coordinator: NSObject, MKMapViewDelegate {
+        var parent: CustomMapView
+        init(_ parent: CustomMapView) { self.parent = parent }
+
+        func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+            DispatchQueue.main.async {
+                switch mode {
+                case .follow, .followWithHeading:
+                    self.parent.trackingState = .follow
+                default:
+                    self.parent.trackingState = .none
+                }
+            }
+        }
+
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation {
-                // Personalizza la posizione dell'utente
                 let identifier = "UserLocation"
                 var view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
                 if view == nil {
                     view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                 }
-                view?.image = UIImage(named: "giovanni") // tua immagine
+                view?.image = UIImage(named: "giovanni")
                 view?.bounds = CGRect(x: 0, y: 0, width: 60, height: 60)
                 return view
             } else {
@@ -64,11 +84,11 @@ struct CustomMapView: UIViewRepresentable {
                 if markerView == nil {
                     markerView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                     markerView?.canShowCallout = true
-                    markerView?.markerTintColor = .systemRed
-                    markerView?.glyphImage = UIImage(systemName: "questionmark")
-                } else {
-                    markerView?.annotation = annotation
                 }
+                // Imposta SEMPRE le proprietà custom, anche quando la view è riusata!
+                markerView?.markerTintColor = .systemRed
+                markerView?.glyphImage = UIImage(systemName: "questionmark")
+                markerView?.annotation = annotation
                 return markerView
             }
         }
