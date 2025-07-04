@@ -1,30 +1,59 @@
 import SwiftUI
+import CoreLocation
+import UserNotifications
 
 struct ContentView: View {
-    @State private var shouldCenterUser = false
-    @State private var trackingState: TrackingState = .none
-    @StateObject private var locationManager = LocationManager()
+    let poiList = [
+        POI(
+            street: "Via Lannio",
+            streetNumber: "2",
+            city: "Cetara",
+            province: "Salerno"
+        ),
+        POI(
+            street: "Via Giuseppe Armenante",
+            streetNumber: "21",
+            city: "Cava de' Tirreni",
+            province: "Salerno"
+        )
+    ]
+
+    @StateObject private var notificationManager = NotificationManager() // NEW
 
     var body: some View {
-        ZStack {
-            CustomMapView(shouldCenterUser: $shouldCenterUser, trackingState: $trackingState)
-                .edgesIgnoringSafeArea(.all)
-
-            VStack {
-                HStack {
-                    Spacer()
-                    TrackingButton(trackingState: $trackingState) {
-                        shouldCenterUser = true
-                        trackingState = .follow
-                    }
-                    .padding(.top, 70)
-                    .padding(.trailing, 14)
+        TabView {
+            MapTab(pois: poiList)
+                .tabItem {
+                    Image(systemName: "map")
+                    Text("Mappa")
                 }
-                Spacer()
-            }
+            Text("Diario")
+                .tabItem {
+                    Image(systemName: "book.closed")
+                    Text("Diario")
+                }
+            Text("Badge")
+                .tabItem {
+                    Image(systemName: "rosette")
+                    Text("Badge")
+                }
+            Text("Shop")
+                .tabItem {
+                    Image(systemName: "cart")
+                    Text("Shop")
+                }
+            Text("Profilo")
+                .tabItem {
+                    Image(systemName: "person")
+                    Text("Profilo")
+                }
         }
         .onAppear {
-            locationManager.requestAuthorization()
+            notificationManager.requestPermissions() // NEW
         }
     }
+}
+
+#Preview {
+    ContentView()
 }
