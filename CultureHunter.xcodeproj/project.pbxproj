@@ -11,11 +11,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		246BB1592E17D5D800F0EE55 /* New Folder */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "New Folder";
-			sourceTree = "<group>";
-		};
 		C03878062E054947009AADAA /* CultureHunter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CultureHunter;
@@ -37,7 +32,6 @@
 		C03877FB2E054946009AADAA = {
 			isa = PBXGroup;
 			children = (
-				246BB1592E17D5D800F0EE55 /* New Folder */,
 				C03878062E054947009AADAA /* CultureHunter */,
 				C03878052E054947009AADAA /* Products */,
 			);
@@ -67,7 +61,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				246BB1592E17D5D800F0EE55 /* New Folder */,
 				C03878062E054947009AADAA /* CultureHunter */,
 			);
 			name = CultureHunter;
