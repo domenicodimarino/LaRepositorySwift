@@ -17,7 +17,7 @@ struct AvatarCustomizationView: View {
         .init(title: "Capigliatura",
               iconName: "hair_icon",
               iconColor: nil,
-              destination: AnyView(Text("Capelli View"))),
+              destination: AnyView(HairSelectionView())),
         .init(title: "Carnagione",
               iconName: nil,
               iconColor: Color(red: 0.98, green: 0.84, blue: 0.73),

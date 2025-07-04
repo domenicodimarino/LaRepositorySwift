@@ -62,7 +62,7 @@ struct ProfileView: View {
                                     Spacer()
                                 }
                             }
-                            // Link a inventario
+                            // Link a riavvio tutorial
                             NavigationLink {
                                 //InventoryView()
                             } label: {
