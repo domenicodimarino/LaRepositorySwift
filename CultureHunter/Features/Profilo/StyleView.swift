@@ -41,7 +41,7 @@ struct StyleView: View {
                     .overlay(
                         Group {
                             if selectedIndex == 0 {
-                                Image("checkmark") // Cambia con il nome della tua spunta
+                                Image("checkmarkIcon") // Cambia con il nome della tua spunta
                                     .resizable()
                                     .frame(width: 48, height: 48)
                                     .offset(x:10,y:-10)
@@ -76,7 +76,7 @@ struct StyleView: View {
                     .overlay(
                         Group {
                             if selectedIndex == 1 {
-                                Image("checkmark") // Cambia con il nome della tua spunta
+                                Image("checkmarkIcon") // Cambia con il nome della tua spunta
                                     .resizable()
                                     .frame(width: 48, height: 48)
                                     .offset(x:10,y:-10)
