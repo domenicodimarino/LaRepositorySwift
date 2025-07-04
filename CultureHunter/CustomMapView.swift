@@ -26,8 +26,9 @@ struct CustomMapView: UIViewRepresentable {
         mapView.setRegion(region, animated: false)
 
         mapView.preferredConfiguration = configuration
-
-        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 60, heading: 0)
+        mapView.isPitchEnabled = false
+        
+        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 80, heading: 0)
         mapView.setCamera(camera, animated: false)
 
         mapView.delegate = context.coordinator
@@ -35,7 +36,7 @@ struct CustomMapView: UIViewRepresentable {
         mapView.userTrackingMode = .none // di default non segue l'utente
 
         let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2D(latitude: 40.707, longitude: 14.708)
+        annotation.coordinate = CLLocationCoordinate2D(latitude: 40.70837020698155, longitude: 14.70882631252605)
         annotation.title = "Punto di interesse"
         mapView.addAnnotation(annotation)
 
@@ -85,7 +86,7 @@ struct CustomMapView: UIViewRepresentable {
                     markerView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                     markerView?.canShowCallout = true
                 }
-                // Imposta SEMPRE le proprietà custom, anche quando la view è riusata!
+
                 markerView?.markerTintColor = .systemRed
                 markerView?.glyphImage = UIImage(systemName: "questionmark")
                 markerView?.annotation = annotation

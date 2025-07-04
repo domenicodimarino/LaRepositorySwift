@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var shouldCenterUser = false
     @State private var trackingState: TrackingState = .none
+    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         ZStack {
@@ -21,6 +22,9 @@ struct ContentView: View {
                 }
                 Spacer()
             }
+        }
+        .onAppear {
+            locationManager.requestAuthorization()
         }
     }
 }
