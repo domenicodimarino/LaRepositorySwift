@@ -8,13 +8,19 @@ struct ContentView: View {
             street: "Via Lannio",
             streetNumber: "2",
             city: "Cetara",
-            province: "Salerno"
+            province: "Salerno",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil
         ),
         POI(
             street: "Via Giuseppe Armenante",
             streetNumber: "21",
             city: "Cava de' Tirreni",
-            province: "Salerno"
+            province: "Salerno",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil
         )
     ]
 
@@ -42,7 +48,7 @@ struct ContentView: View {
                     Image(systemName: "cart")
                     Text("Shop")
                 }
-            Text("Profilo")
+            ProfileView()
                 .tabItem {
                     Image(systemName: "person")
                     Text("Profilo")
@@ -54,6 +60,3 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-}
