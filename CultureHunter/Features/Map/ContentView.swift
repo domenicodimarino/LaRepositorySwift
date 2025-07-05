@@ -25,6 +25,7 @@ struct ContentView: View {
     ]
 
     @StateObject private var notificationManager = NotificationManager() // NEW
+    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         TabView {
