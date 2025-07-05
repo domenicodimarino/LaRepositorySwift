@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @State private var nickname: String = ""
+    @StateObject var viewModel = AvatarViewModel()
     
     var body: some View {
         NavigationStack {
@@ -24,10 +25,8 @@ struct ProfileView: View {
                             .frame(width: 308, height: 205)
                             .clipped()
                             .cornerRadius(16)
-                        Image("giovanni")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 133)
+                        AvatarSpriteKitView(viewModel: viewModel)
+                            .frame(width: 128, height: 128)
                     }
                     
                     // Spacer to separate from form
