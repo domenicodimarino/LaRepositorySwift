@@ -1,9 +1,3 @@
-//
-//  NotificationManager.swift
-//  CultureHunter
-//
-//  Created by Giovanni Adinolfi   on 04/07/25.
-//
 import Foundation
 import UserNotifications
 import UIKit
@@ -19,8 +13,8 @@ class NotificationManager: ObservableObject {
         content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
         content.sound = .default
 
-        // Prendi l'immagine dall'assets (NON AppIcon) – esempio: "poi_notification"
-        if let image = UIImage(named: "AppIcon"),
+        // Assicurati che "Notifications" sia il nome giusto dell'immagine nel tuo assets
+        if let image = UIImage(named: "Notifications"),
            let attachment = createImageAttachment(image: image, identifier: "poiImage") {
             content.attachments = [attachment]
         }

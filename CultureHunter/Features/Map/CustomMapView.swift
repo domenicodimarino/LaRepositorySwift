@@ -49,13 +49,22 @@ struct CustomMapView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Aggiorna la posizione utente
+        // Tracking automatico: se trackingState == .follow, segui sempre l'utente
+        if trackingState == .follow {
+            if uiView.userTrackingMode != .follow {
+                uiView.userTrackingMode = .follow
+            }
+        } else {
+            if uiView.userTrackingMode != .none {
+                uiView.userTrackingMode = .none
+            }
+        }
+        
+        // Centra una tantum se richiesto dal bottone
         if shouldCenterUser {
             uiView.userTrackingMode = .follow
-            if shouldCenterUser {
-                DispatchQueue.main.async {
-                    self.shouldCenterUser = false
-                }
+            DispatchQueue.main.async {
+                self.shouldCenterUser = false
             }
         }
         
@@ -83,6 +92,16 @@ struct CustomMapView: UIViewRepresentable {
                 case .follow, .followWithHeading:
                     self.parent.trackingState = .follow
                 default:
+                    self.parent.trackingState = .none
+                }
+            }
+        }
+        
+        // Quando l'utente muove la mappa manualmente, disattiva il tracking automatico
+        func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+            if mapView.userTrackingMode != .none {
+                mapView.userTrackingMode = .none
+                DispatchQueue.main.async {
                     self.parent.trackingState = .none
                 }
             }

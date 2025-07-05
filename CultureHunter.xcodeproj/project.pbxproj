@@ -10,9 +10,22 @@
 		C03878042E054947009AADAA /* CultureHunter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CultureHunter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		24DB63652E197B9100F78C4E /* Exceptions for "CultureHunter" folder in "CultureHunter" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C03878032E054947009AADAA /* CultureHunter */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C03878062E054947009AADAA /* CultureHunter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				24DB63652E197B9100F78C4E /* Exceptions for "CultureHunter" folder in "CultureHunter" target */,
+			);
 			path = CultureHunter;
 			sourceTree = "<group>";
 		};
@@ -254,6 +267,7 @@
 				DEVELOPMENT_TEAM = 9SL2NG6G52;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CultureHunter/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Serve per il funzionamento dell'applicazione";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Serve per il funzionamento dell'applicazione";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -283,6 +297,7 @@
 				DEVELOPMENT_TEAM = 9SL2NG6G52;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CultureHunter/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Serve per il funzionamento dell'applicazione";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Serve per il funzionamento dell'applicazione";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

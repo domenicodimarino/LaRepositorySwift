@@ -1,9 +1,3 @@
-//
-//  MapTab.swift
-//  CultureHunter
-//
-//  Created by Giovanni Adinolfi   on 04/07/25.
-//
 import SwiftUI
 
 struct MapTab: View {
@@ -12,7 +6,8 @@ struct MapTab: View {
     @State private var trackingState: TrackingState = .none
     @StateObject private var locationManager = LocationManager()
     @StateObject private var viewModel = POIViewModel()
-    
+    @State private var hasCenteredOnUser = false // Nuovo stato
+
     var body: some View {
         ZStack {
             if !viewModel.mappedPOIs.isEmpty {
@@ -42,6 +37,13 @@ struct MapTab: View {
         .onAppear {
             locationManager.requestAuthorization()
             viewModel.geocodeAll(pois: pois)
+        }
+        .onChange(of: locationManager.lastLocation) { newLocation in
+            // Centra solo la prima volta che ottieni la posizione
+            if newLocation != nil && !hasCenteredOnUser {
+                shouldCenterUser = true
+                hasCenteredOnUser = true
+            }
         }
     }
 }
