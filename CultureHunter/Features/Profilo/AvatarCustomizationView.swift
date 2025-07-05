@@ -1,32 +1,51 @@
 import SwiftUI
 
 struct AvatarCustomizationView: View {
+    
+    @ObservedObject var viewModel: AvatarViewModel
+    
     struct Option: Identifiable {
         let id = UUID()
         let title: String
         let iconName: String?
         let iconColor: Color?
         let destination: AnyView
+        let dynamicImage: (() -> Image)?
     }
     
-    private let options: [Option] = [
-        .init(title: "Cambia stile",
-              iconName: "giovanni",
-              iconColor: nil,
-              destination: AnyView(StyleView())),
-        .init(title: "Capigliatura",
-              iconName: "hair_icon",
-              iconColor: nil,
-              destination: AnyView(HairSelectionView())),
-        .init(title: "Carnagione",
-              iconName: nil,
-              iconColor: Color(red: 0.98, green: 0.84, blue: 0.73),
-              destination: AnyView(Text("Carnagione View"))),
-        .init(title: "Colore degli occhi",
-              iconName: nil,
-              iconColor: .blue,
-              destination: AnyView(Text("Occhi View"))),
-    ]
+    private var options: [Option] {
+        [
+            .init(title: "Cambia stile",
+                  iconName: "giovanni",
+                  iconColor: nil,
+                  destination: AnyView(StyleView()),
+                 dynamicImage: nil),
+            .init(title: "Capigliatura",
+                  iconName: "hair_icon",
+                  iconColor: nil,
+                  destination: AnyView(HairSelectionView(viewModel: viewModel)),
+                  dynamicImage: {
+                                        // Generiamo l'immagine dal nome del capello attuale
+                                        let hairName = getHairIconName()
+                                        return Image(hairName)
+                                    }
+                 ),
+            .init(title: "Carnagione",
+                  iconName: nil,
+                  iconColor: Color(red: 0.98, green: 0.84, blue: 0.73),
+                  destination: AnyView(Text("Carnagione View")),
+                 dynamicImage: nil),
+            .init(title: "Colore degli occhi",
+                  iconName: nil,
+                  iconColor: .blue,
+                  destination: AnyView(Text("Occhi View")),
+                 dynamicImage: nil),
+        ]
+    }
+    // Funzione per ottenere il nome dell'icona dei capelli
+        private func getHairIconName() -> String {
+            return viewModel.avatar.hair
+        }
     
     var body: some View {
         ZStack {
@@ -41,17 +60,26 @@ struct AvatarCustomizationView: View {
                             .frame(width: 308, height: 205)
                             .clipped()
                             .cornerRadius(16)
-                        Image("giovanni")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 133)
+                        // Sostituiamo l'immagine statica con l'avatar dinamico
+                                                AvatarSpriteKitView(viewModel: viewModel)
+                            .frame(width: 128, height: 128)
                     }
                     // Lista con sfondo bianco
                     VStack(spacing: 0) {
                         ForEach(options) { opt in
                             NavigationLink(destination: opt.destination) {
                                 HStack(spacing: 16) {
-                                    if let iconName = opt.iconName {
+                                    
+                                    if let dynamicImageProvider = opt.dynamicImage {
+                                                                            // Usa l'immagine dinamica se disponibile
+                                                                            dynamicImageProvider()
+                                                                                .resizable()
+                                                                                .scaledToFit()
+                                                                                .cornerRadius(10)
+                                                                                .frame(width: 60, height: 60)
+                                                                                .clipped()
+                                                                                .background(Color.gray.opacity(0.1))
+                                                                        } else if let iconName = opt.iconName {
                                         Image(iconName)
                                             .resizable()
                                             .scaledToFill()
@@ -100,6 +128,6 @@ struct AvatarCustomizationView: View {
 
 #Preview {
     NavigationView {
-        AvatarCustomizationView()
+        AvatarCustomizationView(viewModel: AvatarViewModel())
     }
 }

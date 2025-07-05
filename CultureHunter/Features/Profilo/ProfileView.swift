@@ -44,7 +44,7 @@ struct ProfileView: View {
                             
                             // Link a schermata di personalizzazione avatar
                             NavigationLink {
-                                AvatarCustomizationView()
+                                AvatarCustomizationView(viewModel: viewModel)
                             } label: {
                                 HStack {
                                     Text("Aspetto")
