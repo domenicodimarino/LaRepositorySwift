@@ -41,8 +41,8 @@ struct AvatarCustomizationView: View {
       .init(
         title: "Colore degli occhi",
         iconName: nil,
-        iconColor: .blue,
-        destination: AnyView(Text("Occhi View")),
+        iconColor: getEyeColor(),
+        destination: AnyView(EyeColorView(viewModel: viewModel)),
         dynamicImage: nil),
     ]
   }
@@ -59,6 +59,14 @@ struct AvatarCustomizationView: View {
             return complexion.color
         }
         return ComplexionColors.getColor(for: "light") // Default se non troviamo corrispondenze
+    }
+    // Aggiungere questa funzione a AvatarCustomizationView
+    private func getEyeColor() -> Color {
+      let currentEyes = viewModel.avatar.eyes
+      if let eyeColor = EyeColors.findEyeColor(in: currentEyes) {
+        return eyeColor.color
+      }
+      return EyeColors.getColor(for: "blue")  // Default se non troviamo corrispondenze
     }
 
   var body: some View {

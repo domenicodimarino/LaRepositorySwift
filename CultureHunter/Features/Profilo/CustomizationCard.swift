@@ -105,6 +105,52 @@ struct ComplexionCard: View {
         }
     }
 }
+///card per colore degli occhi
+struct EyeColorCard: View {
+    let eyeColor: EyeColors.EyeColor
+    let isSelected: Bool
+    let onSelect: () -> Void
+    
+    // Inizializzatore primario
+    init(eyeColor: EyeColors.EyeColor, isSelected: Bool, onSelect: @escaping () -> Void) {
+        self.eyeColor = eyeColor
+        self.isSelected = isSelected
+        self.onSelect = onSelect
+    }
+    
+    // Inizializzatore di compatibilità se necessario
+    init(eyeColorName: String, isSelected: Bool, onSelect: @escaping () -> Void) {
+        self.eyeColor = EyeColors.all.first { $0.assetName == eyeColorName } ??
+                         EyeColors.all.first!
+        self.isSelected = isSelected
+        self.onSelect = onSelect
+    }
+    
+    var body: some View {
+        CustomizationCard(isSelected: isSelected, onSelect: onSelect) {
+            ZStack {
+                // Simuliamo un occhio stilizzato
+                Circle()
+                    .fill(.white)
+                    .frame(width: 55, height: 55)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.black, lineWidth: 1)
+                    )
+                
+                // Iride (il colore vero e proprio)
+                Circle()
+                    .fill(eyeColor.color)
+                    .frame(width: 35, height: 35)
+                
+                // Pupilla
+                Circle()
+                    .fill(.black)
+                    .frame(width: 15, height: 15)
+            }
+        }
+    }
+}
 
 // MARK: - Previews
 

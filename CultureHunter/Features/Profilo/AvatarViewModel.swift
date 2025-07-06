@@ -77,7 +77,12 @@ class AvatarViewModel: ObservableObject {
     }
     
     func setEyes(_ eyes: String) {
-        avatar.eyes = eyes
+        
+        let genderPrefix = avatar.gender == .male ? "male_" : "female_"
+        
+        let eyeBaseName = "105 eye_color Eye_Color"
+        avatar.eyes = "\(eyeBaseName) \(eyes)"
+        
     }
     
     func setGender(_ gender: Gender) {
