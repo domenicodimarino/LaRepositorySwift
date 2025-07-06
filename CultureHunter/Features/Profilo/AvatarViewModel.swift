@@ -43,7 +43,25 @@ class AvatarViewModel: ObservableObject {
     }
     
     func setSkin(_ skin: String) {
-        avatar.skin = skin
+        // Mantieni il formato esistente dell'asset ma sostituisci solo il tono della pelle
+        
+        // Estrai il prefisso di genere
+        let genderPrefix = avatar.gender == .male ? "male_" : "female_"
+        
+        // Aggiorna il corpo (body)
+        let bodyBaseName = "010 body Body_color"
+        avatar.skin = "\(bodyBaseName) \(skin)"
+        
+        // Aggiorna anche la testa con lo stesso tono di pelle
+        let currentHead = avatar.head
+        
+        // Determina il tipo di testa (Human_male, Human_female, ecc.)
+        let headTypeComponents = currentHead.components(separatedBy: " ")
+        if headTypeComponents.count >= 3 {
+            // Formato: "100 head Human_male light" -> estrai "Human_male"
+            let headType = headTypeComponents[2]
+            avatar.head = "100 head \(headType) \(skin)"
+        }
     }
     
     func setShirt(_ shirt: String) {

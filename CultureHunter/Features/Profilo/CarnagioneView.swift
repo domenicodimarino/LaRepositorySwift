@@ -7,12 +7,171 @@
 
 import SwiftUI
 
+// Modello per carnagione
+struct Complexion: Identifiable, Hashable {
+  let id = UUID()
+  let assetName: String
+}
+
 struct CarnagioneView: View {
+    @ObservedObject var viewModel: AvatarViewModel
+    
+    let allComplexions: [Complexion] = [
+        Complexion(assetName: "light"),
+        Complexion(assetName: "amber"),
+        Complexion(assetName: "bronze"),
+        Complexion(assetName: "brown"),
+        Complexion(assetName: "black"),
+        Complexion(assetName: "olive"),
+        Complexion(assetName: "taupe")
+    ]
+    
+    @State private var selectedComplexion: Complexion?
+    @State private var containerWidth: CGFloat = 0
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ScrollView {
+            VStack {
+                ZStack(alignment: .bottom) {
+                    Image("background")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 308, height: 205)
+                        .clipped()
+                        .cornerRadius(16)
+                    AvatarSpriteKitView(viewModel: viewModel)
+                        .frame(width: 128, height: 128)
+                }
+                .padding(.top)
+                .frame(maxWidth: .infinity)
+                
+                Spacer(minLength: 30)
+                
+                // Layout adattivo basato sulla larghezza dello schermo
+                GeometryReader { proxy in
+                    VStack(alignment: .center, spacing: 20) {
+                        let width = proxy.size.width
+                        
+                        // Determina la larghezza disponibile e crea le righe
+                        AdaptiveComplexionGrid(
+                            containerWidth: width,
+                            complexions: allComplexions,
+                            selectedComplexion: selectedComplexion,
+                            onSelectComplexion: selectComplexion
+                        )
+                    }
+                    .onAppear {
+                        containerWidth = proxy.size.width
+                    }
+                    .onChange(of: proxy.size.width) { oldWidth, newWidth in
+                                            containerWidth = newWidth
+                                        }
+                    .frame(width: proxy.size.width)
+                }
+                .padding(.horizontal)
+                .frame(minHeight: 350) // Altezza minima per contenere la griglia
+            }
+        }
+        .navigationTitle("Carnagione")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            let currentSkin = viewModel.avatar.skin
+            let skinTone = extractSkinTone(from: currentSkin)
+            selectedComplexion = allComplexions.first { $0.assetName == skinTone }
+        }
+    }
+    
+    private func selectComplexion(_ complexion: Complexion) {
+        selectedComplexion = complexion
+        viewModel.setSkin(complexion.assetName)
+    }
+    
+    private func extractSkinTone(from skinAsset: String) -> String {
+        for complexion in allComplexions.map({ $0.assetName }) {
+            if skinAsset.contains(complexion) {
+                return complexion
+            }
+        }
+        return "light"
+    }
+}
+
+struct AdaptiveComplexionGrid: View {
+    let containerWidth: CGFloat
+    let complexions: [Complexion]
+    let selectedComplexion: Complexion?
+    let onSelectComplexion: (Complexion) -> Void
+    
+    // Costanti di layout
+    let cardWidth: CGFloat = 73
+    let minSpacing: CGFloat = 15
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Prima sezione (2 card)
+            if complexions.count > 0 {
+                HStack(spacing: getOptimalSpacing(cardCount: 2)) {
+                    ForEach(0..<min(2, complexions.count), id: \.self) { index in
+                        ComplexionCard(
+                            complexionName: complexions[index].assetName,
+                            isSelected: selectedComplexion == complexions[index],
+                            onSelect: { onSelectComplexion(complexions[index]) }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+            
+            // Seconda sezione (3 card)
+            if complexions.count > 2 {
+                HStack(spacing: getOptimalSpacing(cardCount: 3)) {
+                    ForEach(2..<min(5, complexions.count), id: \.self) { index in
+                        ComplexionCard(
+                            complexionName: complexions[index].assetName,
+                            isSelected: selectedComplexion == complexions[index],
+                            onSelect: { onSelectComplexion(complexions[index]) }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+            
+            // Terza sezione (2 card o il resto)
+            if complexions.count > 5 {
+                let remainingCount = min(complexions.count - 5, 2) // Massimo 2 card nell'ultima riga
+                HStack(spacing: getOptimalSpacing(cardCount: remainingCount)) {
+                    ForEach(5..<min(7, complexions.count), id: \.self) { index in
+                        ComplexionCard(
+                            complexionName: complexions[index].assetName,
+                            isSelected: selectedComplexion == complexions[index],
+                            onSelect: { onSelectComplexion(complexions[index]) }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            }
+        }
+    }
+    
+    // Calcola lo spazio ottimale tra le card in base alla larghezza disponibile
+    private func getOptimalSpacing(cardCount: Int) -> CGFloat {
+        // Spazio disponibile dopo aver sottratto la larghezza di tutte le card
+        let totalCardWidth = cardWidth * CGFloat(cardCount)
+        let availableSpace = containerWidth - totalCardWidth
+        
+        // Se non c'è abbastanza spazio, usa lo spazio minimo
+        if availableSpace < minSpacing * CGFloat(cardCount - 1) {
+            return minSpacing
+        }
+        
+        // Calcola lo spazio equidistante
+        let spacing = availableSpace / CGFloat(cardCount + 1)
+        return max(spacing, minSpacing)
     }
 }
 
 #Preview {
-    CarnagioneView()
+    NavigationView {
+        CarnagioneView(viewModel: AvatarViewModel())
+    }
 }

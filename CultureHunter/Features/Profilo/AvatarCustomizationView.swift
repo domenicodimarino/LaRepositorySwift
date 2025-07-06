@@ -35,8 +35,8 @@ struct AvatarCustomizationView: View {
       .init(
         title: "Carnagione",
         iconName: nil,
-        iconColor: Color(red: 0.98, green: 0.84, blue: 0.73),
-        destination: AnyView(Text("Carnagione View")),
+        iconColor: getSkinColor(),  // Usiamo il colore dinamico della carnagione
+        destination: AnyView(CarnagioneView(viewModel: viewModel)),
         dynamicImage: nil),
       .init(
         title: "Colore degli occhi",
@@ -46,9 +46,37 @@ struct AvatarCustomizationView: View {
         dynamicImage: nil),
     ]
   }
+  
   // Funzione per ottenere il nome dell'icona dei capelli
   private func getHairIconName() -> String {
     return viewModel.avatar.hair
+  }
+  
+  // Funzione per ottenere il colore della carnagione attuale
+  private func getSkinColor() -> Color {
+    // Mappa dei colori di carnagione - uguale a quella in ComplexionCard
+    let complexionColors: [String: Color] = [
+        "amber": Color(red: 0.98, green: 0.84, blue: 0.65),
+        "light": Color(red: 0.98, green: 0.85, blue: 0.73),
+        "black": Color(red: 0.45, green: 0.3, blue: 0.25),
+        "bronze": Color(red: 0.8, green: 0.6, blue: 0.4),
+        "brown": Color(red: 0.65, green: 0.45, blue: 0.3),
+        "olive": Color(red: 0.85, green: 0.7, blue: 0.5),
+        "taupe": Color(red: 0.75, green: 0.55, blue: 0.4)
+    ]
+    
+    // Ottieni il nome della carnagione attuale
+    let currentSkin = viewModel.avatar.skin
+    
+    // Cerca tra i nomi di carnagione conosciuti
+    for (complexionName, color) in complexionColors {
+      if currentSkin.contains(complexionName) {
+        return color
+      }
+    }
+    
+    // Default se non troviamo corrispondenze
+    return Color(red: 0.98, green: 0.85, blue: 0.73)  // light skin color come default
   }
 
   var body: some View {
@@ -94,6 +122,10 @@ struct AvatarCustomizationView: View {
                     Circle()
                       .fill(color)
                       .frame(width: 60, height: 60)
+                      .overlay(
+                        Circle()
+                          .stroke(Color.black, lineWidth: 4)
+                      )
                   } else {
                     Image(systemName: "person.crop.circle.fill")
                       .resizable()
