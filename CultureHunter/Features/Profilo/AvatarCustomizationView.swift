@@ -52,32 +52,14 @@ struct AvatarCustomizationView: View {
     return viewModel.avatar.hair
   }
   
-  // Funzione per ottenere il colore della carnagione attuale
-  private func getSkinColor() -> Color {
-    // Mappa dei colori di carnagione - uguale a quella in ComplexionCard
-    let complexionColors: [String: Color] = [
-        "amber": Color(red: 0.98, green: 0.84, blue: 0.65),
-        "light": Color(red: 0.98, green: 0.85, blue: 0.73),
-        "black": Color(red: 0.45, green: 0.3, blue: 0.25),
-        "bronze": Color(red: 0.8, green: 0.6, blue: 0.4),
-        "brown": Color(red: 0.65, green: 0.45, blue: 0.3),
-        "olive": Color(red: 0.85, green: 0.7, blue: 0.5),
-        "taupe": Color(red: 0.75, green: 0.55, blue: 0.4)
-    ]
-    
-    // Ottieni il nome della carnagione attuale
-    let currentSkin = viewModel.avatar.skin
-    
-    // Cerca tra i nomi di carnagione conosciuti
-    for (complexionName, color) in complexionColors {
-      if currentSkin.contains(complexionName) {
-        return color
-      }
+    // Funzione per ottenere il colore della carnagione attuale
+    private func getSkinColor() -> Color {
+        let currentSkin = viewModel.avatar.skin
+        if let complexion = ComplexionColors.findComplexion(in: currentSkin) {
+            return complexion.color
+        }
+        return ComplexionColors.getColor(for: "light") // Default se non troviamo corrispondenze
     }
-    
-    // Default se non troviamo corrispondenze
-    return Color(red: 0.98, green: 0.85, blue: 0.73)  // light skin color come default
-  }
 
   var body: some View {
     ZStack {
