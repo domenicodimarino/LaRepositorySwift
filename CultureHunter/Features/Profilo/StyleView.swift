@@ -7,12 +7,12 @@ struct StyleView: View {
         VStack {
             Text("Cambio stile")
                 .font(.largeTitle)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
                 .bold()
                 .padding()
             Text("Scegli uno dei due avatar qui sotto. Ricorda che puoi ricambiarlo successivamente.")
                 .font(.body)
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
                 .padding()
             HStack {
                 Spacer()
