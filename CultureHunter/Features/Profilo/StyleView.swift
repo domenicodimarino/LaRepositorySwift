@@ -1,8 +1,15 @@
 import SwiftUI
 
 struct StyleView: View {
-    @State private var selectedIndex: Int? = nil
-
+    @ObservedObject var viewModel: AvatarViewModel
+    @Environment(\.presentationMode) var presentationMode
+    
+    // Il selectedIndex viene inizializzato dal genere attuale dell'avatar
+    @State private var selectedIndex: Int?
+    
+    // ViewModel temporaneo per l'anteprima del genere alternativo
+    @State private var previewViewModel = AvatarViewModel()
+    
     var body: some View {
         VStack {
             Text("Cambio stile")
@@ -10,14 +17,19 @@ struct StyleView: View {
                 .foregroundColor(.primary)
                 .bold()
                 .padding()
+            
             Text("Scegli uno dei due avatar qui sotto. Ricorda che puoi ricambiarlo successivamente.")
                 .font(.body)
                 .foregroundColor(.primary)
                 .padding()
+            
             HStack {
                 Spacer()
-                // Primo bottone
-                Button(action: { selectedIndex = 0 }) {
+                
+                // Avatar maschile
+                Button(action: {
+                    selectedIndex = 0
+                }) {
                     ZStack {
                         Rectangle()
                             .foregroundColor(.clear)
@@ -33,15 +45,21 @@ struct StyleView: View {
                                     .inset(by: 5.05)
                                     .stroke(.black, lineWidth: 5.05)
                             )
-                        Image("uomo")
-                            .resizable()
-                            .frame(width: 137, height: 137)
+                        
+                        if viewModel.avatar.gender == .male {
+                            // Se l'utente è già uomo, mostra il suo avatar attuale
+                            AvatarSpriteKitView(viewModel: viewModel)
+                                .frame(width: 137, height: 137)
+                        } else {
+                            // Altrimenti mostra l'anteprima maschile
+                            AvatarSpriteKitView(viewModel: previewViewModel)
+                                .frame(width: 137, height: 137)
+                        }
                     }
-                    // SOLO LA SPUNTA in alto a destra
                     .overlay(
                         Group {
                             if selectedIndex == 0 {
-                                Image("checkmarkIcon") // Cambia con il nome della tua spunta
+                                Image("checkmarkIcon")
                                     .resizable()
                                     .frame(width: 48, height: 48)
                                     .offset(x:10,y:-10)
@@ -51,9 +69,13 @@ struct StyleView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
+                
                 Spacer()
-                // Secondo bottone
-                Button(action: { selectedIndex = 1 }) {
+                
+                // Avatar femminile
+                Button(action: {
+                    selectedIndex = 1
+                }) {
                     ZStack {
                         Rectangle()
                             .foregroundColor(.clear)
@@ -69,14 +91,21 @@ struct StyleView: View {
                                     .inset(by: 5.05)
                                     .stroke(.black, lineWidth: 5.05)
                             )
-                        Image("donna")
-                            .resizable()
-                            .frame(width: 137, height: 137)
+                        
+                        if viewModel.avatar.gender == .female {
+                            // Se l'utente è già donna, mostra il suo avatar attuale
+                            AvatarSpriteKitView(viewModel: viewModel)
+                                .frame(width: 137, height: 137)
+                        } else {
+                            // Altrimenti mostra l'anteprima femminile
+                            AvatarSpriteKitView(viewModel: previewViewModel)
+                                .frame(width: 137, height: 137)
+                        }
                     }
                     .overlay(
                         Group {
                             if selectedIndex == 1 {
-                                Image("checkmarkIcon") // Cambia con il nome della tua spunta
+                                Image("checkmarkIcon")
                                     .resizable()
                                     .frame(width: 48, height: 48)
                                     .offset(x:10,y:-10)
@@ -86,11 +115,23 @@ struct StyleView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
+                
                 Spacer()
             }
+            
             // Bottone "Avanti"
             Button(action: {
-                // Azione per avanti
+                if let selectedIndex = selectedIndex {
+                    // Verifica se l'utente sta cambiando genere
+                    let newGender: Gender = selectedIndex == 0 ? .male : .female
+                    if viewModel.avatar.gender != newGender {
+                        // Semplicemente sostituisce l'avatar con la preview
+                        viewModel.avatar = previewViewModel.avatar
+                    }
+                }
+                
+                // Torna alla schermata precedente
+                presentationMode.wrappedValue.dismiss()
             }) {
                 ZStack {
                     Rectangle()
@@ -106,10 +147,45 @@ struct StyleView: View {
             }
             .buttonStyle(PlainButtonStyle())
             .padding(.top, 30)
+            .disabled(selectedIndex == nil)
+            .opacity(selectedIndex == nil ? 0.6 : 1.0)
         }
+        .onAppear {
+            // Imposta la selezione iniziale basata sul genere attuale
+            selectedIndex = viewModel.avatar.gender == .male ? 0 : 1
+            
+            // Prepara il ViewModel per l'anteprima dell'altro genere
+            setupPreviewViewModel()
+        }
+    }
+    
+    // Configura il ViewModel per l'anteprima del genere alternativo
+    private func setupPreviewViewModel() {
+        // Copia l'avatar attuale
+        previewViewModel.avatar = viewModel.avatar
+        
+        // Cambia il genere nell'anteprima
+        let currentGender = viewModel.avatar.gender
+        let oppositeGender: Gender = currentGender == .male ? .female : .male
+        
+        // Imposta il genere opposto
+        previewViewModel.avatar.gender = oppositeGender
+        
+        // Cambia i prefissi degli asset per riflettere il nuovo genere
+        let oldPrefix = currentGender == .male ? "male_" : "female_"
+        let newPrefix = oppositeGender == .male ? "male_" : "female_"
+        
+        // Aggiorna tutti gli asset sostituendo solo il prefisso
+        previewViewModel.avatar.head = previewViewModel.avatar.head.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.hair = previewViewModel.avatar.hair.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.skin = previewViewModel.avatar.skin.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.shirt = previewViewModel.avatar.shirt.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.pants = previewViewModel.avatar.pants.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.shoes = previewViewModel.avatar.shoes.replacingOccurrences(of: oldPrefix, with: newPrefix)
+        previewViewModel.avatar.eyes = previewViewModel.avatar.eyes.replacingOccurrences(of: oldPrefix, with: newPrefix)
     }
 }
 
 #Preview {
-    StyleView()
+    StyleView(viewModel: AvatarViewModel())
 }

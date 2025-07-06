@@ -19,7 +19,7 @@ struct AvatarCustomizationView: View {
         title: "Cambia stile",
         iconName: "giovanni",
         iconColor: nil,
-        destination: AnyView(StyleView()),
+        destination: AnyView(StyleView(viewModel: viewModel)),
         dynamicImage: nil),
       .init(
         title: "Capigliatura",
