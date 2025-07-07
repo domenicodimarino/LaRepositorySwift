@@ -23,6 +23,7 @@ struct CustomMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         
+        // Imposta la posizione iniziale su Napoli solo se non viene richiesta la centratura sulla posizione utente
         let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
         let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1300, longitudinalMeters: 1300)
         mapView.setRegion(region, animated: false)
@@ -45,6 +46,11 @@ struct CustomMapView: UIViewRepresentable {
             mapView.addAnnotation(annotation)
         }
         
+        // Centra subito sulla posizione utente all'avvio, se possibile
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            mapView.userTrackingMode = .follow
+        }
+        
         return mapView
     }
     
@@ -60,7 +66,7 @@ struct CustomMapView: UIViewRepresentable {
             }
         }
         
-        // Centra una tantum se richiesto dal bottone
+        // Centra una tantum se richiesto dal bottone o da onAppear della view principale
         if shouldCenterUser {
             uiView.userTrackingMode = .follow
             DispatchQueue.main.async {

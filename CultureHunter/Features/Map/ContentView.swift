@@ -1,8 +1,7 @@
 import SwiftUI
-import CoreLocation
-import UserNotifications
 
 struct ContentView: View {
+    // Lista di POI originali (senza coordinate)
     let poiList = [
         POI(
             street: "Via Lannio",
@@ -21,15 +20,27 @@ struct ContentView: View {
             isDiscovered: false,
             discoveredTitle: nil,
             photo: nil
+        ),
+        POI(
+            street: "Via Giovanni Paolo II",
+            streetNumber: "132",
+            city: "Fisciano",
+            province: "Salerno",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil
         )
     ]
-
-    @StateObject private var notificationManager = NotificationManager() // NEW
+    
+    @State private var mappedPOIs: [MappedPOI] = []
+    @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var badgeManager = BadgeManager()
 
     var body: some View {
         TabView {
-            MapTab(pois: poiList)
+            MapTab(pois: mappedPOIs)
+                .environmentObject(locationManager)
                 .tabItem {
                     Image(systemName: "map")
                     Text("Mappa")
@@ -39,7 +50,13 @@ struct ContentView: View {
                     Image(systemName: "book.closed")
                     Text("Diario")
                 }
-            Text("Badge")
+                .navigationTitle("Diario")
+            }
+            .tabItem {
+                Image(systemName: "book.closed")
+                Text("Diario")
+            }
+            BadgeView(manager: badgeManager)
                 .tabItem {
                     Image(systemName: "rosette")
                     Text("Badge")
@@ -56,8 +73,12 @@ struct ContentView: View {
                 }
         }
         .onAppear {
-            notificationManager.requestPermissions() // NEW
+            notificationManager.requestPermissions()
+            locationManager.requestAuthorization()
+            POIGeocoder.geocode(pois: poiList) { mapped in
+                self.mappedPOIs = mapped
+                locationManager.startMonitoringPOIs(pois: mapped)
+            }
         }
     }
 }
-
