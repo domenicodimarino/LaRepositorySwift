@@ -34,7 +34,7 @@ struct ContentView: View {
                     Image(systemName: "map")
                     Text("Mappa")
                 }
-            Text("Diario")
+            PlacesList()
                 .tabItem {
                     Image(systemName: "book.closed")
                     Text("Diario")
