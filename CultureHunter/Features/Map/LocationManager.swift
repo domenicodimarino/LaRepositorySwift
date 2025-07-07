@@ -1,54 +1,67 @@
 import Foundation
 import CoreLocation
-import Combine
+import UserNotifications
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    private let locationManager = CLLocationManager()
-    private let notificationManager = NotificationManager()
-    private var notifiedPOIs: Set<String> = [] // Per evitare notifiche ripetute
-
+    private let manager = CLLocationManager()
     @Published var lastLocation: CLLocation?
-    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
-
-    var poiList: [POI] = []
+    private var notificationManager = NotificationManager()
 
     override init() {
         super.init()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.allowsBackgroundLocationUpdates = true
-        locationManager.pausesLocationUpdatesAutomatically = false
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.allowsBackgroundLocationUpdates = true
+        manager.pausesLocationUpdatesAutomatically = false
     }
 
     func requestAuthorization() {
-        locationManager.requestAlwaysAuthorization()
-        locationManager.startUpdatingLocation()
+        manager.requestAlwaysAuthorization()
     }
 
-    // Chiamala quando sai che l’utente è vicino a un POI!
-    func userIsNearPOI(poiID: String) {
-        // (opzionale: verifica che il POI esista nella lista)
-        guard poiList.contains(where: { $0.id.uuidString == poiID }) else { return }
-        if !notifiedPOIs.contains(poiID) {
-            notificationManager.sendPOINearbyNotificationWithImage()
-            notifiedPOIs.insert(poiID)
+    // Avvia il monitoraggio di tutte le regioni dei POI geocodificati
+    func startMonitoringPOIs(pois: [MappedPOI]) {
+        // Rimuovi eventuali regioni precedenti prima di aggiungerne di nuove
+        for region in manager.monitoredRegions {
+            manager.stopMonitoring(for: region)
+        }
+        for poi in pois {
+            let region = CLCircularRegion(center: poi.coordinate, radius: 100, identifier: poi.id.uuidString)
+            region.notifyOnEntry = true
+            region.notifyOnExit = false
+            manager.startMonitoring(for: region)
         }
     }
 
-    func resetPOINotification(poiID: String) {
-        // Se vuoi permettere una nuova notifica per questo POI (ad esempio quando l'utente si allontana)
-        notifiedPOIs.remove(poiID)
-    }
-
-    // Location delegate base (può essere lasciato così, oppure tolto se non ti serve la posizione)
+    // Delegate: posizione aggiornata
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         lastLocation = locations.last
     }
 
+    // Delegate: entrato in una regione
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        print("Entrato in regione: \(region.identifier)")
+        notificationManager.sendPOINearbyNotificationWithImage()
+    }
+
+    // Delegate: errori
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location error: \(error.localizedDescription)")
+    }
+
+    // Delegate: autorizzazioni cambiate
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        authorizationStatus = manager.authorizationStatus
-        if authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
-            manager.startUpdatingLocation()
+        switch manager.authorizationStatus {
+        case .authorizedAlways:
+            print("Autorizzazione posizione: SEMPRE")
+        case .authorizedWhenInUse:
+            print("Autorizzazione posizione: SOLO APP APERTA (serve SEMPRE per geofencing!)")
+        case .denied, .restricted:
+            print("Autorizzazione posizione NEGATA o limitata")
+        case .notDetermined:
+            print("Autorizzazione posizione non ancora richiesta")
+        @unknown default:
+            print("Autorizzazione posizione: stato sconosciuto")
         }
     }
 }

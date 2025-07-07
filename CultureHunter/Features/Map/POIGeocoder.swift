@@ -1,9 +1,3 @@
-//
-//  POIGeocoder.swift
-//  CultureHunter
-//
-//  Created by Giovanni Adinolfi   on 04/07/25.
-//
 import Foundation
 import CoreLocation
 
@@ -12,7 +6,12 @@ class POIGeocoder {
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(poi.address) { placemarks, _ in
             if let location = placemarks?.first?.location {
-                let mapped = MappedPOI(title: poi.title, coordinate: location.coordinate)
+                let mapped = MappedPOI(
+                    id: poi.id,
+                    title: poi.title,
+                    address: poi.address,
+                    coordinate: location.coordinate
+                )
                 completion(mapped)
             } else {
                 completion(nil)

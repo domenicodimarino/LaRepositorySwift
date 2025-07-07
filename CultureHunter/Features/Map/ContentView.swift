@@ -21,26 +21,38 @@ struct ContentView: View {
             isDiscovered: false,
             discoveredTitle: nil,
             photo: nil
+        ),
+        POI(
+                    street: "Via Giovanni Paolo II",
+                    streetNumber: "132",
+                    city: "Fisciano",
+                    province: "Salerno",
+                    isDiscovered: false,
+                    discoveredTitle: nil,
+                    photo: nil
         )
     ]
 
+    @State private var mappedPOIs: [MappedPOI] = []
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
     @StateObject private var viewModel = AvatarViewModel()
+    @StateObject private var badgeManager = BadgeManager()
 
     var body: some View {
         TabView {
-            MapTab(pois: poiList)
+            MapTab(pois: mappedPOIs)
+                .environmentObject(locationManager)
                 .tabItem {
                     Image(systemName: "map")
                     Text("Mappa")
                 }
-            Text("Diario")
+            PlacesList()
                 .tabItem {
                     Image(systemName: "book.closed")
                     Text("Diario")
                 }
-            Text("Badge")
+            BadgeView(manager: badgeManager)
                 .tabItem {
                     Image(systemName: "rosette")
                     Text("Badge")
@@ -57,7 +69,12 @@ struct ContentView: View {
                 }
         }
         .onAppear {
-            notificationManager.requestPermissions()
+                    notificationManager.requestPermissions()
+                    locationManager.requestAuthorization()
+            POIGeocoder.geocode(pois: poiList) { mapped in
+                self.mappedPOIs = mapped
+                locationManager.startMonitoringPOIs(pois: mapped)
+            }
         }
     }
 }

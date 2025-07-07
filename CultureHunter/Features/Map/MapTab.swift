@@ -1,20 +1,19 @@
 import SwiftUI
 
 struct MapTab: View {
-    let pois: [POI]
+    let pois: [MappedPOI]
     @State private var shouldCenterUser = false
     @State private var trackingState: TrackingState = .none
     @StateObject private var locationManager = LocationManager()
-    @StateObject private var viewModel = POIViewModel()
-    @State private var hasCenteredOnUser = false // Nuovo stato
+    @State private var hasCenteredOnUser = false
 
     var body: some View {
         ZStack {
-            if !viewModel.mappedPOIs.isEmpty {
+            if !pois.isEmpty {
                 CustomMapView(
                     shouldCenterUser: $shouldCenterUser,
                     trackingState: $trackingState,
-                    mappedPOIs: viewModel.mappedPOIs
+                    mappedPOIs: pois
                 )
                 .edgesIgnoringSafeArea(.top)
             } else {
@@ -36,10 +35,8 @@ struct MapTab: View {
         }
         .onAppear {
             locationManager.requestAuthorization()
-            viewModel.geocodeAll(pois: pois)
         }
         .onChange(of: locationManager.lastLocation) { newLocation in
-            // Centra solo la prima volta che ottieni la posizione
             if newLocation != nil && !hasCenteredOnUser {
                 shouldCenterUser = true
                 hasCenteredOnUser = true
