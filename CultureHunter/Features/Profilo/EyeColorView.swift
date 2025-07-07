@@ -19,7 +19,7 @@ struct EyeColorView: View {
         ScrollView {
             VStack {
                 ZStack(alignment: .bottom) {
-                    Image("background")
+                    Image("room")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 308, height: 205)

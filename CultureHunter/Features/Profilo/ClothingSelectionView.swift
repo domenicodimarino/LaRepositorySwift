@@ -103,7 +103,7 @@ struct AvatarPreviewHeader: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            Image("background")
+            Image("room")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 308, height: 205)

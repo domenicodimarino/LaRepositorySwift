@@ -57,7 +57,7 @@ struct HairSelectionView: View {
         ScrollView {
             VStack {
                 ZStack(alignment: .bottom) {
-                    Image("background")
+                    Image("hair salon")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: 308, height: 205)
