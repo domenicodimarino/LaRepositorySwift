@@ -59,7 +59,7 @@ struct ClothingSelectionView<T: View>: View {
                 }
                 
                 // Messaggio informativo
-                Text("Per ottenere altri \(clothingType.displayName), compra allo shop o completa le missioni")
+                Text("Per ottenere \(clothingType.isMasculine ? "altri" : "altre") \(clothingType.displayName), compra allo shop o completa le missioni")
                     .multilineTextAlignment(.center)
                     .padding()
                 
