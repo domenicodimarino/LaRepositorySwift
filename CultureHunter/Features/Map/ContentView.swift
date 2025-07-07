@@ -1,7 +1,8 @@
 import SwiftUI
+import CoreLocation
+import UserNotifications
 
 struct ContentView: View {
-    // Lista di POI originali (senza coordinate)
     let poiList = [
         POI(
             street: "Via Lannio",
@@ -22,16 +23,16 @@ struct ContentView: View {
             photo: nil
         ),
         POI(
-            street: "Via Giovanni Paolo II",
-            streetNumber: "132",
-            city: "Fisciano",
-            province: "Salerno",
-            isDiscovered: false,
-            discoveredTitle: nil,
-            photo: nil
+                    street: "Via Giovanni Paolo II",
+                    streetNumber: "132",
+                    city: "Fisciano",
+                    province: "Salerno",
+                    isDiscovered: false,
+                    discoveredTitle: nil,
+                    photo: nil
         )
     ]
-    
+
     @State private var mappedPOIs: [MappedPOI] = []
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
@@ -50,12 +51,6 @@ struct ContentView: View {
                     Image(systemName: "book.closed")
                     Text("Diario")
                 }
-                .navigationTitle("Diario")
-            }
-            .tabItem {
-                Image(systemName: "book.closed")
-                Text("Diario")
-            }
             BadgeView(manager: badgeManager)
                 .tabItem {
                     Image(systemName: "rosette")
@@ -73,8 +68,8 @@ struct ContentView: View {
                 }
         }
         .onAppear {
-            notificationManager.requestPermissions()
-            locationManager.requestAuthorization()
+                    notificationManager.requestPermissions()
+                    locationManager.requestAuthorization()
             POIGeocoder.geocode(pois: poiList) { mapped in
                 self.mappedPOIs = mapped
                 locationManager.startMonitoringPOIs(pois: mapped)
