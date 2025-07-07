@@ -42,9 +42,8 @@ class AvatarScene: SKScene {
     }
 
     override func didMove(to view: SKView) {
-        backgroundColor = .clear  // CAMBIA DA .clear A .blue PER TEST
+        backgroundColor = .clear
         
-        // AGGIUNGI DIMENSIONI ESPLICITE
         headNode.size = CGSize(width: characterSize, height: characterSize)
         bodyNode.size = CGSize(width: characterSize, height: characterSize)
         hairNode.size = CGSize(width: characterSize, height: characterSize)
@@ -53,7 +52,6 @@ class AvatarScene: SKScene {
         pantsNode.size = CGSize(width: characterSize, height: characterSize)
         shoesNode.size = CGSize(width: characterSize, height: characterSize)
         
-        print("AVATAR SCENE LOADED")
         setupNodes()
         startAnimation(for: .idle)
     }

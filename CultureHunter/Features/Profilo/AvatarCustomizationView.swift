@@ -17,7 +17,7 @@ struct AvatarCustomizationView: View {
     [
       .init(
         title: "Cambia stile",
-        iconName: "giovanni",
+        iconName: nil,
         iconColor: nil,
         destination: AnyView(StyleView(viewModel: viewModel)),
         dynamicImage: nil),
@@ -92,7 +92,11 @@ struct AvatarCustomizationView: View {
               NavigationLink(destination: opt.destination) {
                 HStack(spacing: 16) {
 
-                  if let dynamicImageProvider = opt.dynamicImage {
+                    if opt.title == "Cambia stile"
+                    {
+                        AvatarHeadPreview(viewModel: viewModel)
+                    }
+                else if let dynamicImageProvider = opt.dynamicImage {
                     // Usa l'immagine dinamica se disponibile
                     dynamicImageProvider()
                       .resizable()

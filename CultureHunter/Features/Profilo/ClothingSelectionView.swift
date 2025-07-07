@@ -66,7 +66,7 @@ struct ClothingSelectionView<T: View>: View {
                 Spacer()
             }
         }
-        .navigationTitle("I tuoi \(clothingType.displayName)")
+        .navigationTitle("\(clothingType.isMasculine ? "I tuoi" : "Le tue") \(clothingType.displayName)")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             setupInitialSelection()
