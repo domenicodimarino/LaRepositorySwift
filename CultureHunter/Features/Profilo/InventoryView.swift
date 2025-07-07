@@ -27,7 +27,7 @@ struct InventoryView: View {
           title: "Maglietta",
           iconName: nil,
           iconColor: nil,
-          destination: AnyView(Text("Maglietta view")),
+          destination: AnyView(ShirtView(viewModel: viewModel)),
           dynamicImage:{
               let shirtName = getShirtIconName()
               return Image(shirtName)
@@ -37,7 +37,7 @@ struct InventoryView: View {
           title: "Pantaloni",
           iconName: nil,
           iconColor: nil,
-          destination: AnyView(Text("Pantaloni view")),
+          destination: AnyView(PantsView(viewModel: viewModel)),
           dynamicImage: {
             let pantsName = getPantsIconName()
             return Image(pantsName)
@@ -47,7 +47,7 @@ struct InventoryView: View {
           title: "Scarpe",
           iconName: nil,
           iconColor: nil,
-          destination: AnyView(Text("Scarpe view")),
+          destination: AnyView(ShoesView(viewModel: viewModel)),
           dynamicImage: {
                 let shoesName = getShoesIconName()
               return Image(shoesName)
