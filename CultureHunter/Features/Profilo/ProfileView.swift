@@ -54,7 +54,7 @@ struct ProfileView: View {
 
               // Link a inventario
               NavigationLink {
-                //InventoryView()
+                InventoryView(viewModel: viewModel)
               } label: {
                 HStack {
                   Text("Inventario")
