@@ -79,7 +79,7 @@ class ShopViewModel: ObservableObject {
             ShopItem(assetName: "020 legs Pants bluegray", price: 20, type: .pants, isOwned: false),
             ShopItem(assetName: "020 legs Pants brown", price: 20, type: .pants, isOwned: false),
             ShopItem(assetName: "020 legs Pants forest", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants grey", price: 20, type: .pants, isOwned: false),
+            ShopItem(assetName: "020 legs Pants gray", price: 20, type: .pants, isOwned: false),
             ShopItem(assetName: "020 legs Pants green", price: 20, type: .pants, isOwned: false),
             ShopItem(assetName: "020 legs Pants lavender", price: 20, type: .pants, isOwned: false),
             ShopItem(assetName: "020 legs Pants leather", price: 20, type: .pants, isOwned: false),
