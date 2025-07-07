@@ -35,6 +35,7 @@ struct AvatarSpriteKitView: UIViewRepresentable {
 struct AvatarSpriteKitView_Previews: PreviewProvider {
     static var previews: some View {
         let avatar = AvatarData(
+            name: "Visitatore",
             gender: .male,
             head: "100 head Human_male black",   // <-- controlla che esista davvero come base name
             hair: "120 hair Plain black",

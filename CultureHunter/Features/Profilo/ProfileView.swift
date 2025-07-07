@@ -1,8 +1,16 @@
 import SwiftUI
 
 struct ProfileView: View {
-  @State private var nickname: String = ""
+  // Rimuoviamo lo stato locale e usiamo il viewModel
   @StateObject var viewModel = AvatarViewModel()
+  
+  // Proprietà calcolata per il binding al nome
+  private var nameBinding: Binding<String> {
+    Binding<String>(
+      get: { self.viewModel.avatar.name },
+      set: { self.viewModel.setName($0) }
+    )
+  }
 
   var body: some View {
     NavigationStack {
@@ -38,9 +46,9 @@ struct ProfileView: View {
             .fontWeight(.medium)
             .foregroundColor(.primary)
           Form {
-
             Section {
-              TextField("Il tuo nome", text: $nickname)
+              // Ora usiamo il binding al viewModel
+              TextField("Il tuo nome", text: nameBinding)
 
               // Link a schermata di personalizzazione avatar
               NavigationLink {
@@ -78,7 +86,8 @@ struct ProfileView: View {
         .padding()
       }
       .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
-    }.navigationTitle("Profilo")
+    }
+    .navigationTitle("Profilo")
   }
 }
 

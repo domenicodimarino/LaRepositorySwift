@@ -36,6 +36,12 @@ class AvatarViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Aggiornamento del nome
+    
+    func setName(_ name: String) {
+        avatar.name = name
+    }
+    
     // MARK: - Aggiornamento dei vari layer
     
     func setHair(_ hair: String) {
@@ -106,6 +112,7 @@ class AvatarViewModel: ObservableObject {
     
     static func defaultAvatar() -> AvatarData {
         return AvatarData(
+            name: "Visitatore",  // Nome default
             gender: .male,
             head: "100 head Human_male light",
             hair: "120 hair Plain black",

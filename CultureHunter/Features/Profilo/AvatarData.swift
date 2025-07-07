@@ -5,6 +5,7 @@
 //  Created by Domenico Di Marino on 05/07/25.
 //
 struct AvatarData : Codable{
+    var name: String // Nome dell'avatar
     var gender: Gender
     var head: String
     var hair: String // nome asset capelli selezionato
