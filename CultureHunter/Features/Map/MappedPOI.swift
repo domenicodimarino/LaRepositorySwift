@@ -7,9 +7,10 @@
 import Foundation
 import CoreLocation
 
-struct MappedPOI: Identifiable, Hashable, Equatable {
-    let id = UUID()
+struct MappedPOI: Identifiable {
+    let id: UUID            // copia l'id del POI originale!
     let title: String
+    let address: String
     let coordinate: CLLocationCoordinate2D
 
     static func == (lhs: MappedPOI, rhs: MappedPOI) -> Bool {
