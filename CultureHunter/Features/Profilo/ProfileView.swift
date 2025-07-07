@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct ProfileView: View {
-  // Rimuoviamo lo stato locale e usiamo il viewModel
-  @StateObject var viewModel = AvatarViewModel()
+  
+    @ObservedObject var viewModel: AvatarViewModel
   
   // Proprietà calcolata per il binding al nome
   private var nameBinding: Binding<String> {
@@ -92,5 +92,5 @@ struct ProfileView: View {
 }
 
 #Preview {
-  ProfileView()
+  ProfileView(viewModel: AvatarViewModel())
 }

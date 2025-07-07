@@ -14,4 +14,5 @@ struct AvatarData : Codable{
     var pants: String // nome asset pantaloni selezionati
     var shoes: String // nome asset scarpe selezionate
     var eyes: String // nome asset occhi selezionati
+    var coins: Int = 40 // Monete del giocatore (default 40)
 }

@@ -24,8 +24,9 @@ struct ContentView: View {
         )
     ]
 
-    @StateObject private var notificationManager = NotificationManager() // NEW
+    @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
+    @StateObject private var viewModel = AvatarViewModel()
 
     var body: some View {
         TabView {
@@ -44,20 +45,19 @@ struct ContentView: View {
                     Image(systemName: "rosette")
                     Text("Badge")
                 }
-            Text("Shop")
+            ShopView(avatarViewModel: viewModel)
                 .tabItem {
                     Image(systemName: "cart")
                     Text("Shop")
                 }
-            ProfileView()
+            ProfileView(viewModel: viewModel)
                 .tabItem {
                     Image(systemName: "person")
                     Text("Profilo")
                 }
         }
         .onAppear {
-            notificationManager.requestPermissions() // NEW
+            notificationManager.requestPermissions()
         }
     }
 }
-

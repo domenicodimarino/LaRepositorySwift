@@ -108,8 +108,22 @@ class AvatarViewModel: ObservableObject {
         avatar = newAvatar
     }
     
-    // MARK: - Avatar di default (static func)
-    
+    func addCoins(_ amount: Int) {
+        avatar.coins += amount
+    }
+
+    func spendCoins(_ amount: Int) -> Bool {
+        if avatar.coins >= amount {
+            avatar.coins -= amount
+            return true
+        }
+        return false
+    }
+
+    func getCoins() -> Int {
+        return avatar.coins
+    }
+
     static func defaultAvatar() -> AvatarData {
         return AvatarData(
             name: "Visitatore",  // Nome default
@@ -120,7 +134,8 @@ class AvatarViewModel: ObservableObject {
             shirt: "035 clothes TShirt white",
             pants: "020 legs Pants black",
             shoes: "015 shoes Basic_Shoes black",
-            eyes: "105 eye_color Eye_Color blue"
+            eyes: "105 eye_color Eye_Color blue",
+            coins: 40  // Monete di default
         )
     }
 }
