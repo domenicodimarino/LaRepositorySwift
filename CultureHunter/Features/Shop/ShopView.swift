@@ -330,32 +330,43 @@ struct ShopView: View {
             // Aggiorna lo stato degli item posseduti quando la vista appare
             shopViewModel.updateOwnedStatus()
         }
+        .onChange(of: shopViewModel.coins) { _ in
+            // Aggiorna lo stato degli item quando cambiano le monete
+            shopViewModel.updateOwnedStatus()
+        }
     }
     
-    // Funzione per gestire l'acquisto
     private func buySelectedItem() {
         guard let item = selectedItem else { return }
         
-        if item.isOwned {
-            // Se l'item è già posseduto, mostra un alert
+        if shopViewModel.inventoryManager.isItemUnlocked(ClothingItem(
+            assetName: item.assetName,
+            type: item.type,
+            disponibile: true
+        )) {
             alertMessage = "Possiedi già questo articolo"
             showAlert = true
-        } else if shopViewModel.coins < item.price {
-            // Se non ci sono abbastanza monete, mostra un alert
+            return
+        }
+        
+        if shopViewModel.coins < item.price {
             alertMessage = "Non hai abbastanza monete"
             showAlert = true
-        } else {
-            // Tenta l'acquisto
-            if shopViewModel.buyItem(item) {
-                alertMessage = "Acquisto completato! Puoi indossare questo articolo dall'inventario"
-                showAlert = true
-            } else {
-                alertMessage = "Errore durante l'acquisto"
-                showAlert = true
-            }
+            return
         }
-    }
-}
+        
+        // Tenta l'acquisto
+        if shopViewModel.buyItem(item) {
+            // Forza l'aggiornamento dello stato dopo l'acquisto
+            shopViewModel.updateOwnedStatus()
+            
+            alertMessage = "Acquisto completato! Puoi indossare questo articolo dall'inventario"
+            showAlert = true
+        } else {
+            alertMessage = "Errore durante l'acquisto"
+            showAlert = true
+        }
+    }}
 
 // Card per visualizzare un articolo dello shop
 struct ShopItemCard: View {
