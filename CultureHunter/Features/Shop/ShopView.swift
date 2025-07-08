@@ -15,8 +15,20 @@ struct ShopItem: Identifiable, Equatable {
     let type: ClothingType
     var isOwned: Bool
     
+    // Implementazione efficiente di Equatable
     static func == (lhs: ShopItem, rhs: ShopItem) -> Bool {
         lhs.id == rhs.id
+    }
+    
+    // Computed property per ottenere il nome visualizzabile
+    var displayName: String {
+        let components = assetName.components(separatedBy: " ")
+        if components.count >= 3 {
+            let itemType = components[2]
+            let color = components.dropFirst(3).joined(separator: " ")
+            return "\(itemType) \(color)"
+        }
+        return assetName
     }
 }
 
@@ -25,104 +37,56 @@ class ShopViewModel: ObservableObject {
     @Published var items: [ShopItem] = []
     
     private var avatarViewModel: AvatarViewModel
-    
     let inventoryManager = InventoryManager.shared
     
-    var coins: Int {
-        get { avatarViewModel.getCoins() }
-    }
+    // Proprietà calcolate
+    var coins: Int { avatarViewModel.getCoins() }
+    
+    // MARK: - Lifecycle
     
     init(avatarViewModel: AvatarViewModel) {
-            self.avatarViewModel = avatarViewModel
-            loadItems()
-        }
+        self.avatarViewModel = avatarViewModel
+        loadItems()
+    }
     
+    // MARK: - Item Management
+    
+    /// Carica tutti gli item disponibili nello shop
     func loadItems() {
-        // Magliette disponibili nello shop
-        items = [
-            // Magliette
-            
-            
-            ShopItem(assetName: "035 clothes TShirt blue", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt bluegray", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt brown", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt charcoal", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt forest", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt gray", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt green", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt lavender", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt leather", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt maroon", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt navy", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt orange", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt pink", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt purple", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt red", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt rose", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt sky", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt slate", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt tan", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt teal", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt walnut", price: 20, type: .shirt, isOwned: false),
-            ShopItem(assetName: "035 clothes TShirt yellow", price: 20, type: .shirt, isOwned: false),
-            
-            // Pantaloni
-            
-            /*
-             ["blue", "bluegray", "brown",
-                               "charcoal", "forest", "gray", "green", "lavender",
-                               "leather", "maroon", "navy", "orange", "pink",
-                               "purple", "red", "rose", "sky", "slate",
-                               "tan", "teal", "walnut", "yellow"]
-             */
-            ShopItem(assetName: "020 legs Pants blue", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants bluegray", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants brown", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants forest", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants gray", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants green", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants lavender", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants leather", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants maroon", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants navy", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants orange", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants pink", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants purple", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants red", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants rose", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants sky", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants slate", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants tan", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants teal", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants walnut", price: 20, type: .pants, isOwned: false),
-            ShopItem(assetName: "020 legs Pants yellow", price: 20, type: .pants, isOwned: false),
-            
-            
-            // Scarpe
-            /*
-             black blue brown gray green leather navy pink red slate tan white yellow
-             */
-            ShopItem(assetName: "015 shoes Basic_Shoes blue", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes brown", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes gray", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes green", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes leather", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes navy", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes pink", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes red", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes slate", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes tan", price: 20, type: .shoes, isOwned: false),
-            ShopItem(assetName: "015 shoes Basic_Shoes yellow", price: 20, type: .shoes, isOwned: false),
-            
-        ]
+        // Creazione degli array di colori per riutilizzo
+        let shirtColors = ["blue", "bluegray", "brown", "charcoal", "forest", "gray",
+                          "green", "lavender", "leather", "maroon", "navy", "orange",
+                          "pink", "purple", "red", "rose", "sky", "slate", "tan",
+                          "teal", "walnut", "yellow"]
         
-        // Aggiorna lo stato di possesso
+        let pantsColors = shirtColors
+        
+        let shoesColors = ["blue", "brown", "gray", "green", "leather", "navy",
+                          "pink", "red", "slate", "tan", "yellow"]
+        
+        // Creazione degli item con una funzione di utilità
+        items = createItems(type: .shirt, style: "TShirt", colors: shirtColors) +
+                createItems(type: .pants, style: "Pants", colors: pantsColors) +
+                createItems(type: .shoes, style: "Basic_Shoes", colors: shoesColors)
+        
         updateOwnedStatus()
     }
     
+    /// Funzione helper per creare array di item con colori diversi
+    private func createItems(type: ClothingType, style: String, colors: [String]) -> [ShopItem] {
+        return colors.map { color in
+            ShopItem(
+                assetName: "\(type.assetPrefix) \(style) \(color)",
+                price: 20,
+                type: type,
+                isOwned: false
+            )
+        }
+    }
+    
+    /// Aggiorna lo stato di possesso degli item
     func updateOwnedStatus() {
-        // Controlla quali item sono già posseduti
-        for i in 0..<items.count {
+        for i in items.indices {
             items[i].isOwned = inventoryManager.isItemUnlocked(ClothingItem(
                 assetName: items[i].assetName,
                 type: items[i].type,
@@ -131,190 +95,63 @@ class ShopViewModel: ObservableObject {
         }
     }
     
+    /// Tenta l'acquisto di un item
+    /// - Parameter item: L'item da acquistare
+    /// - Returns: `true` se l'acquisto ha avuto successo, `false` altrimenti
     func buyItem(_ item: ShopItem) -> Bool {
         // Verifica se l'utente possiede già l'item
-                if item.isOwned {
-                    return false
-                }
-                
-                // Prova a spendere le monete
-                if !avatarViewModel.spendCoins(item.price) {
-                    return false
-                }
-                
-                // Sblocca l'item nell'inventario
-                inventoryManager.unlockItem(withAssetName: item.assetName)
-                
-                // Aggiorna lo stato dell'item
-                if let index = items.firstIndex(where: { $0.id == item.id }) {
-                    items[index].isOwned = true
-                }
-                
-                return true
+        if item.isOwned {
+            return false
+        }
+        
+        // Prova a spendere le monete
+        if !avatarViewModel.spendCoins(item.price) {
+            return false
+        }
+        
+        // Sblocca l'item nell'inventario
+        inventoryManager.unlockItem(withAssetName: item.assetName)
+        
+        // Aggiorna lo stato dell'item
+        if let index = items.firstIndex(where: { $0.id == item.id }) {
+                items[index].isOwned = true
+            }
+        
+        return true
     }
     
-    // Ottieni items filtrati per tipo
+    /// Restituisce gli item filtrati per tipo
+    /// - Parameter type: Il tipo di item da filtrare
+    /// - Returns: Array di item del tipo specificato
     func items(ofType type: ClothingType) -> [ShopItem] {
         return items.filter { $0.type == type }
     }
 }
 
 struct ShopView: View {
+    // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
-        @StateObject private var shopViewModel: ShopViewModel
-        
-        @State private var showAlert = false
-        @State private var alertMessage = ""
-        @State private var selectedItem: ShopItem? = nil
-        
-        // Un solo initializzatore che accetta il viewModel da fuori
-        init(avatarViewModel: AvatarViewModel) {
-            self.avatarViewModel = avatarViewModel
-            _shopViewModel = StateObject(wrappedValue: ShopViewModel(avatarViewModel: avatarViewModel))
-        }
+    @StateObject private var shopViewModel: ShopViewModel
+    
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    @State private var selectedItem: ShopItem? = nil
+    
+    // MARK: - Initialization
+    
+    init(avatarViewModel: AvatarViewModel) {
+        self.avatarViewModel = avatarViewModel
+        _shopViewModel = StateObject(wrappedValue: ShopViewModel(avatarViewModel: avatarViewModel))
+    }
+    
+    // MARK: - View
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Header
-                Text("Shop")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .kerning(0.4)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.primary)
-                    .padding(.top)
-                
-                // Avatar, monete e missione settimanale
-                HStack {
-                    ZStack(alignment: .bottom) {
-                        Image("shop")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 131, height: 186)
-                            .clipped()
-                            .cornerRadius(16)
-                        AvatarSpriteKitView(viewModel: avatarViewModel)
-                            .frame(width: 128, height: 128)
-                    }
-                    VStack {
-                        HStack {
-                            Text("Le tue monete: ")
-                                .font(.body)
-                                .fontWeight(.semibold)
-                            Image("coin")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 19, height: 15)
-                                .clipped()
-                            Text("\(shopViewModel.coins)")
-                                .font(.body)
-                                .fontWeight(.semibold)
-                        }
-                        ZStack {
-                            Rectangle()
-                                .foregroundColor(.clear)
-                                .frame(width: 213, height: 111)
-                                .background(Color(red: 0.85, green: 0.85, blue: 0.85))
-                                .cornerRadius(21)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 21)
-                                        .inset(by: 2.5)
-                                        .stroke(.black, lineWidth: 5)
-                                )
-                            VStack {
-                                Text("Missione settimanale")
-                                    .font(.body)
-                                    .fontWeight(.semibold)
-                                    .padding(.bottom, 4)
-                                
-                                HStack(spacing: 10) {
-                                    Image("shirt_mission") // Immagine della maglietta esclusiva
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 40, height: 40)
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text("Visita \"Stadio Arechi\" per")
-                                            .font(.caption)
-                                        Text("ottenere una maglietta esclusiva")
-                                            .font(.caption)
-                                    }
-                                }
-                            }
-                        }
-                        .frame(width: 213, height: 111)
-                    }
-                }
-                
-                // Sezione Magliette
-                VStack(alignment: .leading) {
-                    Text("Magliette")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(shopViewModel.items(ofType: .shirt)) { item in
-                                ShopItemCard(
-                                    item: item,
-                                    onBuy: {
-                                        selectedItem = item
-                                        buySelectedItem()
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                
-                // Sezione Pantaloni
-                VStack(alignment: .leading) {
-                    Text("Pantaloni")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(shopViewModel.items(ofType: .pants)) { item in
-                                ShopItemCard(
-                                    item: item,
-                                    onBuy: {
-                                        selectedItem = item
-                                        buySelectedItem()
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-                
-                // Sezione Scarpe
-                VStack(alignment: .leading) {
-                    Text("Scarpe")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(shopViewModel.items(ofType: .shoes)) { item in
-                                ShopItemCard(
-                                    item: item,
-                                    onBuy: {
-                                        selectedItem = item
-                                        buySelectedItem()
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
+                headerSection
+                avatarAndInfoSection
+                shopSections
             }
             .padding()
         }
@@ -327,23 +164,147 @@ struct ShopView: View {
             )
         }
         .onAppear {
-            // Aggiorna lo stato degli item posseduti quando la vista appare
             shopViewModel.updateOwnedStatus()
         }
-        .onChange(of: shopViewModel.coins) { _ in
-            // Aggiorna lo stato degli item quando cambiano le monete
+        .onChange(of: avatarViewModel.avatar.coins) { _ in
+            // Quando le monete cambiano (dopo un acquisto), aggiorna lo stato degli item
             shopViewModel.updateOwnedStatus()
         }
     }
     
+    // MARK: - View Components
+    
+    private var headerSection: some View {
+        Text("Shop")
+            .font(.largeTitle)
+            .fontWeight(.bold)
+            .kerning(0.4)
+            .multilineTextAlignment(.center)
+            .foregroundColor(.primary)
+            .padding(.top)
+    }
+    
+    private var avatarAndInfoSection: some View {
+        HStack {
+            avatarPreview
+            VStack {
+                coinDisplay
+                weeklyMissionDisplay
+            }
+        }
+    }
+    
+    private var avatarPreview: some View {
+        ZStack(alignment: .bottom) {
+            Image("shop")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 131, height: 186)
+                .clipped()
+                .cornerRadius(16)
+            AvatarSpriteKitView(viewModel: avatarViewModel)
+                .frame(width: 128, height: 128)
+        }
+    }
+    
+    private var coinDisplay: some View {
+        HStack {
+            Text("Le tue monete: ")
+                .font(.body)
+                .fontWeight(.semibold)
+            Image("coin")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 19, height: 15)
+                .clipped()
+            Text("\(shopViewModel.coins)")
+                .font(.body)
+                .fontWeight(.semibold)
+        }
+    }
+    
+    private var weeklyMissionDisplay: some View {
+        ZStack {
+            Rectangle()
+                .foregroundColor(.clear)
+                .frame(width: 213, height: 111)
+                .background(Color(red: 0.85, green: 0.85, blue: 0.85))
+                .cornerRadius(21)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 21)
+                        .inset(by: 2.5)
+                        .stroke(.black, lineWidth: 5)
+                )
+            
+            VStack {
+                Text("Missione settimanale")
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .padding(.bottom, 4)
+                
+                HStack(spacing: 10) {
+                    Image("shirt_mission")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 40, height: 40)
+                    
+                    VStack(alignment: .leading) {
+                        Text("Visita \"Stadio Arechi\" per")
+                            .font(.caption)
+                        Text("ottenere una maglietta esclusiva")
+                            .font(.caption)
+                    }
+                }
+            }
+        }
+        .frame(width: 213, height: 111)
+    }
+    
+    private var shopSections: some View {
+        VStack(spacing: 20) {
+            shopSection(title: "Magliette", type: .shirt)
+            shopSection(title: "Pantaloni", type: .pants)
+            shopSection(title: "Scarpe", type: .shoes)
+        }
+    }
+    
+    private func shopSection(title: String, type: ClothingType) -> some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(shopViewModel.items(ofType: type)) { item in
+                        ShopItemCard(
+                            item: item,
+                            onBuy: {
+                                selectedItem = item
+                                buySelectedItem()
+                            }
+                        )
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+    
+    // MARK: - Actions
+    
     private func buySelectedItem() {
         guard let item = selectedItem else { return }
         
-        if shopViewModel.inventoryManager.isItemUnlocked(ClothingItem(
+        // Verifica DIRETTAMENTE con l'InventoryManager invece di usare il flag locale
+        let clothingItem = ClothingItem(
             assetName: item.assetName,
             type: item.type,
             disponibile: true
-        )) {
+        )
+        
+        if shopViewModel.inventoryManager.isItemUnlocked(clothingItem) {
             alertMessage = "Possiedi già questo articolo"
             showAlert = true
             return
@@ -355,78 +316,96 @@ struct ShopView: View {
             return
         }
         
-        // Tenta l'acquisto
         if shopViewModel.buyItem(item) {
-            // Forza l'aggiornamento dello stato dopo l'acquisto
+            // Forza l'aggiornamento dello stato subito dopo l'acquisto
             shopViewModel.updateOwnedStatus()
-            
             alertMessage = "Acquisto completato! Puoi indossare questo articolo dall'inventario"
             showAlert = true
         } else {
             alertMessage = "Errore durante l'acquisto"
             showAlert = true
         }
-    }}
+    }
+}
 
 // Card per visualizzare un articolo dello shop
 struct ShopItemCard: View {
+    // MARK: - Properties
     let item: ShopItem
     let onBuy: () -> Void
     
+    // MARK: - Constants
+    private enum ViewMetrics {
+        static let cardWidth: CGFloat = 73
+        static let cardHeight: CGFloat = 98
+        static let priceHeight: CGFloat = 24
+        static let cornerRadius: CGFloat = 16
+        static let borderWidth: CGFloat = 3
+        static let itemImageSize: CGFloat = 60
+    }
+    
+    // MARK: - View
+    
     var body: some View {
-        // Uso uno ZStack per sovrapporre gli elementi
+        Button(action: onBuy) {
+            itemCardView
+        }
+    }
+    
+    private var itemCardView: some View {
         ZStack(alignment: .bottom) {
-            // Contenitore dell'immagine dell'articolo
-            ZStack {
-                Rectangle()
-                    .foregroundColor(.gray.opacity(0.2))
-                    .frame(width: 73, height: 98)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(.black, lineWidth: 3)
-                    )
-                
-                Image(item.assetName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 60, height: 60)
-            }
+            itemContainer
+            priceTag
+        }
+        .frame(width: ViewMetrics.cardWidth, height: 108)
+    }
+    
+    private var itemContainer: some View {
+        ZStack {
+            Rectangle()
+                .foregroundColor(.gray.opacity(0.2))
+                .frame(width: ViewMetrics.cardWidth, height: ViewMetrics.cardHeight)
+                .cornerRadius(ViewMetrics.cornerRadius)
+                .overlay(
+                    RoundedRectangle(cornerRadius: ViewMetrics.cornerRadius)
+                        .stroke(.black, lineWidth: ViewMetrics.borderWidth)
+                )
             
-            // Prezzo o stato dell'articolo - sovrapposto al fondo dell'immagine
-            ZStack {
-                Rectangle()
-                    .foregroundColor(Color(red: 0.2, green: 0.7, blue: 0.92))
-                    .frame(width: 73, height: 24)
-                    .cornerRadius(16)
-                    .overlay(RoundedRectangle(cornerRadius: 16)
-
-                        .stroke(.black, lineWidth: 3))
-                
-                if item.isOwned {
-                    Text("Posseduto")
+            Image(item.assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: ViewMetrics.itemImageSize, height: ViewMetrics.itemImageSize)
+        }
+    }
+    
+    private var priceTag: some View {
+        ZStack {
+            Rectangle()
+                .foregroundColor(Color(red: 0.2, green: 0.7, blue: 0.92))
+                .frame(width: ViewMetrics.cardWidth, height: ViewMetrics.priceHeight)
+                .cornerRadius(ViewMetrics.cornerRadius)
+                .overlay(
+                    RoundedRectangle(cornerRadius: ViewMetrics.cornerRadius)
+                        .stroke(.black, lineWidth: ViewMetrics.borderWidth)
+                )
+            
+            if item.isOwned {
+                Text("Posseduto")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 5)
+            } else {
+                HStack(spacing: 4) {
+                    Image("coin")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 15, height: 15)
+                    
+                    Text("\(item.price)")
                         .font(.caption)
                         .foregroundColor(.white)
-                        .padding(.horizontal, 5)
-                } else {
-                    HStack(spacing: 4) {
-                        Image("coin")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 15, height: 15)
-                        
-                        Text("\(item.price)")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                    }
                 }
             }
-            // Spostamento verso l'alto per sovrapporre il prezzo al bordo inferiore dell'immagine
-            //.offset()
-        }
-        .frame(width: 73, height: 108) // Aggiustiamo l'altezza per tenere conto del prezzo sovrapposto
-        .onTapGesture {
-            onBuy()
         }
     }
 }
