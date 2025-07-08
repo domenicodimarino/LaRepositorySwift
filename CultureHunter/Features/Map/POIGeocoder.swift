@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import UIKit
 
 class POIGeocoder {
     static func geocode(poi: POI, completion: @escaping (MappedPOI?) -> Void) {
@@ -10,7 +11,10 @@ class POIGeocoder {
                     id: poi.id,
                     title: poi.title,
                     address: poi.address,
-                    coordinate: location.coordinate
+                    coordinate: location.coordinate,
+                    isDiscovered: poi.isDiscovered,
+                    discoveredTitle: poi.discoveredTitle,
+                    photo: poi.photo
                 )
                 completion(mapped)
             } else {

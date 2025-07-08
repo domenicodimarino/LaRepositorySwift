@@ -2,7 +2,6 @@ import SwiftUI
 
 struct MapTab: View {
     let pois: [MappedPOI]
-    @State private var shouldCenterUser = false
     @State private var trackingState: TrackingState = .none
     @StateObject private var locationManager = LocationManager()
     @State private var hasCenteredOnUser = false
@@ -11,7 +10,7 @@ struct MapTab: View {
         ZStack {
             if !pois.isEmpty {
                 CustomMapView(
-                    shouldCenterUser: $shouldCenterUser,
+                    shouldCenterUser: .constant(false), // non più necessario, tutto gestito da trackingState
                     trackingState: $trackingState,
                     mappedPOIs: pois
                 )
@@ -24,7 +23,6 @@ struct MapTab: View {
                 HStack {
                     Spacer()
                     TrackingButton(trackingState: $trackingState) {
-                        shouldCenterUser = true
                         trackingState = .follow
                     }
                     .padding(.top, 70)
@@ -38,7 +36,7 @@ struct MapTab: View {
         }
         .onChange(of: locationManager.lastLocation) { newLocation in
             if newLocation != nil && !hasCenteredOnUser {
-                shouldCenterUser = true
+                trackingState = .follow
                 hasCenteredOnUser = true
             }
         }

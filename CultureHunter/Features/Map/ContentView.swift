@@ -11,7 +11,9 @@ struct ContentView: View {
             province: "Salerno",
             isDiscovered: false,
             discoveredTitle: nil,
-            photo: nil
+            photo: nil,
+            latitude: nil,         // Se le hai già, mettile qui
+            longitude: nil
         ),
         POI(
             street: "Via Giuseppe Armenante",
@@ -20,16 +22,20 @@ struct ContentView: View {
             province: "Salerno",
             isDiscovered: false,
             discoveredTitle: nil,
-            photo: nil
+            photo: nil,
+            latitude: 40.703582,         // Idem
+            longitude: 14.690824
         ),
         POI(
-                    street: "Via Giovanni Paolo II",
-                    streetNumber: "132",
-                    city: "Fisciano",
-                    province: "Salerno",
-                    isDiscovered: false,
-                    discoveredTitle: nil,
-                    photo: nil
+            street: "Via Giovanni Paolo II",
+            streetNumber: "132",
+            city: "Fisciano",
+            province: "Salerno",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            latitude: nil,
+            longitude: nil
         )
     ]
 
@@ -69,11 +75,36 @@ struct ContentView: View {
                 }
         }
         .onAppear {
-                    notificationManager.requestPermissions()
-                    locationManager.requestAuthorization()
-            POIGeocoder.geocode(pois: poiList) { mapped in
-                self.mappedPOIs = mapped
-                locationManager.startMonitoringPOIs(pois: mapped)
+            notificationManager.requestPermissions()
+            locationManager.requestAuthorization()
+
+            // Mappatura diretta per POI già con coordinate
+            let withCoords = poiList.compactMap { poi -> MappedPOI? in
+                if let lat = poi.latitude, let lon = poi.longitude {
+                    return MappedPOI(
+                        id: poi.id,
+                        title: poi.title,
+                        address: poi.address,
+                        coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
+                        isDiscovered: poi.isDiscovered,
+                        discoveredTitle: poi.discoveredTitle,
+                        photo: poi.photo
+                    )
+                }
+                return nil
+            }
+
+            // POI senza coordinate: geocodifica solo quelli
+            let withoutCoords = poiList.filter { $0.latitude == nil || $0.longitude == nil }
+            if !withoutCoords.isEmpty {
+                POIGeocoder.geocode(pois: withoutCoords) { mapped in
+                    // Combina POI già mappati + quelli geocodificati
+                    self.mappedPOIs = withCoords + mapped
+                    locationManager.startMonitoringPOIs(pois: self.mappedPOIs)
+                }
+            } else {
+                self.mappedPOIs = withCoords
+                locationManager.startMonitoringPOIs(pois: withCoords)
             }
         }
     }
