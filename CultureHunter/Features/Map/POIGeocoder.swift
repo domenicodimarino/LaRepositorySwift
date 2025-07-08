@@ -12,6 +12,8 @@ class POIGeocoder {
                     title: poi.title,
                     address: poi.address,
                     coordinate: location.coordinate,
+                    city: poi.city,          // <-- aggiungi questi due
+                    province: poi.province,  // <-- aggiungi questi due
                     isDiscovered: poi.isDiscovered,
                     discoveredTitle: poi.discoveredTitle,
                     photo: poi.photo

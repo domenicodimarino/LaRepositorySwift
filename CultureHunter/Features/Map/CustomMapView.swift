@@ -2,16 +2,16 @@ import SwiftUI
 import MapKit
 
 struct CustomMapView: UIViewRepresentable {
-    @Binding var shouldCenterUser: Bool
     @Binding var trackingState: TrackingState
     var mappedPOIs: [MappedPOI]
+    var onPOISelected: ((MappedPOI) -> Void)? = nil
 
     let configuration: MKStandardMapConfiguration
 
-    init(shouldCenterUser: Binding<Bool>, trackingState: Binding<TrackingState>, mappedPOIs: [MappedPOI]) {
-        self._shouldCenterUser = shouldCenterUser
+    init(trackingState: Binding<TrackingState>, mappedPOIs: [MappedPOI], onPOISelected: ((MappedPOI) -> Void)? = nil) {
         self._trackingState = trackingState
         self.mappedPOIs = mappedPOIs
+        self.onPOISelected = onPOISelected
         configuration = MKStandardMapConfiguration(elevationStyle: .realistic)
         configuration.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
     }
@@ -37,16 +37,14 @@ struct CustomMapView: UIViewRepresentable {
 
         // Aggiungi i POI come annotazioni
         for poi in mappedPOIs {
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = poi.coordinate
-            annotation.title = poi.title
+            let annotation = MappedPOIAnnotation(poi: poi)
             mapView.addAnnotation(annotation)
         }
         return mapView
     }
 
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Gestione tracking mode: se trackingState == .follow, segui sempre l'utente
+        // Gestione tracking mode
         if trackingState == .follow {
             if uiView.userTrackingMode != .follow {
                 uiView.setUserTrackingMode(.follow, animated: true)
@@ -60,12 +58,10 @@ struct CustomMapView: UIViewRepresentable {
         // Aggiorna i POI se la lista cambia
         let currentAnnotations = uiView.annotations.filter { !($0 is MKUserLocation) }
         if currentAnnotations.count != mappedPOIs.count ||
-            !Set(currentAnnotations.compactMap { $0.title ?? "" }).isSubset(of: Set(mappedPOIs.map { $0.title })) {
+            !Set(currentAnnotations.compactMap { ($0 as? MappedPOIAnnotation)?.poi.id }).isSubset(of: Set(mappedPOIs.map { $0.id })) {
             uiView.removeAnnotations(currentAnnotations)
             for poi in mappedPOIs {
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = poi.coordinate
-                annotation.title = poi.title
+                let annotation = MappedPOIAnnotation(poi: poi)
                 uiView.addAnnotation(annotation)
             }
         }
@@ -78,9 +74,7 @@ struct CustomMapView: UIViewRepresentable {
         init(_ parent: CustomMapView) { self.parent = parent }
 
         func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
-            // Determina se il cambio regione è dovuto all'interazione utente
             isRegionChangeFromUserInteraction = mapViewIsUserInteraction(mapView)
-            // Se è l'utente a muovere la mappa, disattiva il tracking automatico
             if parent.trackingState == .follow && isRegionChangeFromUserInteraction {
                 mapView.setUserTrackingMode(.none, animated: true)
                 DispatchQueue.main.async {
@@ -89,21 +83,16 @@ struct CustomMapView: UIViewRepresentable {
             }
         }
 
-        func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-            DispatchQueue.main.async {
-                switch mode {
-                case .follow, .followWithHeading:
-                    self.parent.trackingState = .follow
-                default:
-                    self.parent.trackingState = .none
-                }
+        func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+            if let annotation = view.annotation as? MappedPOIAnnotation {
+                parent.onPOISelected?(annotation.poi)
             }
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation {
                 return nil
-            } else {
+            } else if let poiAnnotation = annotation as? MappedPOIAnnotation {
                 let identifier = "POIMarker"
                 var markerView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
                 if markerView == nil {
@@ -111,13 +100,20 @@ struct CustomMapView: UIViewRepresentable {
                     markerView?.canShowCallout = true
                 }
                 markerView?.markerTintColor = .systemRed
-                markerView?.glyphText = "?"
+                if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
+                    // Ridimensiona la foto per il pin
+                    markerView?.glyphImage = photo.resizedToPin()
+                    markerView?.glyphText = nil
+                } else {
+                    markerView?.glyphText = "?"
+                    markerView?.glyphImage = nil
+                }
                 markerView?.annotation = annotation
                 return markerView
             }
+            return nil
         }
 
-        // Utility per capire se la regione è cambiata da gesto utente
         private func mapViewIsUserInteraction(_ mapView: MKMapView) -> Bool {
             for view in mapView.subviews {
                 if let gestureRecognizers = view.gestureRecognizers {
@@ -130,5 +126,25 @@ struct CustomMapView: UIViewRepresentable {
             }
             return false
         }
+    }
+}
+
+// Una annotation custom per collegare il POI all’annotation
+class MappedPOIAnnotation: NSObject, MKAnnotation {
+    let poi: MappedPOI
+    var coordinate: CLLocationCoordinate2D { poi.coordinate }
+    var title: String? { poi.title }
+    init(poi: MappedPOI) { self.poi = poi }
+}
+
+// Estensione per ridimensionare la foto per il pin
+extension UIImage {
+    func resizedToPin() -> UIImage {
+        let size = CGSize(width: 40, height: 40)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        self.draw(in: CGRect(origin: .zero, size: size))
+        let result = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return result ?? self
     }
 }

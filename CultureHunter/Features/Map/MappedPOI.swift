@@ -3,12 +3,16 @@ import CoreLocation
 import UIKit
 
 struct MappedPOI: Identifiable, Hashable {
-    let id: UUID                    // copia l'id del POI originale!
+    let id: UUID
     let title: String
     let address: String
     let coordinate: CLLocationCoordinate2D
 
-    // Campi aggiuntivi opzionali per compatibilità con POI
+    // Nuovi campi
+    let city: String
+    let province: String
+
+    // Nuovi campi per interazione/foto
     let isDiscovered: Bool
     let discoveredTitle: String?
     let photo: UIImage?
@@ -18,7 +22,7 @@ struct MappedPOI: Identifiable, Hashable {
         lhs.title == rhs.title &&
         lhs.coordinate.latitude == rhs.coordinate.latitude &&
         lhs.coordinate.longitude == rhs.coordinate.longitude
-        // Nota: photo e discoveredTitle non vengono confrontati
+        // photo e discoveredTitle ignorati per uguaglianza
     }
 
     func hash(into hasher: inout Hasher) {
@@ -26,6 +30,5 @@ struct MappedPOI: Identifiable, Hashable {
         hasher.combine(title)
         hasher.combine(coordinate.latitude)
         hasher.combine(coordinate.longitude)
-        // Non includo photo e discoveredTitle perché UIImage non è Hashable
     }
 }
