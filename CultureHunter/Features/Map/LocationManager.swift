@@ -17,6 +17,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func requestAuthorization() {
         manager.requestAlwaysAuthorization()
+        // Se vuoi solo foreground: manager.requestWhenInUseAuthorization()
     }
 
     // Avvia il monitoraggio di tutte le regioni dei POI geocodificati
@@ -52,12 +53,12 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Delegate: autorizzazioni cambiate
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
-        case .authorizedAlways:
-            print("Autorizzazione posizione: SEMPRE")
-        case .authorizedWhenInUse:
-            print("Autorizzazione posizione: SOLO APP APERTA (serve SEMPRE per geofencing!)")
+        case .authorizedAlways, .authorizedWhenInUse:
+            print("Autorizzazione posizione: CONSENTITA")
+            manager.startUpdatingLocation()
         case .denied, .restricted:
             print("Autorizzazione posizione NEGATA o limitata")
+            manager.stopUpdatingLocation()
         case .notDetermined:
             print("Autorizzazione posizione non ancora richiesta")
         @unknown default:

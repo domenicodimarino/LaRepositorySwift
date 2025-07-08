@@ -11,7 +11,9 @@ struct ContentView: View {
             province: "Salerno",
             isDiscovered: false,
             discoveredTitle: nil,
-            photo: nil
+            photo: nil,
+            latitude: nil,
+            longitude: nil
         ),
         POI(
             street: "Via Giuseppe Armenante",
@@ -20,20 +22,24 @@ struct ContentView: View {
             province: "Salerno",
             isDiscovered: false,
             discoveredTitle: nil,
-            photo: nil
+            photo: nil,
+            latitude: 40.703582,
+            longitude: 14.690824
         ),
         POI(
-                    street: "Via Giovanni Paolo II",
-                    streetNumber: "132",
-                    city: "Fisciano",
-                    province: "Salerno",
-                    isDiscovered: false,
-                    discoveredTitle: nil,
-                    photo: nil
+            street: "Via Giovanni Paolo II",
+            streetNumber: "132",
+            city: "Fisciano",
+            province: "Salerno",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            latitude: nil,
+            longitude: nil
         )
     ]
 
-    @State private var mappedPOIs: [MappedPOI] = []
+    @StateObject private var poiViewModel = POIViewModel()
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
     @StateObject private var viewModel = AvatarViewModel()
@@ -41,7 +47,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            MapTab(pois: mappedPOIs)
+            MapTab(viewModel: poiViewModel, badgeManager: badgeManager)
                 .environmentObject(locationManager)
                 .tabItem {
                     Image(systemName: "map")
@@ -69,12 +75,11 @@ struct ContentView: View {
                 }
         }
         .onAppear {
-                    notificationManager.requestPermissions()
-                    locationManager.requestAuthorization()
-            POIGeocoder.geocode(pois: poiList) { mapped in
-                self.mappedPOIs = mapped
-                locationManager.startMonitoringPOIs(pois: mapped)
-            }
+            notificationManager.requestPermissions()
+            locationManager.requestAuthorization()
+            poiViewModel.geocodeAll(pois: poiList)
+            // Se vuoi monitorare i POI dopo la geocodifica, fallo in un onReceive nel MapTab o qui, ad esempio:
+            // locationManager.startMonitoringPOIs(pois: poiViewModel.mappedPOIs)
         }
     }
 }

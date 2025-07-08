@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 import UIKit
 
 struct POI: Identifiable, Hashable {
@@ -13,6 +14,10 @@ struct POI: Identifiable, Hashable {
     var discoveredTitle: String?
     var photo: UIImage?
 
+    // Coordinate (opzionali)
+    var latitude: Double?
+    var longitude: Double?
+
     // Titolo visualizzato
     var title: String {
         isDiscovered ? (discoveredTitle ?? "Punto di interesse") : "Punto di interesse"
@@ -20,6 +25,14 @@ struct POI: Identifiable, Hashable {
 
     var address: String {
         "\(street) \(streetNumber), \(city), \(province)"
+    }
+
+    // Coordinate come CLLocationCoordinate2D (utile per MapKit)
+    var coordinate: CLLocationCoordinate2D? {
+        if let lat = latitude, let lon = longitude {
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+        return nil
     }
 
     // Inizializzatore di default
@@ -30,7 +43,9 @@ struct POI: Identifiable, Hashable {
         province: String,
         isDiscovered: Bool = false,
         discoveredTitle: String? = nil,
-        photo: UIImage? = nil
+        photo: UIImage? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil
     ) {
         self.id = UUID()
         self.street = street
@@ -40,5 +55,7 @@ struct POI: Identifiable, Hashable {
         self.isDiscovered = isDiscovered
         self.discoveredTitle = discoveredTitle
         self.photo = photo
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }
