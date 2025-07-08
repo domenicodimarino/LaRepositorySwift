@@ -7,135 +7,17 @@
 
 import SwiftUI
 
-// Modello per un articolo dello shop
-struct ShopItem: Identifiable, Equatable {
-    let id = UUID()
-    let assetName: String
-    let price: Int
-    let type: ClothingType
-    var isOwned: Bool
-    
-    // Implementazione efficiente di Equatable
-    static func == (lhs: ShopItem, rhs: ShopItem) -> Bool {
-        lhs.id == rhs.id
-    }
-    
-    // Computed property per ottenere il nome visualizzabile
-    var displayName: String {
-        let components = assetName.components(separatedBy: " ")
-        if components.count >= 3 {
-            let itemType = components[2]
-            let color = components.dropFirst(3).joined(separator: " ")
-            return "\(itemType) \(color)"
-        }
-        return assetName
-    }
-}
-
-// Gestore delle monete e degli acquisti
-class ShopViewModel: ObservableObject {
-    @Published var items: [ShopItem] = []
-    
-    private var avatarViewModel: AvatarViewModel
-    let inventoryManager = InventoryManager.shared
-    
-    // Proprietà calcolate
-    var coins: Int { avatarViewModel.getCoins() }
-    
-    // MARK: - Lifecycle
-    
-    init(avatarViewModel: AvatarViewModel) {
-        self.avatarViewModel = avatarViewModel
-        loadItems()
-    }
-    
-    // MARK: - Item Management
-    
-    /// Carica tutti gli item disponibili nello shop
-    func loadItems() {
-        // Creazione degli array di colori per riutilizzo
-        let shirtColors = ["blue", "bluegray", "brown", "charcoal", "forest", "gray",
-                          "green", "lavender", "leather", "maroon", "navy", "orange",
-                          "pink", "purple", "red", "rose", "sky", "slate", "tan",
-                          "teal", "walnut", "yellow"]
-        
-        let pantsColors = shirtColors
-        
-        let shoesColors = ["blue", "brown", "gray", "green", "leather", "navy",
-                          "pink", "red", "slate", "tan", "yellow"]
-        
-        // Creazione degli item con una funzione di utilità
-        items = createItems(type: .shirt, style: "TShirt", colors: shirtColors) +
-                createItems(type: .pants, style: "Pants", colors: pantsColors) +
-                createItems(type: .shoes, style: "Basic_Shoes", colors: shoesColors)
-        
-        updateOwnedStatus()
-    }
-    
-    /// Funzione helper per creare array di item con colori diversi
-    private func createItems(type: ClothingType, style: String, colors: [String]) -> [ShopItem] {
-        return colors.map { color in
-            ShopItem(
-                assetName: "\(type.assetPrefix) \(style) \(color)",
-                price: 20,
-                type: type,
-                isOwned: false
-            )
-        }
-    }
-    
-    /// Aggiorna lo stato di possesso degli item
-    func updateOwnedStatus() {
-        for i in items.indices {
-            items[i].isOwned = inventoryManager.isItemUnlocked(ClothingItem(
-                assetName: items[i].assetName,
-                type: items[i].type,
-                disponibile: true
-            ))
-        }
-    }
-    
-    /// Tenta l'acquisto di un item
-    /// - Parameter item: L'item da acquistare
-    /// - Returns: `true` se l'acquisto ha avuto successo, `false` altrimenti
-    func buyItem(_ item: ShopItem) -> Bool {
-        // Verifica se l'utente possiede già l'item
-        if item.isOwned {
-            return false
-        }
-        
-        // Prova a spendere le monete
-        if !avatarViewModel.spendCoins(item.price) {
-            return false
-        }
-        
-        // Sblocca l'item nell'inventario
-        inventoryManager.unlockItem(withAssetName: item.assetName)
-        
-        // Aggiorna lo stato dell'item
-        if let index = items.firstIndex(where: { $0.id == item.id }) {
-                items[index].isOwned = true
-            }
-        
-        return true
-    }
-    
-    /// Restituisce gli item filtrati per tipo
-    /// - Parameter type: Il tipo di item da filtrare
-    /// - Returns: Array di item del tipo specificato
-    func items(ofType type: ClothingType) -> [ShopItem] {
-        return items.filter { $0.type == type }
-    }
-}
-
 struct ShopView: View {
     // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
     @StateObject private var shopViewModel: ShopViewModel
     
     @State private var showAlert = false
+    @State private var showConfirmation = false
+    @State private var showWearConfirmation = false
     @State private var alertMessage = ""
     @State private var selectedItem: ShopItem? = nil
+    @State private var justPurchasedItem: ShopItem? = nil
     
     // MARK: - Initialization
     
@@ -163,6 +45,39 @@ struct ShopView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
+        // Alert di conferma (prima dell'acquisto)
+                .alert("Conferma acquisto", isPresented: $showConfirmation) {
+                    Button("No", role: .cancel) {
+                        // Non fa nulla, chiude solo l'alert
+                    }
+                    Button("Sì") {
+                        // Procede con l'acquisto quando l'utente conferma
+                        proceedWithPurchase()
+                    }
+                } message: {
+                    if let item = selectedItem {
+                        Text("Vuoi acquistare \(item.displayName) per \(item.price) monete?")
+                    } else {
+                        Text("Vuoi acquistare questo articolo?")
+                    }
+                }
+        // Nuovo alert per indossare l'articolo
+                .alert("Indossare articolo", isPresented: $showWearConfirmation) {
+                    Button("No", role: .cancel) {
+                        // Non fa nulla, l'utente può andare all'inventario in seguito
+                        alertMessage = "Puoi indossarlo dall'inventario quando vuoi."
+                        showAlert = true
+                    }
+                    Button("Sì") {
+                        wearItem()
+                    }
+                }message: {
+                    if let item = justPurchasedItem {
+                        Text("Articolo acquistato! Vuoi indossare subito \(item.displayName)?")
+                    } else {
+                        Text("Articolo acquistato! Vuoi indossarlo subito?")
+                    }
+                }
         .onAppear {
             shopViewModel.updateOwnedStatus()
         }
@@ -277,7 +192,8 @@ struct ShopView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    ForEach(shopViewModel.items(ofType: type)) { item in
+                    // Ordina gli elementi: prima quelli non posseduti, poi quelli posseduti
+                    ForEach(shopViewModel.items(ofType: type).sorted { !$0.isOwned && $1.isOwned }) { item in
                         ShopItemCard(
                             item: item,
                             onBuy: {
@@ -295,121 +211,63 @@ struct ShopView: View {
     // MARK: - Actions
     
     private func buySelectedItem() {
-        guard let item = selectedItem else { return }
-        
-        // Verifica DIRETTAMENTE con l'InventoryManager invece di usare il flag locale
-        let clothingItem = ClothingItem(
-            assetName: item.assetName,
-            type: item.type,
-            disponibile: true
-        )
-        
-        if shopViewModel.inventoryManager.isItemUnlocked(clothingItem) {
-            alertMessage = "Possiedi già questo articolo"
-            showAlert = true
-            return
-        }
-        
-        if shopViewModel.coins < item.price {
-            alertMessage = "Non hai abbastanza monete"
-            showAlert = true
-            return
-        }
-        
-        if shopViewModel.buyItem(item) {
-            // Forza l'aggiornamento dello stato subito dopo l'acquisto
-            shopViewModel.updateOwnedStatus()
-            alertMessage = "Acquisto completato! Puoi indossare questo articolo dall'inventario"
-            showAlert = true
-        } else {
-            alertMessage = "Errore durante l'acquisto"
-            showAlert = true
-        }
-    }
-}
-
-// Card per visualizzare un articolo dello shop
-struct ShopItemCard: View {
-    // MARK: - Properties
-    let item: ShopItem
-    let onBuy: () -> Void
-    
-    // MARK: - Constants
-    private enum ViewMetrics {
-        static let cardWidth: CGFloat = 73
-        static let cardHeight: CGFloat = 98
-        static let priceHeight: CGFloat = 24
-        static let cornerRadius: CGFloat = 16
-        static let borderWidth: CGFloat = 3
-        static let itemImageSize: CGFloat = 60
-    }
-    
-    // MARK: - View
-    
-    var body: some View {
-        Button(action: onBuy) {
-            itemCardView
-        }
-    }
-    
-    private var itemCardView: some View {
-        ZStack(alignment: .bottom) {
-            itemContainer
-            priceTag
-        }
-        .frame(width: ViewMetrics.cardWidth, height: 108)
-    }
-    
-    private var itemContainer: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(.gray.opacity(0.2))
-                .frame(width: ViewMetrics.cardWidth, height: ViewMetrics.cardHeight)
-                .cornerRadius(ViewMetrics.cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ViewMetrics.cornerRadius)
-                        .stroke(.black, lineWidth: ViewMetrics.borderWidth)
-                )
+            guard let item = selectedItem else { return }
             
-            Image(item.assetName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: ViewMetrics.itemImageSize, height: ViewMetrics.itemImageSize)
-        }
-    }
-    
-    private var priceTag: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(Color(red: 0.2, green: 0.7, blue: 0.92))
-                .frame(width: ViewMetrics.cardWidth, height: ViewMetrics.priceHeight)
-                .cornerRadius(ViewMetrics.cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: ViewMetrics.cornerRadius)
-                        .stroke(.black, lineWidth: ViewMetrics.borderWidth)
-                )
+            // Verifica con l'InventoryManager
+            let clothingItem = ClothingItem(
+                assetName: item.assetName,
+                type: item.type,
+                disponibile: true
+            )
             
-            if item.isOwned {
-                Text("Posseduto")
-                    .font(.caption)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 5)
+            if shopViewModel.inventoryManager.isItemUnlocked(clothingItem) {
+                alertMessage = "Possiedi già questo articolo"
+                showAlert = true
+                return
+            }
+            
+            if shopViewModel.coins < item.price {
+                alertMessage = "Non hai abbastanza monete"
+                showAlert = true
+                return
+            }
+            
+            showConfirmation = true
+        }
+        
+        private func proceedWithPurchase() {
+            guard let item = selectedItem else { return }
+            
+            if shopViewModel.buyItem(item) {
+                // Forza l'aggiornamento dello stato
+                shopViewModel.updateOwnedStatus()
+                
+                // Salva l'item appena acquistato e mostra l'alert per indossarlo
+                justPurchasedItem = item
+                showWearConfirmation = true
             } else {
-                HStack(spacing: 4) {
-                    Image("coin")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 15, height: 15)
-                    
-                    Text("\(item.price)")
-                        .font(.caption)
-                        .foregroundColor(.white)
-                }
+                alertMessage = "Errore durante l'acquisto"
+                showAlert = true
             }
         }
-    }
+        
+        // Nuova funzione per indossare l'articolo
+        private func wearItem() {
+            guard let item = justPurchasedItem else { return }
+            
+            // Indossa l'articolo in base al suo tipo
+            switch item.type {
+            case .shirt:
+                avatarViewModel.setShirt(item.assetName)
+            case .pants:
+                avatarViewModel.setPants(item.assetName)
+            case .shoes:
+                avatarViewModel.setShoes(item.assetName)
+            }
+        }
 }
 
+// Preview per la vista principale
 #Preview {
     ShopView(avatarViewModel: AvatarViewModel())
 }
