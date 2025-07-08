@@ -3,155 +3,236 @@
 //  CultureHunter
 //
 //  Created by Domenico Di Marino on 05/07/25.
+//  Ottimizzato il 08/07/25
 //
 
 import SpriteKit
 
-// Mappa il numero di frame per ciascuna animazione
-let animationFrameCounts: [AvatarAnimation: Int] = [
-    .walk: 9,
-    .idle: 2
-]
-
-class AvatarScene: SKScene {
-    var avatar: AvatarData
-
-    private var headNode = SKSpriteNode()
-    private var bodyNode = SKSpriteNode()
-    private var hairNode = SKSpriteNode()
-    private var eyesNode = SKSpriteNode()
-    private var shirtNode = SKSpriteNode()
-    private var pantsNode = SKSpriteNode()
-    private var shoesNode = SKSpriteNode()
-
-    var currentDirection: AvatarDirection = .down
-    var currentAnimation: AvatarAnimation = .idle
-    var currentFrame = 0
-    private var timer: Timer?
+/// Scene che visualizza un avatar animato personalizzabile
+final class AvatarScene: SKScene {
+    // MARK: - Constants
     
+    /// Conteggio dei frame per ciascuna animazione
+    private static let animationFrameCounts: [AvatarAnimation: Int] = [
+        .walk: 9,
+        .idle: 2
+    ]
+    
+    /// Intervallo di tempo tra i frame dell'animazione
+    private static let animationFrameInterval: TimeInterval = 0.12
+    
+    // MARK: - Properties
+    
+    /// Dati dell'avatar attualmente visualizzato
+    var avatar: AvatarData
+    
+    /// Dimensione base del personaggio in pixel
     var characterSize: Int = 128
-
+    
+    /// Direzione attuale dell'avatar
+    var currentDirection: AvatarDirection = .down {
+        didSet { if oldValue != currentDirection { updateTextures() } }
+    }
+    
+    /// Animazione corrente
+    var currentAnimation: AvatarAnimation = .idle {
+        didSet { if oldValue != currentAnimation { resetAnimation() } }
+    }
+    
+    /// Frame attuale dell'animazione corrente
+    private(set) var currentFrame = 0
+    
+    // MARK: - Sprite Nodes
+    
+    private let bodyNode = SKSpriteNode()
+    private let headNode = SKSpriteNode()
+    private let hairNode = SKSpriteNode()
+    private let eyesNode = SKSpriteNode()
+    private let shirtNode = SKSpriteNode()
+    private let pantsNode = SKSpriteNode()
+    private let shoesNode = SKSpriteNode()
+    
+    // MARK: - Private Properties
+    
+    private var timer: Timer?
+    private var textureCache: [String: SKTexture] = [:]
+    
+    // MARK: - Initialization
+    
+    /// Crea una nuova scena dell'avatar
+    /// - Parameters:
+    ///   - size: Dimensione della scena
+    ///   - avatar: Dati dell'avatar da visualizzare
     init(size: CGSize, avatar: AvatarData) {
         self.avatar = avatar
         super.init(size: size)
         scaleMode = .aspectFit
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
+    // MARK: - Scene Lifecycle
+    
     override func didMove(to view: SKView) {
         backgroundColor = .clear
-        
-        headNode.size = CGSize(width: characterSize, height: characterSize)
-        bodyNode.size = CGSize(width: characterSize, height: characterSize)
-        hairNode.size = CGSize(width: characterSize, height: characterSize)
-        eyesNode.size = CGSize(width: characterSize, height: characterSize)
-        shirtNode.size = CGSize(width: characterSize, height: characterSize)
-        pantsNode.size = CGSize(width: characterSize, height: characterSize)
-        shoesNode.size = CGSize(width: characterSize, height: characterSize)
-        
+        configureNodes()
         setupNodes()
         startAnimation(for: .idle)
     }
-
-    func setupNodes() {
-        // Tutti i nodi sovrapposti, centrati nella scena
+    
+    deinit {
+        stopAnimation()
+        textureCache.removeAll()
+        removeAllChildren()
+        removeAllActions()
+    }
+    
+    // MARK: - Node Configuration
+    
+    /// Configura le dimensioni dei nodi
+    private func configureNodes() {
+        let nodeSize = CGSize(width: characterSize, height: characterSize)
+        
+        // Invece di ripetere lo stesso codice, imposta tutte le dimensioni in un colpo solo
+        for node in [bodyNode, headNode, hairNode, eyesNode, shirtNode, pantsNode, shoesNode] {
+            node.size = nodeSize
+        }
+    }
+    
+    /// Posiziona e configura i nodi nell'ordine corretto
+    private func setupNodes() {
+        // Centro della scena per tutti i nodi
         let center = CGPoint(x: size.width / 2, y: size.height / 2)
-
-        bodyNode.position = center
-        shirtNode.position = center
-        pantsNode.position = center
-        shoesNode.position = center
-        headNode.position = center
-        hairNode.position = center
-        eyesNode.position = center
-
-        // L'ordine di zPosition determina quali layer stanno sopra/sotto
-        bodyNode.zPosition = 0
-        pantsNode.zPosition = 1
-        shoesNode.zPosition = 2
-        shirtNode.zPosition = 3
-        headNode.zPosition = 4
-        eyesNode.zPosition = 5
-        hairNode.zPosition = 6
-
-        addChild(bodyNode)
-        addChild(pantsNode)
-        addChild(shoesNode)
-        addChild(shirtNode)
-        addChild(headNode)
-        addChild(eyesNode)
-        addChild(hairNode)
-
+        
+        // Configurazione ordinata dei nodi con zPosition
+        let nodeConfigs: [(node: SKSpriteNode, zPosition: CGFloat)] = [
+            (bodyNode, 0),
+            (pantsNode, 1),
+            (shoesNode, 2),
+            (shirtNode, 3),
+            (headNode, 4),
+            (eyesNode, 5),
+            (hairNode, 6)
+        ]
+        
+        // Applica configurazione e aggiungi alla scena
+        for (node, zPosition) in nodeConfigs {
+            node.position = center
+            node.zPosition = zPosition
+            addChild(node)
+        }
+        
         updateTextures()
     }
     
-
-    func totalFrames(for animation: AvatarAnimation) -> Int {
-        animationFrameCounts[animation] ?? 1
-    }
-
-    func assetName(base: String, gender: Gender, anim: String, dir: String, frame: Int) -> String {
+    // MARK: - Texture Management
+    
+    /// Genera il nome completo dell'asset
+    private func assetName(base: String, gender: Gender, anim: String, dir: String, frame: Int) -> String {
         let genderPrefix = (gender == .male) ? "male_" : "female_"
         return "\(genderPrefix)\(base)_\(anim)_\(dir)_\(frame)"
     }
-
+    
+    /// Ottiene una texture dalla cache o la crea se non esiste
+    private func getTexture(named name: String) -> SKTexture {
+        if let cachedTexture = textureCache[name] {
+            return cachedTexture
+        }
+        
+        let texture = SKTexture(imageNamed: name)
+        textureCache[name] = texture
+        return texture
+    }
+    
+    /// Aggiorna le texture di tutti i nodi
     func updateTextures() {
         let dir = currentDirection.rawValue
         let anim = currentAnimation.rawValue
         let frame = currentFrame
         let gender = avatar.gender
-            
+        
         // Ripristina i valori predefiniti per colore e blending
-        headNode.colorBlendFactor = 0.0
-        bodyNode.colorBlendFactor = 0.0
-        hairNode.colorBlendFactor = 0.0
-        eyesNode.colorBlendFactor = 0.0
-        shirtNode.colorBlendFactor = 0.0
-        pantsNode.colorBlendFactor = 0.0
-        shoesNode.colorBlendFactor = 0.0
-
-        bodyNode.texture = SKTexture(imageNamed: assetName(base: avatar.skin, gender: gender, anim: anim, dir: dir, frame: frame))
-        pantsNode.texture = SKTexture(imageNamed: assetName(base: avatar.pants, gender: gender, anim: anim, dir: dir, frame: frame))
-        shoesNode.texture = SKTexture(imageNamed: assetName(base: avatar.shoes, gender: gender, anim: anim, dir: dir, frame: frame))
-        shirtNode.texture = SKTexture(imageNamed: assetName(base: avatar.shirt, gender: gender, anim: anim, dir: dir, frame: frame))
-        headNode.texture = SKTexture(imageNamed: assetName(base: avatar.head, gender: gender, anim: anim, dir: dir, frame: frame))
-        eyesNode.texture = SKTexture(imageNamed: assetName(base: avatar.eyes, gender: gender, anim: anim, dir: dir, frame: frame))
-        hairNode.texture = avatar.hair == "none" ? nil : SKTexture(imageNamed: assetName(base: avatar.hair, gender: gender, anim: anim, dir: dir, frame: frame))
+        [bodyNode, headNode, hairNode, eyesNode, shirtNode, pantsNode, shoesNode].forEach {
+            $0.colorBlendFactor = 0.0
+        }
+        
+        // Aggiorna le texture usando il caching
+        bodyNode.texture = getTexture(named: assetName(base: avatar.skin, gender: gender, anim: anim, dir: dir, frame: frame))
+        headNode.texture = getTexture(named: assetName(base: avatar.head, gender: gender, anim: anim, dir: dir, frame: frame))
+        eyesNode.texture = getTexture(named: assetName(base: avatar.eyes, gender: gender, anim: anim, dir: dir, frame: frame))
+        shirtNode.texture = getTexture(named: assetName(base: avatar.shirt, gender: gender, anim: anim, dir: dir, frame: frame))
+        pantsNode.texture = getTexture(named: assetName(base: avatar.pants, gender: gender, anim: anim, dir: dir, frame: frame))
+        shoesNode.texture = getTexture(named: assetName(base: avatar.shoes, gender: gender, anim: anim, dir: dir, frame: frame))
+        
+        // Gestione speciale dei capelli
+        if avatar.hair == "none" {
+            hairNode.texture = nil
+            hairNode.isHidden = true
+        } else {
+            hairNode.isHidden = false
+            hairNode.texture = getTexture(named: assetName(base: avatar.hair, gender: gender, anim: anim, dir: dir, frame: frame))
+        }
     }
-
+    
+    // MARK: - Animation Control
+    
+    /// Ottiene il numero totale di frame per un'animazione
+    private func totalFrames(for animation: AvatarAnimation) -> Int {
+        return AvatarScene.animationFrameCounts[animation] ?? 1
+    }
+    
+    /// Resetta l'animazione corrente al primo frame
+    private func resetAnimation() {
+        currentFrame = 0
+        updateTextures()
+    }
+    
+    /// Avvia l'animazione
+    /// - Parameter animation: Tipo di animazione da avviare
     func startAnimation(for animation: AvatarAnimation) {
-        timer?.invalidate()
+        stopAnimation()
         currentAnimation = animation
         currentFrame = 0
-        timer = Timer.scheduledTimer(withTimeInterval: 0.12, repeats: true) { [weak self] _ in
+        
+        timer = Timer.scheduledTimer(withTimeInterval: AvatarScene.animationFrameInterval, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             let total = self.totalFrames(for: self.currentAnimation)
             self.currentFrame = (self.currentFrame + 1) % total
             self.updateTextures()
         }
     }
-
+    
+    /// Interrompe l'animazione corrente
+    func stopAnimation() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    /// Cambia l'animazione corrente
+    /// - Parameter animation: Nuova animazione da eseguire
     func changeAnimation(to animation: AvatarAnimation) {
         startAnimation(for: animation)
     }
-
-    // Chiamato quando cambia il personaggio da SwiftUI/ViewModel
-    func updateAvatar(_ newAvatar: AvatarData) {
-        self.avatar = newAvatar
-        currentFrame = 0
-        updateTextures()
+    
+    /// Cambia la direzione dell'avatar
+    /// - Parameter direction: Nuova direzione
+    func changeDirection(to direction: AvatarDirection) {
+        currentDirection = direction
     }
     
-    func changeDirection(to direction: AvatarDirection){
-        currentDirection = direction
-        currentFrame = 0
-        updateTextures()
+    // MARK: - Public API
+    
+    /// Aggiorna l'avatar visualizzato con nuovi dati
+    /// - Parameter newAvatar: Nuovo avatar da visualizzare
+    func updateAvatar(_ newAvatar: AvatarData) {
+        self.avatar = newAvatar
+        resetAnimation()
     }
-
-    deinit {
-        timer?.invalidate()
+    
+    /// Pulisce la cache delle texture per liberare memoria
+    func clearTextureCache() {
+        textureCache.removeAll()
     }
 }
