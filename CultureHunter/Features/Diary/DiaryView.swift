@@ -16,32 +16,12 @@ struct DiaryView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Immagine principale
-                AsyncImage(url: URL(string: place.imageURL)) { phase in
-                    switch phase {
-                    case .empty:
-                        Rectangle()
-                            .foregroundColor(.gray.opacity(0.3))
-                            .frame(height: 250)
-                            .overlay(ProgressView())
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 250)
-                            .clipped()
-                    case .failure:
-                        Rectangle()
-                            .foregroundColor(.gray.opacity(0.3))
-                            .frame(height: 250)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.largeTitle)
-                            )
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
+                // Immagine principale dagli Assets
+                Image(place.imageName)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 250)
+                    .clipped()
                 
                 VStack(alignment: .leading, spacing: 15) {
                     // Titolo
@@ -178,7 +158,6 @@ struct DiaryView: View {
             if let italianVoice = AVSpeechSynthesisVoice(language: "it-IT") {
                 utterance.voice = italianVoice
             } else if let defaultVoice = AVSpeechSynthesisVoice(language: "en-US") {
-                // Fallback alla voce inglese se l'italiano non è disponibile
                 utterance.voice = defaultVoice
                 print("Voce italiana non disponibile, utilizzo voce inglese")
             }
@@ -212,7 +191,6 @@ struct DiaryView: View {
                 speechSynthesizer.stopSpeaking(at: .immediate)
             }
             
-            // Correzione: il metodo speak(_:) non restituisce un valore booleano
             speechSynthesizer.speak(utterance)
             print("Avvio sintesi vocale")
             isReading = true

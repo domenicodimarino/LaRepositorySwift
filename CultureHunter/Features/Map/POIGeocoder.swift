@@ -5,24 +5,25 @@ import UIKit
 class POIGeocoder {
     static func geocode(poi: POI, completion: @escaping (MappedPOI?) -> Void) {
         let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(poi.address) { placemarks, _ in
+        geocoder.geocodeAddressString(poi.address, completionHandler: { placemarks, _ in
             if let location = placemarks?.first?.location {
                 let mapped = MappedPOI(
                     id: poi.id,
                     title: poi.title,
                     address: poi.address,
                     coordinate: location.coordinate,
-                    city: poi.city,          // <-- aggiungi questi due
-                    province: poi.province,  // <-- aggiungi questi due
+                    city: poi.city,
+                    province: poi.province,
+                    diaryPlaceName: poi.diaryPlaceName, // <-- campo di collegamento!
                     isDiscovered: poi.isDiscovered,
                     discoveredTitle: poi.discoveredTitle,
-                    photo: poi.photo
+                    photoPath: poi.photoPath // <-- salva path, non UIImage
                 )
                 completion(mapped)
             } else {
                 completion(nil)
             }
-        }
+        })
     }
     
     static func geocode(pois: [POI], completion: @escaping ([MappedPOI]) -> Void) {

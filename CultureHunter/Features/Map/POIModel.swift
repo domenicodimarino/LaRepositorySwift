@@ -9,6 +9,10 @@ struct POI: Identifiable, Hashable {
     let city: String
     let province: String
 
+    // Nuovi campi richiesti per collegamento e persistenza
+    let diaryPlaceName: String
+    var photoPath: String?
+
     // Stato di scoperta
     var isDiscovered: Bool
     var discoveredTitle: String?
@@ -35,15 +39,17 @@ struct POI: Identifiable, Hashable {
         return nil
     }
 
-    // Inizializzatore di default
+    // Inizializzatore aggiornato
     init(
         street: String,
         streetNumber: String,
         city: String,
         province: String,
+        diaryPlaceName: String,       // <--- nuovo campo obbligatorio
         isDiscovered: Bool = false,
         discoveredTitle: String? = nil,
         photo: UIImage? = nil,
+        photoPath: String? = nil,     // <--- nuovo campo opzionale
         latitude: Double? = nil,
         longitude: Double? = nil
     ) {
@@ -52,6 +58,8 @@ struct POI: Identifiable, Hashable {
         self.streetNumber = streetNumber
         self.city = city
         self.province = province
+        self.diaryPlaceName = diaryPlaceName
+        self.photoPath = photoPath
         self.isDiscovered = isDiscovered
         self.discoveredTitle = discoveredTitle
         self.photo = photo

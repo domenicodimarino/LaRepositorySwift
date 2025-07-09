@@ -2,21 +2,31 @@ import Foundation
 import CoreLocation
 import UIKit
 
+import Foundation
+import CoreLocation
+import UIKit
+
 struct MappedPOI: Identifiable, Hashable {
     let id: UUID
     let title: String
     let address: String
     let coordinate: CLLocationCoordinate2D
-
-    // Nuovi campi
     let city: String
     let province: String
+
+    // Collegamento al Diario
+    let diaryPlaceName: String
 
     // Nuovi campi per interazione/foto
     let isDiscovered: Bool
     let discoveredTitle: String?
-    let photo: UIImage?
+    let photoPath: String? // Persisti il path, non la UIImage
 
+    var photo: UIImage? {
+        guard let photoPath else { return nil }
+        return UIImage(contentsOfFile: photoPath)
+    }
+    
     static func == (lhs: MappedPOI, rhs: MappedPOI) -> Bool {
         lhs.id == rhs.id &&
         lhs.title == rhs.title &&

@@ -32,8 +32,16 @@ struct MapTab: View {
             VStack {
                 HStack {
                     Spacer()
-                    TrackingButton(trackingState: $trackingState) {
+                    // Pulsante tracking che imposta lo stato su .follow
+                    Button(action: {
                         trackingState = .follow
+                    }) {
+                        Image(systemName: "location.fill")
+                            .font(.title)
+                            .padding()
+                            .background(Color(.systemBackground).opacity(0.8))
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
                     }
                     .padding(.top, 70)
                     .padding(.trailing, 14)
@@ -75,6 +83,7 @@ struct MapTab: View {
             locationManager.requestAuthorization()
         }
         .onChange(of: locationManager.lastLocation) { newLocation in
+            // Appena ricevi la posizione per la prima volta, attiva il tracking
             if newLocation != nil && !hasCenteredOnUser {
                 trackingState = .follow
                 hasCenteredOnUser = true
@@ -86,12 +95,5 @@ struct MapTab: View {
         guard let userLoc = locationManager.lastLocation else { return false }
         let poiLoc = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
         return userLoc.distance(from: poiLoc) < 100 // soglia in metri
-    }
-
-    // Helper per estrarre la città dall'indirizzo (adatta se serve!)
-    private func cityFromAddress(_ address: String) -> String {
-        // Se il formato è sempre "via, città, provincia", puoi splittare su ","
-        let comps = address.split(separator: ",")
-        return comps.count > 1 ? comps[1].trimmingCharacters(in: .whitespaces) : ""
     }
 }

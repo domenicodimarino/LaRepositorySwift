@@ -22,20 +22,18 @@ struct CustomMapView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
-        let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
-        let region = MKCoordinateRegion(center: coordinate, latitudinalMeters: 1300, longitudinalMeters: 1300)
-        mapView.setRegion(region, animated: false)
         mapView.preferredConfiguration = configuration
-        mapView.isPitchEnabled = false
-
-        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 80, heading: 0)
-        mapView.setCamera(camera, animated: false)
-
-        mapView.delegate = context.coordinator
+        mapView.isPitchEnabled = true
+        mapView.isRotateEnabled = true
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .none
+        mapView.delegate = context.coordinator
 
-        // Aggiungi i POI come annotazioni
+        // Camera 3D iniziale (solo qui!)
+        let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
+        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
+        mapView.setCamera(camera, animated: false)
+
         for poi in mappedPOIs {
             let annotation = MappedPOIAnnotation(poi: poi)
             mapView.addAnnotation(annotation)
@@ -44,14 +42,19 @@ struct CustomMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Gestione tracking mode
-        if trackingState == .follow {
+        // Cambia solo tracking mode, NON la camera!
+        switch trackingState {
+        case .follow:
             if uiView.userTrackingMode != .follow {
                 uiView.setUserTrackingMode(.follow, animated: true)
             }
-        } else {
+        case .none:
             if uiView.userTrackingMode != .none {
                 uiView.setUserTrackingMode(.none, animated: true)
+                // Dopo che il tracking si disattiva, puoi rimettere la camera 3D.
+                let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
+                let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
+                uiView.setCamera(camera, animated: true)
             }
         }
 
@@ -101,7 +104,6 @@ struct CustomMapView: UIViewRepresentable {
                 }
                 markerView?.markerTintColor = .systemRed
                 if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
-                    // Ridimensiona la foto per il pin
                     markerView?.glyphImage = photo.resizedToPin()
                     markerView?.glyphText = nil
                 } else {
@@ -113,6 +115,9 @@ struct CustomMapView: UIViewRepresentable {
             }
             return nil
         }
+
+        // RIMUOVI tutte le altre funzioni delegate che impostano la camera!
+        // NON mettere regionDidChangeAnimated né didUpdate userLocation!
 
         private func mapViewIsUserInteraction(_ mapView: MKMapView) -> Bool {
             for view in mapView.subviews {
@@ -129,7 +134,6 @@ struct CustomMapView: UIViewRepresentable {
     }
 }
 
-// Una annotation custom per collegare il POI all’annotation
 class MappedPOIAnnotation: NSObject, MKAnnotation {
     let poi: MappedPOI
     var coordinate: CLLocationCoordinate2D { poi.coordinate }
@@ -137,7 +141,6 @@ class MappedPOIAnnotation: NSObject, MKAnnotation {
     init(poi: MappedPOI) { self.poi = poi }
 }
 
-// Estensione per ridimensionare la foto per il pin
 extension UIImage {
     func resizedToPin() -> UIImage {
         let size = CGSize(width: 40, height: 40)

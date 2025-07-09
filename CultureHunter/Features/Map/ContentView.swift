@@ -9,9 +9,11 @@ struct ContentView: View {
             streetNumber: "2",
             city: "Cetara",
             province: "Salerno",
+            diaryPlaceName: "Casa Mia", // esempio: deve combaciare con Place.name
             isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
+            photoPath: nil,
             latitude: nil,
             longitude: nil
         ),
@@ -20,20 +22,24 @@ struct ContentView: View {
             streetNumber: "21",
             city: "Cava de' Tirreni",
             province: "Salerno",
+            diaryPlaceName: "Casa Mia", // esempio
             isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
-            latitude: 40.703582,
-            longitude: 14.690824
+            photoPath: nil,
+            latitude: 40.703449251961516,
+            longitude: 14.690691949939817
         ),
         POI(
             street: "Via Giovanni Paolo II",
             streetNumber: "132",
             city: "Fisciano",
             province: "Salerno",
+            diaryPlaceName: "Casa Mia", // esempio
             isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
+            photoPath: nil,
             latitude: nil,
             longitude: nil
         )
@@ -79,7 +85,7 @@ struct ContentView: View {
             locationManager.requestAuthorization()
             poiViewModel.geocodeAll(pois: poiList)
             // Se vuoi monitorare i POI dopo la geocodifica, fallo in un onReceive nel MapTab o qui, ad esempio:
-            // locationManager.startMonitoringPOIs(pois: poiViewModel.mappedPOIs)
+            locationManager.startMonitoringPOIs(pois: poiViewModel.mappedPOIs)
         }
     }
 }
