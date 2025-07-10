@@ -59,18 +59,33 @@ struct CustomMapView: UIViewRepresentable {
             }
         }
 
-        // Aggiorna annotazioni se cambia la lista o la foto
-        let currentPOIIDs = Set(uiView.annotations.compactMap { ($0 as? MappedPOIAnnotation)?.poi.id })
-        let newPOIIDs = Set(mappedPOIs.map { $0.id })
-        if currentPOIIDs != newPOIIDs || mappedPOIs.contains(where: { poi in
-            guard let annotation = uiView.annotations.first(where: { ($0 as? MappedPOIAnnotation)?.poi.id == poi.id }) as? MappedPOIAnnotation else { return true }
-            return annotation.poi.photoPath != poi.photoPath
-        }) {
-            let toRemove = uiView.annotations.filter { !($0 is MKUserLocation) }
-            uiView.removeAnnotations(toRemove)
-            for poi in mappedPOIs {
-                let annotation = MappedPOIAnnotation(poi: poi)
-                uiView.addAnnotation(annotation)
+        // --- PATCH: Annotazioni efficienti ---
+
+        // Ottieni annotazioni attuali e nuove
+        let currentAnnotations = uiView.annotations.compactMap { $0 as? MappedPOIAnnotation }
+        let currentIDs = Set(currentAnnotations.map { $0.poi.id })
+        let newIDs = Set(mappedPOIs.map { $0.id })
+
+        // Aggiungi solo le nuove annotazioni
+        let toAdd = mappedPOIs.filter { !currentIDs.contains($0.id) }
+        for poi in toAdd {
+            let annotation = MappedPOIAnnotation(poi: poi)
+            uiView.addAnnotation(annotation)
+        }
+
+        // Rimuovi solo quelle eliminate
+        let toRemove = currentAnnotations.filter { !newIDs.contains($0.poi.id) }
+        uiView.removeAnnotations(toRemove)
+
+        // Aggiorna annotazioni se la foto o stato scoperta è cambiato
+        for poi in mappedPOIs {
+            if let annotation = currentAnnotations.first(where: { $0.poi.id == poi.id }) {
+                let changedPhoto = annotation.poi.photoPath != poi.photoPath
+                let changedState = annotation.poi.isDiscovered != poi.isDiscovered
+                if changedPhoto || changedState {
+                    uiView.removeAnnotation(annotation)
+                    uiView.addAnnotation(MappedPOIAnnotation(poi: poi))
+                }
             }
         }
     }
@@ -79,8 +94,8 @@ struct CustomMapView: UIViewRepresentable {
         if let userLocation = mapView.userLocation.location {
             let camera = MKMapCamera(
                 lookingAtCenter: userLocation.coordinate,
-                fromDistance: 600,
-                pitch: 75,
+                fromDistance: 150,
+                pitch: 65,
                 heading: mapView.camera.heading
             )
             mapView.setCamera(camera, animated: true)
