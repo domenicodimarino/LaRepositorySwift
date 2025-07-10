@@ -77,6 +77,7 @@ class MissionViewModel: ObservableObject {
               poiVisited else { return nil }
         
         let now = Date()
+        //DA IMPLEMENTARE COMPLETAMENTO MISSIONE
         if now.timeIntervalSince(start) <= mission.duration {
             mission.isCompleted = true
             self.activeMission = mission
@@ -202,9 +203,8 @@ class MissionViewModel: ObservableObject {
     private func createNewMission() {
         // Definisci possibili missioni
         let possibleMissions = [
-            (description: "Visita un punto di interesse entro 30 minuti per ottenere 100 monete", reward: 100, duration: 30 * 60.0),
-            (description: "Visita un museo entro 1 ora per guadagnare 200 monete", reward: 200, duration: 60 * 60.0),
-            (description: "Scopri un nuovo POI entro 45 minuti e ottieni 150 monete", reward: 150, duration: 45 * 60.0)
+            (description: "Visita un punto di interesse entro 120 minuti per ottenere 100 monete", reward: 100, duration: 120 * 60.0),
+            (description: "Scopri un nuovo POI entro 60 minuti e ottieni 200 monete", reward: 150, duration: 45 * 60.0)
         ]
         
         // Scegli casualmente

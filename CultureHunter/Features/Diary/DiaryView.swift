@@ -3,15 +3,16 @@ import AVFoundation
 
 struct DiaryView: View {
     let place: Place
-    @State private var isReading: Bool = false
     @State private var errorMessage: String? = nil
     @State private var showError: Bool = false
-    @State private var currentDate: String = "2025-07-07 14:41:43"
-    @State private var username: String = "FrancescoDiCrescenzo"
+    @State private var currentDate: String = "2025-07-10 13:00:15"
     
-    // Mantieni il sintetizzatore come proprietà di stato per evitare che venga deallocato
-    @State private var speechSynthesizer = AVSpeechSynthesizer()
-    @State private var synthesizerDelegate: SpeechSynthesizerDelegate?
+    // Usa l'AudioManager originale come ObservableObject
+    @StateObject private var audioManager = AudioManager.shared
+    
+    // Stato per il valore di trascinamento
+    @State private var dragPosition: Double = 0
+    @State private var isDragging: Bool = false
     
     var body: some View {
         ScrollView {
@@ -54,45 +55,76 @@ struct DiaryView: View {
                     
                     Divider()
                     
-                    // Sezione Diary/Storia con bottone di lettura
-                    HStack {
-                        Text("Diary")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        Spacer()
-                        
-                        // Bottone per la lettura vocale
-                        Button(action: {
-                            if isReading {
-                                stopReading()
-                            } else {
-                                readText(place.history)
-                            }
-                        }) {
-                            HStack {
-                                Image(systemName: isReading ? "stop.fill" : "play.fill")
-                                Text(isReading ? "Stop" : "Ascolta")
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(isReading ? Color.red : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                        }
-                    }
-                    .padding(.top, 5)
-                    
-                    if isReading {
+                    // Sezione Diary/Storia con bottone di audio
+                    VStack(spacing: 10) {
                         HStack {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                            Text("Riproduzione audio in corso...")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.leading, 5)
+                            Text("Diary")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            // Bottone per l'audio pre-registrato
+                            Button(action: {
+                                if audioManager.isPlaying {
+                                    audioManager.pauseAudio()
+                                } else if audioManager.currentTime > 0 {
+                                    audioManager.resumeAudio()
+                                } else {
+                                    playAudio()
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                    Text(audioManager.isPlaying ? "Pausa" : (audioManager.currentTime > 0 ? "Riprendi" : "Ascolta"))
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(audioManager.isPlaying ? Color.red : Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
                         }
-                        .padding(.top, 5)
+                        
+                        // BARRA DI PROGRESSO AUDIO INTERATTIVA
+                        if audioManager.duration > 0 {
+                            VStack(spacing: 6) {
+                                // Barra di progresso con funzionalità di seek
+                                Slider(
+                                    value: Binding(
+                                        get: { isDragging ? dragPosition : audioManager.currentTime },
+                                        set: { newValue in
+                                            dragPosition = newValue
+                                            isDragging = true
+                                        }
+                                    ),
+                                    in: 0...max(0.1, audioManager.duration),
+                                    onEditingChanged: { editing in
+                                        if !editing && isDragging {
+                                            // Quando il trascinamento finisce, imposta la nuova posizione
+                                            audioManager.seek(to: dragPosition)
+                                            isDragging = false
+                                        }
+                                    }
+                                )
+                                .accentColor(.blue)
+                                
+                                // Etichette temporali
+                                HStack {
+                                    Text(formatTime(isDragging ? dragPosition : audioManager.currentTime))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Spacer()
+                                    
+                                    Text(formatTime(audioManager.duration))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.horizontal, 2)
+                            .padding(.bottom, 5)
+                        }
                     }
                     
                     Text(place.history)
@@ -109,7 +141,6 @@ struct DiaryView: View {
                             .font(.headline)
                     }
                     .padding(.top, 15)
-                    
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 30)
@@ -124,7 +155,8 @@ struct DiaryView: View {
             }
         }
         .onDisappear {
-            stopReading()
+            // Ferma l'audio quando la vista scompare
+            audioManager.stopAllAudio()
         }
         .onAppear {
             // Attiva l'audio della sessione
@@ -145,102 +177,21 @@ struct DiaryView: View {
         })
     }
     
-    // Funzione per leggere il testo
-    private func readText(_ text: String) {
-        do {
-            // Assicurati che la sessione audio sia attiva
-            try AVAudioSession.sharedInstance().setActive(true)
-            
-            // Crea l'utterance
-            let utterance = AVSpeechUtterance(string: text)
-            
-            // Prova a impostare la voce italiana, altrimenti usa la voce predefinita
-            if let italianVoice = AVSpeechSynthesisVoice(language: "it-IT") {
-                utterance.voice = italianVoice
-            } else if let defaultVoice = AVSpeechSynthesisVoice(language: "en-US") {
-                utterance.voice = defaultVoice
-                print("Voce italiana non disponibile, utilizzo voce inglese")
-            }
-            
-            utterance.rate = 0.5
-            utterance.pitchMultiplier = 1.0
-            utterance.volume = 1.0 // Volume massimo
-            
-            // Crea un nuovo delegato e mantieni un riferimento forte
-            synthesizerDelegate = SpeechSynthesizerDelegate(onComplete: {
-                DispatchQueue.main.async {
-                    self.isReading = false
-                    print("Lettura completata")
-                }
-            }, onStart: {
-                print("Lettura iniziata")
-            }, onError: { error in
-                DispatchQueue.main.async {
-                    self.isReading = false
-                    self.errorMessage = "Errore durante la lettura: \(error)"
-                    self.showError = true
-                    print("Errore durante la lettura: \(error)")
-                }
-            })
-            
-            // Assegna il delegato
-            speechSynthesizer.delegate = synthesizerDelegate
-            
-            // Inizia a parlare
-            if speechSynthesizer.isSpeaking {
-                speechSynthesizer.stopSpeaking(at: .immediate)
-            }
-            
-            speechSynthesizer.speak(utterance)
-            print("Avvio sintesi vocale")
-            isReading = true
-            
-        } catch {
-            errorMessage = "Errore di inizializzazione audio: \(error.localizedDescription)"
+    // Funzione per avviare la riproduzione audio
+    private func playAudio() {
+        // Usa effectiveAudioName dalla struttura Place
+        if let audioURL = audioManager.loadAudioFromBundle(named: place.effectiveAudioName) {
+            audioManager.playAudio(from: audioURL, withID: "narration")
+        } else {
+            errorMessage = "Audio narrativo non disponibile per questo luogo"
             showError = true
-            print("Errore di inizializzazione audio: \(error)")
         }
     }
     
-    // Funzione per fermare la lettura
-    private func stopReading() {
-        if speechSynthesizer.isSpeaking {
-            speechSynthesizer.stopSpeaking(at: .immediate)
-        }
-        isReading = false
-    }
-}
-
-// Delegato migliorato per la sintesi vocale
-class SpeechSynthesizerDelegate: NSObject, AVSpeechSynthesizerDelegate {
-    private let onComplete: () -> Void
-    private let onStart: () -> Void
-    private let onError: (String) -> Void
-    
-    init(onComplete: @escaping () -> Void, onStart: @escaping () -> Void, onError: @escaping (String) -> Void) {
-        self.onComplete = onComplete
-        self.onStart = onStart
-        self.onError = onError
-        super.init()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        onStart()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        onComplete()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        onError("Lettura annullata")
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
-        onError("Lettura in pausa")
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
-        onStart()
+    // Formatta il tempo in formato MM:SS
+    private func formatTime(_ timeInSeconds: Double) -> String {
+        let minutes = Int(timeInSeconds) / 60
+        let seconds = Int(timeInSeconds) % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }

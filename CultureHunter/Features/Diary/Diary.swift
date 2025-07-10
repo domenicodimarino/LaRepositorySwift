@@ -15,6 +15,12 @@ struct Place: Identifiable {
     let history: String
     let yearBuilt: String
     let location: String
+    let audioName: String? // Nuovo campo per riferimento al file audio
+        
+        // Se non specifichi audioName, usa il nome del POI
+        var effectiveAudioName: String {
+            return audioName ?? name.lowercased().replacingOccurrences(of: " ", with: "_")
+        }
 }
 
 // Database di luoghi con informazioni storiche
@@ -24,10 +30,11 @@ class PlacesData {
     let places = [
         Place(
             name: "Casa Mia",
-            imageName: "shirt_mission", // <-- nome asset tra virgolette!
+            imageName: "shirt_mission",
             history: "Il Colosseo, originariamente noto come Anfiteatro Flavio, è un anfiteatro ovale situato nel centro di Roma. Costruito in calcestruzzo e sabbia, è il più grande anfiteatro mai costruito ed è considerato una delle più grandi opere dell'architettura e dell'ingegneria romana. La costruzione iniziò sotto l'imperatore Vespasiano nel 72 d.C. e fu completata sotto Tito nell'80 d.C. Poteva ospitare tra 50.000 e 80.000 spettatori ed era utilizzato per combattimenti di gladiatori e spettacoli pubblici.",
             yearBuilt: "72-80 d.C.",
-            location: "Cava de' Tirreni, Italia"
+            location: "Cava de' Tirreni, Italia",
+            audioName: "casa_mia"
         )
     ]
 }

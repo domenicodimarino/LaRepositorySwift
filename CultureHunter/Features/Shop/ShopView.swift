@@ -31,7 +31,7 @@ struct ShopView: View {
     // MARK: - View
     
     var body: some View {
-        ScrollView {
+        VStack {
             VStack(spacing: 20) {
                 headerSection
                 avatarAndInfoSection
@@ -160,7 +160,7 @@ struct ShopView: View {
     }
     
     private var shopSections: some View {
-        VStack(spacing: 20) {
+        ScrollView(.vertical, showsIndicators: false) {
             shopSection(title: "Magliette", type: .shirt)
             shopSection(title: "Pantaloni", type: .pants)
             shopSection(title: "Scarpe", type: .shoes)
