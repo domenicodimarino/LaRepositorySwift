@@ -32,7 +32,6 @@ struct MapTab: View {
             VStack {
                 HStack {
                     Spacer()
-                    // Pulsante tracking che imposta lo stato su .follow
                     Button(action: {
                         trackingState = .follow
                     }) {
@@ -48,7 +47,6 @@ struct MapTab: View {
                 }
                 Spacer()
             }
-            // Bottone scatta solo se vicino e POI non ancora scoperto
             if showPhotoButton, let poi = selectedPOI, !poi.isDiscovered {
                 VStack {
                     Spacer()
@@ -68,13 +66,12 @@ struct MapTab: View {
         .sheet(isPresented: $showCamera) {
             if let poi = selectedPOI {
                 CameraPicker { image in
-                    // Aggiorna il POI come scoperto con la foto
                     viewModel.markPOIDiscovered(
                         id: poi.id,
                         photo: image,
                         city: poi.city,
                         badgeManager: badgeManager,
-                        nomeUtente: "Giovanni" // O recuperalo dinamicamente dall’utente
+                        nomeUtente: "Giovanni"
                     )
                 }
             }
@@ -83,7 +80,6 @@ struct MapTab: View {
             locationManager.requestAuthorization()
         }
         .onChange(of: locationManager.lastLocation) { newLocation in
-            // Appena ricevi la posizione per la prima volta, attiva il tracking
             if newLocation != nil && !hasCenteredOnUser {
                 trackingState = .follow
                 hasCenteredOnUser = true

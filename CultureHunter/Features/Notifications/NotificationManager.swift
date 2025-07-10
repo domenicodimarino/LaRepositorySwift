@@ -13,11 +13,16 @@ class NotificationManager: ObservableObject {
         }
     }
 
-    // Invia UNA SOLA notifica locale, opzionalmente con immagine
-    func sendPOINearbyNotificationWithImage() {
+    // Invia UNA SOLA notifica locale, opzionalmente con immagine e POI personalizzato
+    func sendPOINearbyNotificationWithImage(for poi: MappedPOI? = nil) {
         let content = UNMutableNotificationContent()
-        content.title = "Nuovo punto di interesse nei dintorni!"
-        content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
+        if let poi = poi {
+            content.title = "Sei vicino a \(poi.title)"
+            content.body = "Scatta una foto per scoprire di più su \(poi.title) e guadagnare crediti!"
+        } else {
+            content.title = "Nuovo punto di interesse nei dintorni!"
+            content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
+        }
         content.sound = .default
 
         // Opzionale: allega immagine se presente negli assets (nome: "Notifications")
@@ -27,7 +32,7 @@ class NotificationManager: ObservableObject {
         }
 
         // Usa sempre lo stesso identifier per non accumulare notifiche
-        let identifier = "poi_notification"
+        let identifier = poi?.id.uuidString ?? "poi_notification"
 
         // Rimuovi prima eventuali notifiche pendenti con lo stesso identifier
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])

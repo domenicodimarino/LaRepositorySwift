@@ -6,6 +6,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     @Published var lastLocation: CLLocation?
     private var notificationManager = NotificationManager()
+    
+    // Mantieni la lista dei POI monitorati per notifica personalizzata
+    private var monitoredPOIs: [MappedPOI] = []
 
     override init() {
         super.init()
@@ -26,8 +29,9 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         for region in manager.monitoredRegions {
             manager.stopMonitoring(for: region)
         }
+        monitoredPOIs = pois // Salva la lista per notifiche personalizzate
         for poi in pois {
-            let region = CLCircularRegion(center: poi.coordinate, radius: 100, identifier: poi.id.uuidString)
+            let region = CLCircularRegion(center: poi.coordinate, radius: 50, identifier: poi.id.uuidString)
             region.notifyOnEntry = true
             region.notifyOnExit = false
             manager.startMonitoring(for: region)
@@ -42,7 +46,13 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Delegate: entrato in una regione
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         print("Entrato in regione: \(region.identifier)")
-        notificationManager.sendPOINearbyNotificationWithImage()
+        // Cerca il POI corrispondente
+        if let poi = monitoredPOIs.first(where: { $0.id.uuidString == region.identifier }) {
+            notificationManager.sendPOINearbyNotificationWithImage(for: poi)
+        } else {
+            // Fallback se il POI non viene trovato
+            notificationManager.sendPOINearbyNotificationWithImage()
+        }
     }
 
     // Delegate: errori

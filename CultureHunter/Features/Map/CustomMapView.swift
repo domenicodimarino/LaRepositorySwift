@@ -23,13 +23,13 @@ struct CustomMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.preferredConfiguration = configuration
-        mapView.isPitchEnabled = true
+        mapView.isPitchEnabled = false
         mapView.isRotateEnabled = true
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .none
         mapView.delegate = context.coordinator
 
-        // Camera 3D iniziale (solo qui!)
+        // Camera 3D iniziale
         let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
         let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
         mapView.setCamera(camera, animated: false)
@@ -42,31 +42,48 @@ struct CustomMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Cambia solo tracking mode, NON la camera!
         switch trackingState {
         case .follow:
             if uiView.userTrackingMode != .follow {
                 uiView.setUserTrackingMode(.follow, animated: true)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    centerCameraOnUser(uiView)
+                }
             }
         case .none:
             if uiView.userTrackingMode != .none {
                 uiView.setUserTrackingMode(.none, animated: true)
-                // Dopo che il tracking si disattiva, puoi rimettere la camera 3D.
                 let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
-                let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
+                let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: uiView.camera.heading)
                 uiView.setCamera(camera, animated: true)
             }
         }
 
-        // Aggiorna i POI se la lista cambia
-        let currentAnnotations = uiView.annotations.filter { !($0 is MKUserLocation) }
-        if currentAnnotations.count != mappedPOIs.count ||
-            !Set(currentAnnotations.compactMap { ($0 as? MappedPOIAnnotation)?.poi.id }).isSubset(of: Set(mappedPOIs.map { $0.id })) {
-            uiView.removeAnnotations(currentAnnotations)
+        // Aggiorna annotazioni se cambia la lista o la foto
+        let currentPOIIDs = Set(uiView.annotations.compactMap { ($0 as? MappedPOIAnnotation)?.poi.id })
+        let newPOIIDs = Set(mappedPOIs.map { $0.id })
+        if currentPOIIDs != newPOIIDs || mappedPOIs.contains(where: { poi in
+            guard let annotation = uiView.annotations.first(where: { ($0 as? MappedPOIAnnotation)?.poi.id == poi.id }) as? MappedPOIAnnotation else { return true }
+            return annotation.poi.photoPath != poi.photoPath
+        }) {
+            let toRemove = uiView.annotations.filter { !($0 is MKUserLocation) }
+            uiView.removeAnnotations(toRemove)
             for poi in mappedPOIs {
                 let annotation = MappedPOIAnnotation(poi: poi)
                 uiView.addAnnotation(annotation)
             }
+        }
+    }
+
+    private func centerCameraOnUser(_ mapView: MKMapView) {
+        if let userLocation = mapView.userLocation.location {
+            let camera = MKMapCamera(
+                lookingAtCenter: userLocation.coordinate,
+                fromDistance: 600,
+                pitch: 75,
+                heading: mapView.camera.heading
+            )
+            mapView.setCamera(camera, animated: true)
         }
     }
 
@@ -93,9 +110,24 @@ struct CustomMapView: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if annotation is MKUserLocation {
-                return nil
-            } else if let poiAnnotation = annotation as? MappedPOIAnnotation {
+            if annotation is MKUserLocation { return nil }
+            guard let poiAnnotation = annotation as? MappedPOIAnnotation else { return nil }
+
+            if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
+                // POI scoperto: solo la foto come marker
+                let identifier = "POIPhoto"
+                var view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
+                if view == nil {
+                    view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+                    view?.canShowCallout = true
+                    view?.centerOffset = CGPoint(x: 0, y: 0)
+                } else {
+                    view?.annotation = annotation
+                }
+                view?.image = photo.fixedOrientation().resizedToPin()
+                return view
+            } else {
+                // POI non scoperto: marker default a tema con punto interrogativo
                 let identifier = "POIMarker"
                 var markerView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
                 if markerView == nil {
@@ -103,21 +135,12 @@ struct CustomMapView: UIViewRepresentable {
                     markerView?.canShowCallout = true
                 }
                 markerView?.markerTintColor = .systemRed
-                if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
-                    markerView?.glyphImage = photo.resizedToPin()
-                    markerView?.glyphText = nil
-                } else {
-                    markerView?.glyphText = "?"
-                    markerView?.glyphImage = nil
-                }
+                markerView?.glyphText = "?"
+                markerView?.glyphImage = nil
                 markerView?.annotation = annotation
                 return markerView
             }
-            return nil
         }
-
-        // RIMUOVI tutte le altre funzioni delegate che impostano la camera!
-        // NON mettere regionDidChangeAnimated né didUpdate userLocation!
 
         private func mapViewIsUserInteraction(_ mapView: MKMapView) -> Bool {
             for view in mapView.subviews {
@@ -142,6 +165,7 @@ class MappedPOIAnnotation: NSObject, MKAnnotation {
 }
 
 extension UIImage {
+    // Ridimensiona per il pin
     func resizedToPin() -> UIImage {
         let size = CGSize(width: 40, height: 40)
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
@@ -149,5 +173,14 @@ extension UIImage {
         let result = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return result ?? self
+    }
+    // Fissa l'orientamento (altrimenti rischi foto bianche)
+    func fixedOrientation() -> UIImage {
+        if imageOrientation == .up { return self }
+        UIGraphicsBeginImageContextWithOptions(size, false, scale)
+        draw(in: CGRect(origin: .zero, size: size))
+        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        return normalizedImage
     }
 }

@@ -40,8 +40,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: nil,
-            longitude: nil
+            latitude: 40.772548,
+            longitude: 14.791206
         )
     ]
 
@@ -84,8 +84,9 @@ struct ContentView: View {
             notificationManager.requestPermissions()
             locationManager.requestAuthorization()
             poiViewModel.geocodeAll(pois: poiList)
-            // Se vuoi monitorare i POI dopo la geocodifica, fallo in un onReceive nel MapTab o qui, ad esempio:
-            locationManager.startMonitoringPOIs(pois: poiViewModel.mappedPOIs)
+        }
+        .onReceive(poiViewModel.$mappedPOIs) { mapped in
+            locationManager.startMonitoringPOIs(pois: mapped)
         }
     }
 }
