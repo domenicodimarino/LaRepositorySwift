@@ -11,6 +11,7 @@ struct ShopView: View {
     // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
     @StateObject private var shopViewModel: ShopViewModel
+    @StateObject private var missionViewModel = MissionViewModel()
     
     @State private var showAlert = false
     @State private var showConfirmation = false
@@ -18,6 +19,7 @@ struct ShopView: View {
     @State private var alertMessage = ""
     @State private var selectedItem: ShopItem? = nil
     @State private var justPurchasedItem: ShopItem? = nil
+    @State private var missionRewardProcessed = false
     
     // MARK: - Initialization
     
@@ -46,44 +48,63 @@ struct ShopView: View {
             )
         }
         // Alert di conferma (prima dell'acquisto)
-                .alert("Conferma acquisto", isPresented: $showConfirmation) {
-                    Button("No", role: .cancel) {
-                        // Non fa nulla, chiude solo l'alert
-                    }
-                    Button("Sì") {
-                        // Procede con l'acquisto quando l'utente conferma
-                        proceedWithPurchase()
-                    }
-                } message: {
-                    if let item = selectedItem {
-                        Text("Vuoi acquistare \(item.displayName) per \(item.price) monete?")
-                    } else {
-                        Text("Vuoi acquistare questo articolo?")
-                    }
-                }
+        .alert("Conferma acquisto", isPresented: $showConfirmation) {
+            Button("No", role: .cancel) { }
+            Button("Sì") {
+                proceedWithPurchase()
+            }
+        } message: {
+            if let item = selectedItem {
+                Text("Vuoi acquistare \(item.displayName) per \(item.price) monete?")
+            } else {
+                Text("Vuoi acquistare questo articolo?")
+            }
+        }
         // Nuovo alert per indossare l'articolo
-                .alert("Indossare articolo", isPresented: $showWearConfirmation) {
-                    Button("No", role: .cancel) {
-                        // Non fa nulla, l'utente può andare all'inventario in seguito
-                        alertMessage = "Puoi indossarlo dall'inventario quando vuoi."
-                        showAlert = true
-                    }
-                    Button("Sì") {
-                        wearItem()
-                    }
-                }message: {
-                    if let item = justPurchasedItem {
-                        Text("Articolo acquistato! Vuoi indossare subito \(item.displayName)?")
-                    } else {
-                        Text("Articolo acquistato! Vuoi indossarlo subito?")
-                    }
-                }
+        .alert("Indossare articolo", isPresented: $showWearConfirmation) {
+            Button("No", role: .cancel) {
+                alertMessage = "Puoi indossarlo dall'inventario quando vuoi."
+                showAlert = true
+            }
+            Button("Sì") {
+                wearItem()
+            }
+        } message: {
+            if let item = justPurchasedItem {
+                Text("Articolo acquistato! Vuoi indossare subito \(item.displayName)?")
+            } else {
+                Text("Articolo acquistato! Vuoi indossarlo subito?")
+            }
+        }
         .onAppear {
             shopViewModel.updateOwnedStatus()
+            checkMissionCompletion()
         }
         .onChange(of: avatarViewModel.avatar.coins) { _ in
-            // Quando le monete cambiano (dopo un acquisto), aggiorna lo stato degli item
             shopViewModel.updateOwnedStatus()
+        }
+    }
+    
+    // MARK: - Mission Management
+    
+    private func checkMissionCompletion() {
+        // Durante lo sviluppo, puoi cambiare questo a 'true' per testare
+        #if DEBUG
+        let simulatePoiVisited = false
+        #else
+        let simulatePoiVisited = false
+        #endif
+        
+        // Verifica il completamento della missione solo se non è già stato elaborato
+        if !missionRewardProcessed, let reward = missionViewModel.tryCompleteMission(poiVisited: simulatePoiVisited) {
+            avatarViewModel.addCoins(reward)
+            missionRewardProcessed = true
+            
+            // Feedback visivo opzionale
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                alertMessage = "Missione completata! +\(reward) monete."
+                showAlert = true
+            }
         }
     }
     
@@ -104,7 +125,7 @@ struct ShopView: View {
             avatarPreview
             VStack {
                 coinDisplay
-                weeklyMissionDisplay
+                MissionBanner(missionViewModel: missionViewModel)
             }
         }
     }
@@ -136,43 +157,6 @@ struct ShopView: View {
                 .font(.body)
                 .fontWeight(.semibold)
         }
-    }
-    
-    private var weeklyMissionDisplay: some View {
-        ZStack {
-            Rectangle()
-                .foregroundColor(.clear)
-                .frame(width: 213, height: 111)
-                .background(Color(red: 0.85, green: 0.85, blue: 0.85))
-                .cornerRadius(21)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 21)
-                        .inset(by: 2.5)
-                        .stroke(.black, lineWidth: 5)
-                )
-            
-            VStack {
-                Text("Missione settimanale")
-                    .font(.body)
-                    .fontWeight(.semibold)
-                    .padding(.bottom, 4)
-                
-                HStack(spacing: 10) {
-                    Image("shirt_mission")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 40, height: 40)
-                    
-                    VStack(alignment: .leading) {
-                        Text("Visita \"Stadio Arechi\" per")
-                            .font(.caption)
-                        Text("ottenere una maglietta esclusiva")
-                            .font(.caption)
-                    }
-                }
-            }
-        }
-        .frame(width: 213, height: 111)
     }
     
     private var shopSections: some View {
@@ -211,60 +195,60 @@ struct ShopView: View {
     // MARK: - Actions
     
     private func buySelectedItem() {
-            guard let item = selectedItem else { return }
-            
-            // Verifica con l'InventoryManager
-            let clothingItem = ClothingItem(
-                assetName: item.assetName,
-                type: item.type,
-                disponibile: true
-            )
-            
-            if shopViewModel.inventoryManager.isItemUnlocked(clothingItem) {
-                alertMessage = "Possiedi già questo articolo"
-                showAlert = true
-                return
-            }
-            
-            if shopViewModel.coins < item.price {
-                alertMessage = "Non hai abbastanza monete"
-                showAlert = true
-                return
-            }
-            
-            showConfirmation = true
+        guard let item = selectedItem else { return }
+        
+        // Verifica con l'InventoryManager
+        let clothingItem = ClothingItem(
+            assetName: item.assetName,
+            type: item.type,
+            disponibile: true
+        )
+        
+        if shopViewModel.inventoryManager.isItemUnlocked(clothingItem) {
+            alertMessage = "Possiedi già questo articolo"
+            showAlert = true
+            return
         }
         
-        private func proceedWithPurchase() {
-            guard let item = selectedItem else { return }
-            
-            if shopViewModel.buyItem(item) {
-                // Forza l'aggiornamento dello stato
-                shopViewModel.updateOwnedStatus()
-                
-                // Salva l'item appena acquistato e mostra l'alert per indossarlo
-                justPurchasedItem = item
-                showWearConfirmation = true
-            } else {
-                alertMessage = "Errore durante l'acquisto"
-                showAlert = true
-            }
+        if shopViewModel.coins < item.price {
+            alertMessage = "Non hai abbastanza monete"
+            showAlert = true
+            return
         }
         
-        // Nuova funzione per indossare l'articolo
-        private func wearItem() {
-            guard let item = justPurchasedItem else { return }
+        showConfirmation = true
+    }
+    
+    private func proceedWithPurchase() {
+        guard let item = selectedItem else { return }
+        
+        if shopViewModel.buyItem(item) {
+            // Forza l'aggiornamento dello stato
+            shopViewModel.updateOwnedStatus()
             
-            // Indossa l'articolo in base al suo tipo
-            switch item.type {
-            case .shirt:
-                avatarViewModel.setShirt(item.assetName)
-            case .pants:
-                avatarViewModel.setPants(item.assetName)
-            case .shoes:
-                avatarViewModel.setShoes(item.assetName)
-            }
+            // Salva l'item appena acquistato e mostra l'alert per indossarlo
+            justPurchasedItem = item
+            showWearConfirmation = true
+        } else {
+            alertMessage = "Errore durante l'acquisto"
+            showAlert = true
         }
+    }
+    
+    // Nuova funzione per indossare l'articolo
+    private func wearItem() {
+        guard let item = justPurchasedItem else { return }
+        
+        // Indossa l'articolo in base al suo tipo
+        switch item.type {
+        case .shirt:
+            avatarViewModel.setShirt(item.assetName)
+        case .pants:
+            avatarViewModel.setPants(item.assetName)
+        case .shoes:
+            avatarViewModel.setShoes(item.assetName)
+        }
+    }
 }
 
 // Preview per la vista principale

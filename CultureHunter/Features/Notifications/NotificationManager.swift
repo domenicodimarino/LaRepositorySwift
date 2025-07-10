@@ -1,8 +1,12 @@
 import Foundation
 import UserNotifications
 import UIKit
+import Combine  // Importante: aggiungi questa importazione
 
-class NotificationManager: ObservableObject {
+class NotificationManager: ObservableObject {  // Aggiungi conformità a ObservableObject
+    // Puoi aggiungere proprietà osservabili se necessario
+    @Published var lastNotificationSent: Date? = nil
+    
     // Richiedi il permesso per le notifiche (chiamare all'avvio dell'app)
     func requestPermissions() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
@@ -42,11 +46,45 @@ class NotificationManager: ObservableObject {
             content: content,
             trigger: nil // Immediato
         )
-        UNUserNotificationCenter.current().add(request) { error in
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
                 print("Errore invio notifica: \(error.localizedDescription)")
             } else {
                 print("Notifica inviata con successo!")
+                DispatchQueue.main.async {
+                    self?.lastNotificationSent = Date()
+                }
+            }
+        }
+    }
+    
+    // Invia una notifica per una nuova missione
+    func sendMissionNotification(description: String, reward: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = "Nuova missione disponibile!"
+        content.body = "💰 \(description) - Ricompensa: \(reward) monete"
+        content.sound = .default
+        
+        // Usa sempre lo stesso identifier per sostituire eventuali notifiche precedenti
+        let identifier = "mission_notification"
+        
+        // Rimuovi prima eventuali notifiche pendenti con lo stesso identifier
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: nil // Immediato
+        )
+        
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            if let error = error {
+                print("Errore invio notifica missione: \(error.localizedDescription)")
+            } else {
+                print("Notifica missione inviata con successo!")
+                DispatchQueue.main.async {
+                    self?.lastNotificationSent = Date()
+                }
             }
         }
     }
