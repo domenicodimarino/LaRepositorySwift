@@ -53,8 +53,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.668745,
-            longitude: 14.749116
+            latitude: 40.671693,
+            longitude: 14.737993
         ),
         POI(
             street: "Chiesa di San Giorgio, Via Duomo",
