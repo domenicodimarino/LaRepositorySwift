@@ -59,25 +59,19 @@ struct CustomMapView: UIViewRepresentable {
             }
         }
 
-        // --- PATCH: Annotazioni efficienti ---
-
-        // Ottieni annotazioni attuali e nuove
         let currentAnnotations = uiView.annotations.compactMap { $0 as? MappedPOIAnnotation }
         let currentIDs = Set(currentAnnotations.map { $0.poi.id })
         let newIDs = Set(mappedPOIs.map { $0.id })
 
-        // Aggiungi solo le nuove annotazioni
         let toAdd = mappedPOIs.filter { !currentIDs.contains($0.id) }
         for poi in toAdd {
             let annotation = MappedPOIAnnotation(poi: poi)
             uiView.addAnnotation(annotation)
         }
 
-        // Rimuovi solo quelle eliminate
         let toRemove = currentAnnotations.filter { !newIDs.contains($0.poi.id) }
         uiView.removeAnnotations(toRemove)
 
-        // Aggiorna annotazioni se la foto o stato scoperta è cambiato
         for poi in mappedPOIs {
             if let annotation = currentAnnotations.first(where: { $0.poi.id == poi.id }) {
                 let changedPhoto = annotation.poi.photoPath != poi.photoPath
@@ -128,8 +122,10 @@ struct CustomMapView: UIViewRepresentable {
             if annotation is MKUserLocation { return nil }
             guard let poiAnnotation = annotation as? MappedPOIAnnotation else { return nil }
 
-            if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
-                // POI scoperto: solo la foto come marker
+            // --- MARKER LOGIC PATCH ---
+            if poiAnnotation.poi.isDiscovered, let photoPath = poiAnnotation.poi.photoPath,
+               let photo = UIImage(contentsOfFile: photoPath) {
+                // POI scoperto: marker con foto scattata
                 let identifier = "POIPhoto"
                 var view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
                 if view == nil {
@@ -142,7 +138,7 @@ struct CustomMapView: UIViewRepresentable {
                 view?.image = photo.fixedOrientation().resizedToPin()
                 return view
             } else {
-                // POI non scoperto: marker default a tema con punto interrogativo
+                // POI bloccato: marker rosso con punto interrogativo
                 let identifier = "POIMarker"
                 var markerView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
                 if markerView == nil {
@@ -180,7 +176,6 @@ class MappedPOIAnnotation: NSObject, MKAnnotation {
 }
 
 extension UIImage {
-    // Ridimensiona per il pin
     func resizedToPin() -> UIImage {
         let size = CGSize(width: 40, height: 40)
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
@@ -189,7 +184,6 @@ extension UIImage {
         UIGraphicsEndImageContext()
         return result ?? self
     }
-    // Fissa l'orientamento (altrimenti rischi foto bianche)
     func fixedOrientation() -> UIImage {
         if imageOrientation == .up { return self }
         UIGraphicsBeginImageContextWithOptions(size, false, scale)

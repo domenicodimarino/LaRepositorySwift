@@ -2,10 +2,6 @@ import Foundation
 import CoreLocation
 import UIKit
 
-import Foundation
-import CoreLocation
-import UIKit
-
 struct MappedPOI: Identifiable, Hashable {
     let id: UUID
     let title: String
@@ -21,6 +17,8 @@ struct MappedPOI: Identifiable, Hashable {
     let isDiscovered: Bool
     let discoveredTitle: String?
     let photoPath: String? // Persisti il path, non la UIImage
+    let discoveredDate: Date? // <--- AGGIUNTO CAMPO DATA SCOPERTA
+    let imageName: String // <-- nome asset
 
     var photo: UIImage? {
         guard let photoPath else { return nil }
@@ -32,7 +30,7 @@ struct MappedPOI: Identifiable, Hashable {
         lhs.title == rhs.title &&
         lhs.coordinate.latitude == rhs.coordinate.latitude &&
         lhs.coordinate.longitude == rhs.coordinate.longitude
-        // photo e discoveredTitle ignorati per uguaglianza
+        // photo, discoveredTitle e discoveredDate ignorati per uguaglianza
     }
 
     func hash(into hasher: inout Hasher) {

@@ -16,7 +16,9 @@ class POIGeocoder {
                 diaryPlaceName: poi.diaryPlaceName,
                 isDiscovered: poi.isDiscovered,
                 discoveredTitle: poi.discoveredTitle,
-                photoPath: poi.photoPath
+                photoPath: poi.photoPath,
+                discoveredDate: poi.discoveredDate,
+                imageName: poi.imageName // <-- AGGIUNTO!
             )
             completion(mapped)
             return
@@ -35,7 +37,9 @@ class POIGeocoder {
                     diaryPlaceName: poi.diaryPlaceName,
                     isDiscovered: poi.isDiscovered,
                     discoveredTitle: poi.discoveredTitle,
-                    photoPath: poi.photoPath
+                    photoPath: poi.photoPath,
+                    discoveredDate: poi.discoveredDate,
+                    imageName: poi.imageName // <-- AGGIUNTO!
                 )
                 completion(mapped)
             } else {

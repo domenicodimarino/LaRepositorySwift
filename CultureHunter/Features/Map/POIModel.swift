@@ -9,29 +9,22 @@ struct POI: Identifiable, Hashable {
     let city: String
     let province: String
 
-    // Nuovi campi richiesti per collegamento e persistenza
     let diaryPlaceName: String
     var photoPath: String?
-
-    // Stato di scoperta
     var isDiscovered: Bool
     var discoveredTitle: String?
     var photo: UIImage?
-
-    // Coordinate (opzionali)
+    var discoveredDate: Date?
     var latitude: Double?
     var longitude: Double?
+    let imageName: String // <-- aggiunto campo imageName
 
-    // Titolo visualizzato
     var title: String {
         isDiscovered ? (discoveredTitle ?? "Punto di interesse") : "Punto di interesse"
     }
-
     var address: String {
         "\(street) \(streetNumber), \(city), \(province)"
     }
-
-    // Coordinate come CLLocationCoordinate2D (utile per MapKit)
     var coordinate: CLLocationCoordinate2D? {
         if let lat = latitude, let lon = longitude {
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
@@ -39,19 +32,20 @@ struct POI: Identifiable, Hashable {
         return nil
     }
 
-    // Inizializzatore aggiornato
     init(
         street: String,
         streetNumber: String,
         city: String,
         province: String,
-        diaryPlaceName: String,       // <--- nuovo campo obbligatorio
+        diaryPlaceName: String,
         isDiscovered: Bool = false,
         discoveredTitle: String? = nil,
         photo: UIImage? = nil,
-        photoPath: String? = nil,     // <--- nuovo campo opzionale
+        photoPath: String? = nil,
         latitude: Double? = nil,
-        longitude: Double? = nil
+        longitude: Double? = nil,
+        discoveredDate: Date? = nil,
+        imageName: String // <-- aggiunto parametro
     ) {
         self.id = UUID()
         self.street = street
@@ -65,5 +59,7 @@ struct POI: Identifiable, Hashable {
         self.photo = photo
         self.latitude = latitude
         self.longitude = longitude
+        self.discoveredDate = discoveredDate
+        self.imageName = imageName // <-- assegnazione
     }
 }

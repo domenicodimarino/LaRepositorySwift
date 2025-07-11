@@ -18,7 +18,6 @@ class POIViewModel: ObservableObject {
         guard let index = mappedPOIs.firstIndex(where: { $0.id == id }) else { return }
         let oldPOI = mappedPOIs[index]
 
-        // Trova il titolo dal diario tramite diaryPlaceName
         let nuovoTitolo: String
         if let place = PlacesData.shared.places.first(where: { $0.name == oldPOI.diaryPlaceName }) {
             nuovoTitolo = place.name
@@ -26,9 +25,9 @@ class POIViewModel: ObservableObject {
             nuovoTitolo = "Monumento di \(nomeUtente)"
         }
 
-        // Salva la foto su disco
         guard let photoPath = saveImageToDisk(photo, for: id) else { return }
 
+        let now = Date()
         let updatedPOI = MappedPOI(
             id: oldPOI.id,
             title: nuovoTitolo,
@@ -39,12 +38,14 @@ class POIViewModel: ObservableObject {
             diaryPlaceName: oldPOI.diaryPlaceName,
             isDiscovered: true,
             discoveredTitle: nuovoTitolo,
-            photoPath: photoPath
+            photoPath: photoPath,
+            discoveredDate: now,
+            imageName: oldPOI.imageName // <-- AGGIUNTO!
         )
         mappedPOIs[index] = updatedPOI
-        mappedPOIs = Array(mappedPOIs) // Forza il refresh SwiftUI
+        mappedPOIs = Array(mappedPOIs)
         badgeManager.updateBadgeForDiscoveredPOI(city: city, poiID: oldPOI.id)
-        persistDiscoveredPOI(id: id, photoPath: photoPath, title: nuovoTitolo)
+        persistDiscoveredPOI(id: id, photoPath: photoPath, title: nuovoTitolo, discoveredDate: now)
     }
 
     // MARK: - Persistance
@@ -55,14 +56,15 @@ class POIViewModel: ObservableObject {
         let id: UUID
         let photoPath: String
         let title: String
+        let discoveredDate: Date?
     }
 
-    private func persistDiscoveredPOI(id: UUID, photoPath: String, title: String) {
+    private func persistDiscoveredPOI(id: UUID, photoPath: String, title: String, discoveredDate: Date?) {
         var saved = loadPersistedDiscoveredPOIs()
         if let idx = saved.firstIndex(where: { $0.id == id }) {
-            saved[idx] = DiscoveredPOIData(id: id, photoPath: photoPath, title: title)
+            saved[idx] = DiscoveredPOIData(id: id, photoPath: photoPath, title: title, discoveredDate: discoveredDate)
         } else {
-            saved.append(DiscoveredPOIData(id: id, photoPath: photoPath, title: title))
+            saved.append(DiscoveredPOIData(id: id, photoPath: photoPath, title: title, discoveredDate: discoveredDate))
         }
         if let data = try? JSONEncoder().encode(saved) {
             UserDefaults.standard.set(data, forKey: discoveredKey)
@@ -90,7 +92,9 @@ class POIViewModel: ObservableObject {
                     diaryPlaceName: poi.diaryPlaceName,
                     isDiscovered: true,
                     discoveredTitle: found.title,
-                    photoPath: found.photoPath
+                    photoPath: found.photoPath,
+                    discoveredDate: found.discoveredDate,
+                    imageName: poi.imageName // <-- AGGIUNTO!
                 )
             } else {
                 return poi
