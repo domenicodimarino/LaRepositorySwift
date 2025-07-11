@@ -449,7 +449,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            MapTab(viewModel: poiViewModel, badgeManager: badgeManager)
+            MapTab(viewModel: poiViewModel, badgeManager: badgeManager, avatarViewModel: viewModel)
                 .environmentObject(locationManager)
                 .tabItem {
                     Image(systemName: "map")

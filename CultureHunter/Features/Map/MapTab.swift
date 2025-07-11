@@ -4,6 +4,7 @@ import CoreLocation
 struct MapTab: View {
     @ObservedObject var viewModel: POIViewModel
     @ObservedObject var badgeManager: BadgeManager
+    @ObservedObject var avatarViewModel: AvatarViewModel
 
     @State private var trackingState: TrackingState = .none
     @StateObject private var locationManager = LocationManager()
@@ -19,6 +20,7 @@ struct MapTab: View {
                 CustomMapView(
                     trackingState: $trackingState,
                     mappedPOIs: viewModel.mappedPOIs,
+                    avatarViewModel: avatarViewModel,
                     onPOISelected: { poi in
                         selectedPOI = poi
                         showPhotoButton = shouldShowPhotoButton(for: poi)
