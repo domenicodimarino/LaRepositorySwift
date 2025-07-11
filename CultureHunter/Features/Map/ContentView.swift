@@ -16,7 +16,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.646993,
             longitude: 14.703472,
-            imageName: "foto_grige/torre_di_cetara"
+            imageName: "torre_di_cetara"
         ),
         POI(
             street: "Castello di Arechi, Fossato degli Aragonesi",
@@ -30,7 +30,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.684451,
             longitude: 14.754735,
-            imageName: "foto_grige/castello_arechi"
+            imageName: "castello_arechi"
         ),
         POI(
             street: "Giardino della Minerva",
@@ -44,7 +44,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.681106,
             longitude: 14.753674,
-            imageName: "poi_locked"
+            imageName: "giardino_minerva"
         ),
         POI(
             street: "Porto di Salerno, Molo Manfredi",
@@ -58,7 +58,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.671693,
             longitude: 14.737993,
-            imageName: "poi_locked"
+            imageName: "porto_salerno"
         ),
         POI(
             street: "Chiesa di San Giorgio, Via Duomo",
@@ -72,7 +72,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.678821,
             longitude: 14.758956,
-            imageName: "poi_locked"
+            imageName: "chiesa_sangiorgio"
         ),
         POI(
             street: "Piazza della Libertà",
@@ -86,7 +86,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.676276,
             longitude: 14.753785,
-            imageName: "poi_locked"
+            imageName: "piazza_liberta"
         ),
         POI(
             street: "Museo Diocesano San Matteo, Largo Plebiscito",
@@ -100,7 +100,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.680618,
             longitude: 14.760391,
-            imageName: "poi_locked"
+            imageName: "museo_diocesano_salerno"
         ),
         POI(
             street: "Cattedrale di Salerno - Duomo, Via Nicola Monterisi",
@@ -114,7 +114,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.680065,
             longitude: 14.760362,
-            imageName: "poi_locked"
+            imageName: "duomo_salerno"
         ),
         POI(
             street: "Chiesa di Saragnano",
@@ -128,7 +128,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.680596,
             longitude: 14.738688,
-            imageName: "poi_locked"
+            imageName: "saragnano"
         ),
         POI(
             street: "Chiesa del Monte dei Morti",
@@ -142,7 +142,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.680833,
             longitude: 14.760699,
-            imageName: "poi_locked"
+            imageName: "chiesa_monte_morti"
         ),
         POI(
             street: "Teatro Verdi, Piazza Matteo Luciani",
@@ -156,7 +156,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.67921,
             longitude: 14.75267,
-            imageName: "poi_locked"
+            imageName: "teatro_verdi"
         ),
         POI(
             street: "Via Velia",
@@ -170,7 +170,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.679625,
             longitude: 14.764848,
-            imageName: "poi_locked"
+            imageName: "velia"
         ),
         POI(
             street: "Museo dello Sbarco e Salerno Capitale",
@@ -184,7 +184,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.64696,
             longitude: 14.817397,
-            imageName: "poi_locked"
+            imageName: "museo_sbarco"
         ),
         POI(
             street: "Museo virtuale della scuola medica salernitana",
@@ -198,7 +198,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.679046,
             longitude: 14.760005,
-            imageName: "poi_locked"
+            imageName: "museo_virtuale"
         ),
         POI(
             street: "Museo Archeologico Provinciale, Via San Benedetto",
@@ -212,7 +212,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.678984,
             longitude: 14.762344,
-            imageName: "poi_locked"
+            imageName: "museo_archeologico"
         ),
         POI(
             street: "Chiesa della Santissima Annunziata, Via Luigi Einaudi",
@@ -226,7 +226,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.679349,
             longitude: 14.753966,
-            imageName: "poi_locked"
+            imageName: "chiesa_ssannunziata"
         ),
         POI(
             street: "Parrocchia di San Pietro Apostolo, Corso Garibaldi",
@@ -240,7 +240,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.64708,
             longitude: 14.701778,
-            imageName: "poi_locked"
+            imageName: "chiesa_sanpietro"
         ),
         POI(
             street: "Chiesa di Santa Maria di Costantinopoli, Corso di Cetara",
@@ -254,7 +254,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.651286,
             longitude: 14.69749,
-            imageName: "poi_locked"
+            imageName: "costantinopoli"
         ),
         POI(
             street: "Piazza San Francesco",
@@ -268,7 +268,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.647333,
             longitude: 14.700893,
-            imageName: "poi_locked"
+            imageName: "piazza_sanfra"
         ),
         POI(
             street: "Fabbrica Nettuno, Corso Umberto I",
@@ -282,7 +282,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.646787,
             longitude: 14.700531,
-            imageName: "poi_locked"
+            imageName: "fabbrica_nettuno"
         ),
         POI(
             street: "Piazza Eugenio Abbro",
@@ -296,7 +296,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.700247,
             longitude: 14.706409,
-            imageName: "poi_locked"
+            imageName: "caduti"
         ),
         POI(
             street: "Via Alfonso Balzico",
@@ -310,7 +310,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.699917,
             longitude: 14.706942,
-            imageName: "poi_locked"
+            imageName: "duomo_cava"
         ),
         POI(
             street: "Via Armando Diaz",
@@ -324,7 +324,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.70093,
             longitude: 14.707154,
-            imageName: "poi_locked"
+            imageName: "chiesa_sanrocco"
         ),
         POI(
             street: "Giardini di San Giovanni, Via Antonio Nigro",
@@ -338,7 +338,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.698777,
             longitude: 14.709424,
-            imageName: "poi_locked"
+            imageName: "giardini_sangio"
         ),
         POI(
             street: "Via Canonico Aniello Avallone",
@@ -352,7 +352,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.698052,
             longitude: 14.708832,
-            imageName: "poi_locked"
+            imageName: "purgatorio"
         ),
         POI(
             street: "Via Canale",
@@ -366,7 +366,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.695756,
             longitude: 14.709451,
-            imageName: "poi_locked"
+            imageName: "santuario"
         ),
         POI(
             street: "Via Enrico de Marinis",
@@ -380,7 +380,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.695935,
             longitude: 14.71124,
-            imageName: "poi_locked"
+            imageName: "madonna_olmo"
         ),
         POI(
             street: "Via Antonio d'Amico",
@@ -394,7 +394,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.68214,
             longitude: 14.689933,
-            imageName: "poi_locked"
+            imageName: "abbazia"
         ),
         POI(
             street: "Strada Provinciale 75",
@@ -408,7 +408,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.685,
             longitude: 14.703707,
-            imageName: "poi_locked"
+            imageName: "chiesa_avvocatella"
         ),
         POI(
             street: "Via Orilia",
@@ -422,7 +422,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.701124,
             longitude: 14.71481,
-            imageName: "poi_locked"
+            imageName: "chiesa_sanlo"
         ),
         POI(
             street: "Viale Francesco Crispi",
@@ -436,7 +436,7 @@ struct ContentView: View {
             photoPath: nil,
             latitude: 40.700793,
             longitude: 14.70529,
-            imageName: "poi_locked"
+            imageName: "villa_comunale"
         ),
         
     ]
