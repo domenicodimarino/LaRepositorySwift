@@ -1,9 +1,3 @@
-//
-//  BadgeView.swift
-//  CultureHunter
-//
-//  Created by Domenico Di Marino on 04/07/25.
-//
 import SwiftUI
 
 struct BadgeView: View {
@@ -47,11 +41,5 @@ struct BadgeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy"
         return formatter.string(from: date)
-    }
-}
-
-struct BadgeView_Previews: PreviewProvider {
-    static var previews: some View {
-        BadgeView(manager: BadgeManager())
     }
 }

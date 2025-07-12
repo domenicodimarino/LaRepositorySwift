@@ -2,19 +2,46 @@ import SwiftUI
 
 struct PlacesList: View {
     let places: [MappedPOI]
+
+    @State private var selectedCity: String = "Tutti"
+
+    // Ricava automaticamente tutte le città presenti
+    private var allCities: [String] {
+        let cities = Set(places.map { $0.city })
+        return ["Tutti"] + cities.sorted()
+    }
+
+    // Filtra i POI per città selezionata
+    private var filteredPlaces: [MappedPOI] {
+        if selectedCity == "Tutti" {
+            return places
+        } else {
+            return places.filter { $0.city == selectedCity }
+        }
+    }
     
     var body: some View {
         NavigationView {
-            List(places) { place in
-                if place.isDiscovered {
-                    NavigationLink(destination: DiaryView(poi: place)) {
-                        PlacesListRow(place: place)
+            VStack {
+                Picker("Filtra città", selection: $selectedCity) {
+                    ForEach(allCities, id: \.self) { city in
+                        Text(city).tag(city)
                     }
-                } else {
-                    PlacesListRow(place: place)
-                        .contentShape(Rectangle())
-                        .disabled(true)
                 }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal)
+                List(filteredPlaces) { place in
+                    if place.isDiscovered {
+                        NavigationLink(destination: DiaryView(poi: place)) {
+                            PlacesListRow(place: place)
+                        }
+                    } else {
+                        PlacesListRow(place: place)
+                            .contentShape(Rectangle())
+                            .disabled(true)
+                    }
+                }
+                .listStyle(PlainListStyle())
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
