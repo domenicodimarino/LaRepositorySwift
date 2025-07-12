@@ -52,20 +52,39 @@ struct AvatarSpriteKitView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: SKView, context: Context) {
-        // Ottimizzazione: aggiorniamo solo se l'avatar è effettivamente cambiato
-        let currentAvatar = context.coordinator.scene?.avatar
-        let newAvatar = viewModel.avatar
-        
-        // Confrontiamo gli attributi rilevanti
-        if currentAvatar?.gender != newAvatar.gender ||
-           currentAvatar?.head != newAvatar.head ||
-           currentAvatar?.hair != newAvatar.hair ||
-           currentAvatar?.skin != newAvatar.skin ||
-           currentAvatar?.shirt != newAvatar.shirt ||
-           currentAvatar?.pants != newAvatar.pants ||
-           currentAvatar?.shoes != newAvatar.shoes ||
-           currentAvatar?.eyes != newAvatar.eyes {
-            context.coordinator.scene?.updateAvatar(newAvatar)
+        if let scene = uiView.scene as? AvatarScene {
+            // Debug dell'animazione
+            print("🎭 AvatarSpriteKitView - Animation: \(initialAnimation), Direction: \(initialDirection)")
+            
+            // Ottimizzazione: aggiorniamo solo se l'avatar è effettivamente cambiato
+            let currentAvatar = context.coordinator.scene?.avatar
+            let newAvatar = viewModel.avatar
+            
+            // Confrontiamo gli attributi rilevanti
+            if currentAvatar?.gender != newAvatar.gender ||
+               currentAvatar?.head != newAvatar.head ||
+               currentAvatar?.hair != newAvatar.hair ||
+               currentAvatar?.skin != newAvatar.skin ||
+               currentAvatar?.shirt != newAvatar.shirt ||
+               currentAvatar?.pants != newAvatar.pants ||
+               currentAvatar?.shoes != newAvatar.shoes ||
+               currentAvatar?.eyes != newAvatar.eyes {
+                print("👕 Aggiornamento avatar")
+                context.coordinator.scene?.updateAvatar(newAvatar)
+            }
+            
+            // AGGIUNTA: Forza l'animazione ogni volta
+            if scene.currentAnimation != initialAnimation {
+                print("🔄 Cambio animazione da \(scene.currentAnimation) a \(initialAnimation)")
+                scene.changeAnimation(to: initialAnimation)
+            }
+            
+            if scene.currentDirection != initialDirection {
+                print("🧭 Cambio direzione da \(scene.currentDirection) a \(initialDirection)")
+                scene.changeDirection(to: initialDirection)
+            }
+        } else {
+            print("❌ Scene non trovata in updateUIView")
         }
     }
     
