@@ -57,6 +57,8 @@ final class AvatarScene: SKScene {
     private var timer: Timer?
     private var textureCache: [String: SKTexture] = [:]
     
+        private let containerNode = SKNode()
+    
     // MARK: - Initialization
     
     /// Crea una nuova scena dell'avatar
@@ -76,11 +78,18 @@ final class AvatarScene: SKScene {
     // MARK: - Scene Lifecycle
     
     override func didMove(to view: SKView) {
-        backgroundColor = .clear
-        configureNodes()
-        setupNodes()
-        startAnimation(for: .idle)
-    }
+            backgroundColor = .clear
+            
+            // Aggiungi il container node alla scena
+            addChild(containerNode)
+            
+            // Centra il container
+            containerNode.position = CGPoint(x: size.width/2, y: size.height/2)
+            
+            configureNodes()
+            setupNodes()
+            startAnimation(for: .idle)
+        }
     
     deinit {
         stopAnimation()
@@ -103,29 +112,29 @@ final class AvatarScene: SKScene {
     
     /// Posiziona e configura i nodi nell'ordine corretto
     private func setupNodes() {
-        // Centro della scena per tutti i nodi
-        let center = CGPoint(x: size.width / 2, y: size.height / 2)
-        
-        // Configurazione ordinata dei nodi con zPosition
-        let nodeConfigs: [(node: SKSpriteNode, zPosition: CGFloat)] = [
-            (bodyNode, 0),
-            (pantsNode, 1),
-            (shoesNode, 2),
-            (shirtNode, 3),
-            (headNode, 4),
-            (eyesNode, 5),
-            (hairNode, 6)
-        ]
-        
-        // Applica configurazione e aggiungi alla scena
-        for (node, zPosition) in nodeConfigs {
-            node.position = center
-            node.zPosition = zPosition
-            addChild(node)
+            // Centro relativo al container (0,0) invece che alla scena
+            let center = CGPoint.zero
+            
+            // Configurazione ordinata dei nodi con zPosition
+            let nodeConfigs: [(node: SKSpriteNode, zPosition: CGFloat)] = [
+                (bodyNode, 0),
+                (pantsNode, 1),
+                (shoesNode, 2),
+                (shirtNode, 3),
+                (headNode, 4),
+                (eyesNode, 5),
+                (hairNode, 6)
+            ]
+            
+            // Applica configurazione e aggiungi al container
+            for (node, zPosition) in nodeConfigs {
+                node.position = center
+                node.zPosition = zPosition
+                containerNode.addChild(node)  // Aggiunto al container invece che alla scena
+            }
+            
+            updateTextures()
         }
-        
-        updateTextures()
-    }
     
     // MARK: - Texture Management
     

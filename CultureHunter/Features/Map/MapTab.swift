@@ -31,24 +31,7 @@ struct MapTab: View {
                 ProgressView("Caricamento POI sulla mappa…")
                     .edgesIgnoringSafeArea(.top)
             }
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        trackingState = .follow
-                    }) {
-                        Image(systemName: "location.fill")
-                            .font(.title)
-                            .padding()
-                            .background(Color(.systemBackground).opacity(0.8))
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
-                    }
-                    .padding(.top, 70)
-                    .padding(.trailing, 14)
-                }
-                Spacer()
-            }
+            
             if showPhotoButton, let poi = selectedPOI, !poi.isDiscovered {
                 VStack {
                     Spacer()
