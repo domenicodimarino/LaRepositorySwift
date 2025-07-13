@@ -5,6 +5,20 @@ import UserNotifications
 struct ContentView: View {
     let poiList = [
         POI(
+        street: "Via Giuseppe Armenante",
+        streetNumber: "21",
+        city: "Cava de' Tirreni",
+        province: "Salerno",
+        diaryPlaceName: "Casa mia",
+        isDiscovered: false,
+        discoveredTitle: nil,
+        photo: nil,
+        photoPath: nil,
+        latitude: 40.70355755997264,
+        longitude: 14.690757149236486,
+        imageName: "casa_mia"
+        ),
+        POI(
             street: "Via Lannio",
             streetNumber: "2",
             city: "Cetara",

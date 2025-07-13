@@ -30,6 +30,14 @@ class PlacesData {
 
     let places: [Place] = [
         Place(
+            name: "Punto prova casa mia",
+            imageName: "poi_locked",
+            history: "La Torre di Cetara, detta anche “Torre Vicereale”, fu costruita tra il 1551 e il 1565 per volontà del viceré di Napoli, con l’obiettivo di difendere il borgo dalle incursioni di pirati saraceni e barbareschi. Situata a picco sul mare, la torre aveva funzioni di avvistamento e segnalazione: tramite fuochi e segnali luminosi comunicava con le altre torri costiere in caso di pericolo. La struttura, massiccia e a pianta irregolare, era dotata di cannoni e di spazi per la guarnigione. Nel corso dei secoli perse la sua funzione militare ma rimase simbolo di protezione per la comunità locale. Oggi la Torre è uno dei monumenti più rappresentativi di Cetara e ospita mostre, eventi culturali e installazioni artistiche. All’interno si trovano pannelli informativi e materiali che raccontano la storia della torre e delle difese costiere della Costiera Amalfitana. Dalla terrazza si gode di una splendida vista sul Golfo di Salerno e sul borgo marinaro, rendendo la Torre di Cetara una meta imperdibile per chi visita la zona.",
+            yearBuilt: "1551-1565",
+            location: "Cava de' Tirreni, Salerno",
+            audioName: nil
+        ),
+        Place(
             name: "Torre di Cetara",
             imageName: "poi_locked",
             history: "La Torre di Cetara, detta anche “Torre Vicereale”, fu costruita tra il 1551 e il 1565 per volontà del viceré di Napoli, con l’obiettivo di difendere il borgo dalle incursioni di pirati saraceni e barbareschi. Situata a picco sul mare, la torre aveva funzioni di avvistamento e segnalazione: tramite fuochi e segnali luminosi comunicava con le altre torri costiere in caso di pericolo. La struttura, massiccia e a pianta irregolare, era dotata di cannoni e di spazi per la guarnigione. Nel corso dei secoli perse la sua funzione militare ma rimase simbolo di protezione per la comunità locale. Oggi la Torre è uno dei monumenti più rappresentativi di Cetara e ospita mostre, eventi culturali e installazioni artistiche. All’interno si trovano pannelli informativi e materiali che raccontano la storia della torre e delle difese costiere della Costiera Amalfitana. Dalla terrazza si gode di una splendida vista sul Golfo di Salerno e sul borgo marinaro, rendendo la Torre di Cetara una meta imperdibile per chi visita la zona.",
