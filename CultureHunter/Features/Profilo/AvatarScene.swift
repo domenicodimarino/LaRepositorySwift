@@ -57,7 +57,7 @@ final class AvatarScene: SKScene {
     private var timer: Timer?
     private var textureCache: [String: SKTexture] = [:]
     
-        private let containerNode = SKNode()
+    let containerNode = SKNode()
     
     // MARK: - Initialization
     

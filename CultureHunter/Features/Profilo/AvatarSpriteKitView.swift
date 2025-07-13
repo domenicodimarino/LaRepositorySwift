@@ -19,6 +19,8 @@ struct AvatarSpriteKitView: UIViewRepresentable {
     /// Dimensione personalizzabile della vista (default 128x128)
     var size: CGSize = CGSize(width: 128, height: 128)
     
+    var scale: CGFloat = 1.0
+    
     /// Animazione iniziale dell'avatar
     var initialAnimation: AvatarAnimation = .idle
     
@@ -47,6 +49,11 @@ struct AvatarSpriteKitView: UIViewRepresentable {
         
         // Salvataggio del riferimento alla scena nel coordinator
         context.coordinator.scene = scene
+        
+        // Applica scala alla scena se necessario
+                if scale != 1.0 {
+                    scene.containerNode.setScale(scale)
+                }
         
         return skView
     }
@@ -91,6 +98,12 @@ struct AvatarSpriteKitView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator {
         return Coordinator()
     }
+    // Aggiungi un metodo per creare una vista ridimensionata
+        func withScale(_ scale: CGFloat) -> AvatarSpriteKitView {
+            var view = self
+            view.scale = scale
+            return view
+        }
     
     // MARK: - Coordinator
     

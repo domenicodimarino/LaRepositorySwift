@@ -155,7 +155,7 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: animation,
                 initialDirection: direction
             )
-            .withSize(width: 128, height: 128)
+            .withSize(width: 64, height: 64)
             
             hostingController.rootView = avatarView
         }
@@ -185,7 +185,7 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: animation,
                 initialDirection: direction
             )
-            .withSize(width: 128, height: 128)
+            .withSize(width: 64, height: 64)
         }
     }
     
@@ -213,27 +213,28 @@ struct CustomMapView: UIViewRepresentable {
         }
         
         func recreateAvatarView(in annotationView: MKAnnotationView) {
-                    // Rimuovi tutte le subviews esistenti
-                    for subview in annotationView.subviews {
-                        subview.removeFromSuperview()
-                    }
-                    
-                    // Crea un nuovo container view
-                    let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 128, height: 128))
-                    containerView.backgroundColor = .clear
-                    
-                    // Crea un nuovo avatar view
-                    let avatarView = AvatarSpriteKitView(
-                        viewModel: self.parent.avatarViewModel,
-                        initialAnimation: self.parent.userState.isMoving ? .walk : .idle,
-                        initialDirection: self.parent.directionFromHeading(self.parent.userState.heading)
-                    )
-                    .withSize(width: 128, height: 128)
+            // Rimuovi tutte le subviews esistenti
+                for subview in annotationView.subviews {
+                    subview.removeFromSuperview()
+                }
+                
+                // Usa dimensioni più piccole per la mappa
+                let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 64, height: 64))
+                containerView.backgroundColor = .clear
+                
+                // Usa l'avatar con scala 0.5 (metà dimensione)
+                let avatarView = AvatarSpriteKitView(
+                    viewModel: self.parent.avatarViewModel,
+                    initialAnimation: self.parent.userState.isMoving ? .walk : .idle,
+                    initialDirection: self.parent.directionFromHeading(self.parent.userState.heading)
+                )
+                .withSize(width: 128, height: 128)  // Manteniamo la dimensione originale
+                .withScale(1)  // Ma applichiamo una scala di 0.5x
                     
                     // Configura il nuovo hosting controller
                     let hostingController = UIHostingController(rootView: avatarView)
                     hostingController.view.backgroundColor = .clear
-                    hostingController.view.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
+                    hostingController.view.frame = CGRect(x: 0, y: 0, width: 64, height: 64)
                     hostingController.view.autoresizingMask = []
                     hostingController.view.clipsToBounds = false
                     
@@ -254,34 +255,37 @@ struct CustomMapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             // Personalizza l'indicatore utente standard
             if annotation is MKUserLocation {
-                            let reuseId = "userLocationView"
-                            var view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
-                            
-                            if view == nil {
-                                // IMPORTANTE: imposta una dimensione fissa e maggiore per l'annotation view
-                                view = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-                                view?.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
-                                
-                                // Inizializza con il metodo comune
-                                recreateAvatarView(in: view!)
-                            } else {
-                                view?.annotation = annotation
-                                
-                                // IMPORTANTE: forziamo una dimensione anche quando viene riciclata
-                                view?.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
-                                
-                                // Ricrea anche durante il riciclo
-                                recreateAvatarView(in: view!)
-                            }
-                            
-                            // Disabilita il comportamento standard della mappa
-                            view?.canShowCallout = false
-                            
-                            // Questo è importante per mantenere l'avatar centrato sulla posizione
-                            view?.centerOffset = CGPoint(x: 0, y: 0)
-                            
-                            return view
-                        }
+                let reuseId = "userLocationView"
+                var view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
+                
+                if view == nil {
+                    // IMPORTANTE: imposta una dimensione fissa per l'annotation view
+                    view = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+                    view?.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
+                    
+                    // Inizializza con il metodo comune
+                    recreateAvatarView(in: view!)
+                } else {
+                    view?.annotation = annotation
+                    
+                    // Forziamo una dimensione anche quando viene riciclata
+                    view?.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
+                    
+                    // Ricrea anche durante il riciclo
+                    recreateAvatarView(in: view!)
+                }
+                
+                // Disabilita il comportamento standard della mappa
+                view?.canShowCallout = false
+                
+                // Questo è importante per mantenere l'avatar centrato sulla posizione
+                view?.centerOffset = CGPoint(x: 0, y: 0)
+                
+                // NUOVO: Imposta zPriority minima per l'avatar utente
+                view?.zPriority = .min
+                
+                return view
+            }
             // Gestione POI
             else if let poiAnnotation = annotation as? MappedPOIAnnotation {
                 if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
@@ -294,6 +298,11 @@ struct CustomMapView: UIViewRepresentable {
                         view?.annotation = annotation
                     }
                     view?.image = photo.fixedOrientation().resizedToPin()
+                    
+                    // NUOVO: Imposta zPriority massima per i POI
+                    view?.zPriority = .max
+                    view?.displayPriority = .required
+                    
                     return view
                 } else {
                     let identifier = "POIMarker"
@@ -306,6 +315,11 @@ struct CustomMapView: UIViewRepresentable {
                     markerView?.glyphText = "?"
                     markerView?.glyphImage = nil
                     markerView?.annotation = annotation
+                    
+                    // NUOVO: Imposta zPriority massima per i POI
+                    markerView?.zPriority = .max
+                    markerView?.displayPriority = .required
+                    
                     return markerView
                 }
             }
@@ -336,7 +350,7 @@ struct CustomMapView: UIViewRepresentable {
                                 initialAnimation: animation,
                                 initialDirection: direction
                             )
-                            .withSize(width: 128, height: 128)
+                            .withSize(width: 64, height: 64)
                             
                             hostingController.rootView = avatarView
                         }
