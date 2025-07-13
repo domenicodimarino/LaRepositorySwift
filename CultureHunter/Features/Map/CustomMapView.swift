@@ -62,23 +62,41 @@ struct CustomMapView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Aggiorna la modalità di tracciamento
+        
         switch trackingState {
-        case .follow:
-            if uiView.userTrackingMode != .follow {
-                uiView.setUserTrackingMode(.follow, animated: true)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    centerCameraOnUser(uiView)
+            case .follow:
+                if uiView.userTrackingMode != .follow {
+                    // Verifica che la posizione utente sia disponibile
+                    if let userLocation = uiView.userLocation.location {
+                        // Imposta prima la camera e DOPO attiva il tracking
+                        let camera = MKMapCamera(
+                            lookingAtCenter: userLocation.coordinate,
+                            fromDistance: 150,  // Altitudine in metri
+                            pitch: 65,          // Angolo di inclinazione
+                            heading: uiView.camera.heading // Mantieni la direzione attuale
+                        )
+                        
+                        // Importante: prima anima la camera verso l'utente
+                        uiView.setCamera(camera, animated: true)
+                        
+                        // Dopo un breve delay, attiva il tracking per mantenere la vista centrata
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            if self.trackingState == .follow {  // Verifica che l'utente non abbia cambiato idea
+                                uiView.setUserTrackingMode(.follow, animated: false)
+                            }
+                        }
+                    } else {
+                        // Se la posizione utente non è disponibile, attiva solo il tracking
+                        // MapKit si occuperà di centrare quando la posizione sarà disponibile
+                        uiView.setUserTrackingMode(.follow, animated: true)
+                    }
+                }
+            case .none:
+                if uiView.userTrackingMode != .none {
+                    uiView.setUserTrackingMode(.none, animated: true)
                 }
             }
-        case .none:
-            if uiView.userTrackingMode != .none {
-                uiView.setUserTrackingMode(.none, animated: true)
-                let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
-                let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: uiView.camera.heading)
-                uiView.setCamera(camera, animated: true)
-            }
-        }
+        
         // Controllo del movimento dell'utente
         if let userLocation = uiView.userLocation.location {
             // Determina se l'utente è in movimento
@@ -200,38 +218,53 @@ struct CustomMapView: UIViewRepresentable {
         }
     }
     
-    private func centerCameraOnUser(_ mapView: MKMapView) {
-        if let userLocation = mapView.userLocation.location {
-            let camera = MKMapCamera(
-                lookingAtCenter: userLocation.coordinate,
-                fromDistance: 150,
-                pitch: 65,
-                heading: mapView.camera.heading
-            )
-            mapView.setCamera(camera, animated: true)
-        }
-    }
-    
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: CustomMapView
         private var isRegionChangeFromUserInteraction = false
         var lastAvatarHash: Int = 0
         var avatarHostingController: UIHostingController<AvatarSpriteKitView>?
+        private var lastMapCenterTimestamp: Date?
+            private var userInteractionTimer: Timer?
         
         init(_ parent: CustomMapView) {
             self.parent = parent
             super.init()
         }
         
-        func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
-            isRegionChangeFromUserInteraction = mapViewIsUserInteraction(mapView)
-            if self.parent.trackingState == .follow && isRegionChangeFromUserInteraction {
-                mapView.setUserTrackingMode(.none, animated: true)
-                DispatchQueue.main.async {
-                    self.parent.trackingState = .none
+        // Metodo chiamato quando la regione della mappa sta per cambiare
+            func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+                // Usa un metodo più diretto per rilevare il cambiamento manuale
+                if mapView.isUserInteractionEnabled {
+                    lastMapCenterTimestamp = Date()
+                    
+                    // Avvia un timer breve per determinare se l'utente sta interagendo
+                    userInteractionTimer?.invalidate()
+                    userInteractionTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { [weak self] _ in
+                        guard let self = self else { return }
+                        
+                        // Se siamo in modalità follow, disattivala
+                        if self.parent.trackingState == .follow {
+                            DispatchQueue.main.async {
+                                mapView.setUserTrackingMode(.none, animated: false)
+                                self.parent.trackingState = .none
+                            }
+                        }
+                    }
                 }
             }
-        }
+        
+        // Aggiungi questo metodo per distinguere meglio le interazioni utente
+            func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+                // Se la regione è cambiata di recente per interazione utente
+                if let timestamp = lastMapCenterTimestamp,
+                   Date().timeIntervalSince(timestamp) < 0.5, // Cambiato negli ultimi 0.5 secondi
+                   parent.trackingState == .follow {
+                    
+                    DispatchQueue.main.async {
+                        self.parent.trackingState = .none
+                    }
+                }
+            }
         
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
             if let annotation = view.annotation as? MappedPOIAnnotation {
@@ -352,18 +385,7 @@ struct CustomMapView: UIViewRepresentable {
                 }
             }
         }
-        private func mapViewIsUserInteraction(_ mapView: MKMapView) -> Bool {
-            for view in mapView.subviews {
-                if let gestureRecognizers = view.gestureRecognizers {
-                    for recognizer in gestureRecognizers {
-                        if recognizer.state == .began || recognizer.state == .ended {
-                            return true
-                        }
-                    }
-                }
-            }
-            return false
-        }
+        
     }
 }
 
