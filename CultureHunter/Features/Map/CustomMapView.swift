@@ -83,7 +83,7 @@ struct CustomMapView: UIViewRepresentable {
         if let userLocation = uiView.userLocation.location {
             // Determina se l'utente è in movimento
             let speed = userLocation.speed
-            let isMoving = speed > 0.25 // soglia di movimento (in m/s)
+            let isMoving = speed > 0.4 // soglia di movimento (in m/s)
             
             // Aggiorna l'heading se disponibile
             var heading = userState.heading
@@ -316,7 +316,7 @@ struct CustomMapView: UIViewRepresentable {
             if let location = userLocation.location {
                 // Determina se l'utente è in movimento
                 let speed = location.speed
-                let isMoving = speed > 0.25
+                let isMoving = speed > 0.4
                 
                 print("🚶 Speed: \(speed) m/s, Course: \(location.course), Moving: \(isMoving)")
                 
