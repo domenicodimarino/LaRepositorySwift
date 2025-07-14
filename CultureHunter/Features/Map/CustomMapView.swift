@@ -4,19 +4,34 @@ import MapKit
 struct UserMovementState {
     var isMoving: Bool = false
     var heading: Double = 0.0
+    var cameraHeading: Double = 0.0
+    
+    func relativeDirection() -> AvatarDirection {
+            // Calcola l'angolo relativo tra la direzione del movimento e l'orientamento della telecamera
+            let relativeAngle = (heading - cameraHeading + 360).truncatingRemainder(dividingBy: 360)
+            
+            switch relativeAngle {
+            case 315...360, 0..<45: return .up
+            case 45..<135: return .right
+            case 135..<225: return .down
+            case 225..<315: return .left
+            default: return .down
+            }
+        }
+    
+    func currentAnimation() -> AvatarAnimation {
+        isMoving ? .walk : .idle
+    }
 }
 
-// Versione migliorata e semplificata di CustomMapView
 struct CustomMapView: UIViewRepresentable {
     @Binding var trackingState: TrackingState
     var mappedPOIs: [MappedPOI]
     @ObservedObject var avatarViewModel: AvatarViewModel
-    var onPOISelected: ((MappedPOI) -> Void)? = nil
+    var onPOISelected: ((MappedPOI) -> Void)?
     
-    // Stato del movimento dell'utente
-    @State private var userState = UserMovementState()
-    
-    let configuration: MKStandardMapConfiguration
+    // Rimosso @State e gestito nel Coordinator
+    private let configuration: MKStandardMapConfiguration
     
     init(trackingState: Binding<TrackingState>,
          mappedPOIs: [MappedPOI],
@@ -27,12 +42,13 @@ struct CustomMapView: UIViewRepresentable {
         self.avatarViewModel = avatarViewModel
         self.onPOISelected = onPOISelected
         
-        configuration = MKStandardMapConfiguration(elevationStyle: .realistic)
-        configuration.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
+        var config = MKStandardMapConfiguration(elevationStyle: .realistic)
+        config.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
+        configuration = config
     }
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(parent: self)
     }
     
     func makeUIView(context: Context) -> MKMapView {
@@ -40,26 +56,19 @@ struct CustomMapView: UIViewRepresentable {
         mapView.preferredConfiguration = configuration
         mapView.isPitchEnabled = false
         mapView.isRotateEnabled = true
-        
-        // Mostra la posizione dell'utente
         mapView.showsUserLocation = true
-        
-        // Usa il pulsante nativo di MapKit
         mapView.showsUserTrackingButton = true
         
-        // Posiziona il pulsante in alto a destra (opzionale)
         if let userTrackingButton = mapView.subviews.first(where: { $0 is MKUserTrackingButton }) {
             userTrackingButton.frame = CGRect(x: mapView.frame.width - 55, y: 60, width: 44, height: 44)
         }
         
         mapView.delegate = context.coordinator
         
-        // Camera 3D iniziale
         let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
         let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
         mapView.setCamera(camera, animated: false)
         
-        // Aggiungi POI
         for poi in mappedPOIs {
             let annotation = MappedPOIAnnotation(poi: poi)
             mapView.addAnnotation(annotation)
@@ -68,258 +77,95 @@ struct CustomMapView: UIViewRepresentable {
         return mapView
     }
     
-    func updateUIView(_ uiView: MKMapView, context: Context) {
-        // Sincronizza lo stato di tracking con la mappa
+    func updateUIView(_ mapView: MKMapView, context: Context) {
+        // Sincronizza lo stato di tracking
         switch trackingState {
-                case .follow:
-                    if uiView.userTrackingMode == .none {
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            
-                            
-                            
-                            if let userAnnotationView = uiView.view(for: uiView.userLocation) {
-                                // Rimuovi e ricrea l'avatar completamente
-                                context.coordinator.recreateAvatarView(in: userAnnotationView)
-                            }
-                        }
-                    }
-                case .none:
-                    if uiView.userTrackingMode != .none {
-                        uiView.setUserTrackingMode(.none, animated: true)
-                    }
-                }
-        
-        // Controllo del movimento dell'utente per l'animazione
-        if let userLocation = uiView.userLocation.location {
-            let speed = userLocation.speed
-            let isMoving = speed > 0.4
-            
-            var heading = userState.heading
-            if userLocation.course >= 0 {
-                heading = userLocation.course
-            }
-            
-            if isMoving != userState.isMoving || abs(heading - userState.heading) > 10 {
-                DispatchQueue.main.async {
-                    self.userState.isMoving = isMoving
-                    self.userState.heading = heading
-                    self.updateUserAnimation(in: uiView, context: context)
+        case .follow where mapView.userTrackingMode == .none:
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if let userAnnotationView = mapView.view(for: mapView.userLocation) {
+                    context.coordinator.recreateAvatarView(in: userAnnotationView)
                 }
             }
+        case .none where mapView.userTrackingMode != .none:
+            mapView.setUserTrackingMode(.none, animated: true)
+        default:
+            break
         }
         
-        // Aggiorna l'avatar se è cambiato
+        // Aggiorna avatar se necessario
         if context.coordinator.lastAvatarHash != avatarViewModel.avatar.hashValue {
             context.coordinator.lastAvatarHash = avatarViewModel.avatar.hashValue
-            updateUserAvatarView(in: uiView, context: context)
+            context.coordinator.updateAvatarView(
+                avatarViewModel: avatarViewModel
+            )
         }
         
-        // Gestione POI (il codice per aggiornare le annotazioni è corretto, lo lascio invariato)
-        let currentAnnotations = uiView.annotations.compactMap { $0 as? MappedPOIAnnotation }
-        let currentIDs = Set(currentAnnotations.map { $0.poi.id })
-        let newIDs = Set(mappedPOIs.map { $0.id })
+        // Aggiorna POI
+        updatePOIs(in: mapView)
+    }
+    
+    private func updatePOIs(in mapView: MKMapView) {
+        let currentAnnotations = mapView.annotations.compactMap { $0 as? MappedPOIAnnotation }
+        let currentIDs = Set(currentAnnotations.map(\.poi.id))
+        let newIDs = Set(mappedPOIs.map(\.id))
         
-        // Aggiungi solo le nuove annotazioni
-        let toAdd = mappedPOIs.filter { !currentIDs.contains($0.id) }
-        for poi in toAdd {
-            let annotation = MappedPOIAnnotation(poi: poi)
-            uiView.addAnnotation(annotation)
-        }
+        // Aggiungi nuove annotazioni
+        mappedPOIs
+            .filter { !currentIDs.contains($0.id) }
+            .map(MappedPOIAnnotation.init)
+            .forEach(mapView.addAnnotation)
         
-        // Rimuovi solo quelle eliminate
-        let toRemove = currentAnnotations.filter { !newIDs.contains($0.poi.id) }
-        uiView.removeAnnotations(toRemove)
+        // Rimuovi annotazioni eliminate
+        currentAnnotations
+            .filter { !newIDs.contains($0.poi.id) }
+            .forEach(mapView.removeAnnotation)
         
-        // Aggiorna annotazioni se cambiano
+        // Aggiorna annotazioni modificate
         for poi in mappedPOIs {
             if let annotation = currentAnnotations.first(where: { $0.poi.id == poi.id }) {
                 let changedPhoto = annotation.poi.photoPath != poi.photoPath
                 let changedState = annotation.poi.isDiscovered != poi.isDiscovered
                 if changedPhoto || changedState {
-                    uiView.removeAnnotation(annotation)
-                    uiView.addAnnotation(MappedPOIAnnotation(poi: poi))
+                    mapView.removeAnnotation(annotation)
+                    mapView.addAnnotation(MappedPOIAnnotation(poi: poi))
                 }
             }
-        }
-    }
-    
-    // FUNZIONE: aggiorna l'animazione dell'avatar
-    private func updateUserAnimation(in mapView: MKMapView, context: Context) {
-        if let hostingController = context.coordinator.avatarHostingController {
-            let direction = directionFromHeading(userState.heading)
-            let animation = userState.isMoving ? AvatarAnimation.walk : AvatarAnimation.idle
-            
-            let avatarView = AvatarSpriteKitView(
-                viewModel: avatarViewModel,
-                initialAnimation: animation,
-                initialDirection: direction
-            )
-            .withSize(width: 128, height: 128)
-            
-            hostingController.rootView = avatarView
-        }
-    }
-    
-    // Funzione per convertire l'heading in direzione
-    private func directionFromHeading(_ heading: Double) -> AvatarDirection {
-        let normalizedHeading = heading < 0 ? heading + 360 : heading
-        
-        switch normalizedHeading {
-        case 315...360, 0..<45: return .up
-        case 45..<135: return .right
-        case 135..<225: return .down
-        case 225..<315: return .left
-        default: return .down
-        }
-    }
-    
-    private func updateUserAvatarView(in mapView: MKMapView, context: Context) {
-        if let hostingController = context.coordinator.avatarHostingController {
-            let direction = directionFromHeading(userState.heading)
-            let animation = userState.isMoving ? AvatarAnimation.walk : AvatarAnimation.idle
-            
-            // Aggiorna la rootView mantenendo le stesse dimensioni
-            hostingController.rootView = AvatarSpriteKitView(
-                viewModel: avatarViewModel,
-                initialAnimation: animation,
-                initialDirection: direction
-            )
-            .withSize(width: 128, height: 128)
         }
     }
     
     class Coordinator: NSObject, MKMapViewDelegate {
-        var parent: CustomMapView
+        private var parent: CustomMapView
+        private var avatarContainer: UIView?
         var lastAvatarHash: Int = 0
         var avatarHostingController: UIHostingController<AvatarSpriteKitView>?
         
-        init(_ parent: CustomMapView) {
+        // Stato movimento gestito nel Coordinator
+        private var userState = UserMovementState()
+        private var cameraHeading: Double = 0.0
+        
+        init(parent: CustomMapView) {
             self.parent = parent
-            super.init()
         }
         
-        // Sincronizza lo stato di tracking quando cambia nella mappa
         func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-            DispatchQueue.main.async {
-                self.parent.trackingState = mode == .none ? .none : .follow
-            }
+            parent.trackingState = mode == .none ? .none : .follow
         }
         
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-            if let annotation = view.annotation as? MappedPOIAnnotation {
-                self.parent.onPOISelected?(annotation.poi)
-            }
+            guard let annotation = view.annotation as? MappedPOIAnnotation else { return }
+            parent.onPOISelected?(annotation.poi)
         }
         
-        func recreateAvatarView(in annotationView: MKAnnotationView) {
-            // Rimuovi tutte le subviews esistenti
-                for subview in annotationView.subviews {
-                    subview.removeFromSuperview()
-                }
-                
-                // Usa dimensioni più piccole per la mappa
-                let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 128, height: 128))
-                containerView.backgroundColor = .clear
-                
-                // Usa l'avatar con scala 0.5 (metà dimensione)
-                let avatarView = AvatarSpriteKitView(
-                    viewModel: self.parent.avatarViewModel,
-                    initialAnimation: self.parent.userState.isMoving ? .walk : .idle,
-                    initialDirection: self.parent.directionFromHeading(self.parent.userState.heading)
-                )
-                .withSize(width: 128, height: 128)
-            
-                    
-                    // Configura il nuovo hosting controller
-                    let hostingController = UIHostingController(rootView: avatarView)
-                    hostingController.view.backgroundColor = .clear
-                    hostingController.view.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
-                    hostingController.view.autoresizingMask = []
-                    hostingController.view.clipsToBounds = false
-                    
-                    // Aggiungi le views
-                    containerView.addSubview(hostingController.view)
-                    annotationView.addSubview(containerView)
-                    
-                    // Centra correttamente
-                    containerView.center = CGPoint(x: annotationView.frame.width / 2, y: annotationView.frame.height / 2)
-                    
-            self.avatarHostingController = hostingController
-            
-                    // Debug
-                    print("🔄 Avatar ricreato con dimensioni: \(hostingController.view.frame.size)")
-                }
-        
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            // Personalizza l'indicatore utente standard
             if annotation is MKUserLocation {
-                let reuseId = "userLocationView"
-                var view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
-                
-                if view == nil {
-                    // IMPORTANTE: imposta una dimensione fissa per l'annotation view
-                    view = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-                    view?.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
-                    
-                    // Inizializza con il metodo comune
-                    recreateAvatarView(in: view!)
-                } else {
-                    view?.annotation = annotation
-                    
-                    // Forziamo una dimensione anche quando viene riciclata
-                    view?.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
-                    
-                    // Ricrea anche durante il riciclo
-                    recreateAvatarView(in: view!)
-                }
-                
-                // Disabilita il comportamento standard della mappa
-                view?.canShowCallout = false
-                
-                // Questo è importante per mantenere l'avatar centrato sulla posizione
-                view?.centerOffset = CGPoint(x: 0, y: 0)
-                
-                // NUOVO: Imposta zPriority minima per l'avatar utente
-                view?.zPriority = .min
-                
-                return view
+                return userLocationView(for: annotation, in: mapView)
             }
-            // Gestione POI
-            else if let poiAnnotation = annotation as? MappedPOIAnnotation {
+            
+            if let poiAnnotation = annotation as? MappedPOIAnnotation {
                 if poiAnnotation.poi.isDiscovered, let photo = poiAnnotation.poi.photo {
-                    let identifier = "POIPhoto"
-                    var view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
-                    if view == nil {
-                        view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-                        view?.canShowCallout = true
-                    } else {
-                        view?.annotation = annotation
-                    }
-                    view?.image = photo.fixedOrientation().resizedToPin()
-                    
-                    // NUOVO: Imposta zPriority massima per i POI
-                    view?.zPriority = .max
-                    view?.displayPriority = .required
-                    
-                    return view
+                    return photoAnnotationView(for: poiAnnotation, photo: photo)
                 } else {
-                    let identifier = "POIMarker"
-                    var markerView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
-                    if markerView == nil {
-                        markerView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-                        markerView?.canShowCallout = true
-                    }
-                    markerView?.markerTintColor = .systemRed
-                    markerView?.glyphText = "?"
-                    markerView?.glyphImage = nil
-                    markerView?.annotation = annotation
-                    
-                    // NUOVO: Imposta zPriority massima per i POI
-                    markerView?.zPriority = .max
-                    markerView?.displayPriority = .required
-                    
-                    return markerView
+                    return markerAnnotationView(for: poiAnnotation)
                 }
             }
             
@@ -327,62 +173,130 @@ struct CustomMapView: UIViewRepresentable {
         }
         
         func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
-            if let location = userLocation.location {
-                let speed = location.speed
-                let isMoving = speed > 0.4
-                
-                if isMoving || self.parent.userState.isMoving != isMoving {
-                    DispatchQueue.main.async {
-                        // Aggiorna lo stato
-                        self.parent.userState.isMoving = isMoving
-                        
-                        if location.course >= 0 {
-                            self.parent.userState.heading = location.course
-                        }
-                        
-                        if let hostingController = self.avatarHostingController {
-                            let direction = self.parent.directionFromHeading(self.parent.userState.heading)
-                            let animation = isMoving ? AvatarAnimation.walk : AvatarAnimation.idle
+            guard let location = userLocation.location else { return }
+            
+            cameraHeading = mapView.camera.heading
+            
+            let speed = location.speed
+            let isMoving = speed > 0.4
+            let heading = location.course >= 0 ? location.course : userState.heading
+            
+            if isMoving != userState.isMoving ||
+                           heading != userState.heading ||
+                           cameraHeading != userState.cameraHeading {
                             
-                            let avatarView = AvatarSpriteKitView(
-                                viewModel: self.parent.avatarViewModel,
-                                initialAnimation: animation,
-                                initialDirection: direction
+                            userState = UserMovementState(
+                                isMoving: isMoving,
+                                heading: heading,
+                                cameraHeading: cameraHeading
                             )
-                            .withSize(width: 128, height: 128)
-                            
-                            hostingController.rootView = avatarView
+                            updateAvatarForMovement()
                         }
+        }
+        func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+                    // Aggiorna l'heading della telecamera quando l'utente ruota la mappa
+                    let newCameraHeading = mapView.camera.heading
+                    if newCameraHeading != cameraHeading {
+                        cameraHeading = newCameraHeading
+                        userState.cameraHeading = cameraHeading
+                        updateAvatarForMovement()
                     }
                 }
-            }
+        
+        private func userLocationView(for annotation: MKAnnotation, in mapView: MKMapView) -> MKAnnotationView {
+            let reuseId = "userLocationView"
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
+                ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
+            
+            view.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
+            view.canShowCallout = false
+            view.centerOffset = .zero
+            view.zPriority = .min
+            
+            recreateAvatarView(in: view)
+            return view
+        }
+        
+        func recreateAvatarView(in annotationView: MKAnnotationView) {
+            annotationView.subviews.forEach { $0.removeFromSuperview() }
+            
+            avatarContainer = UIView(frame: CGRect(x: 0, y: 0, width: 128, height: 128))
+            avatarContainer?.backgroundColor = .clear
+            
+            let avatarView = AvatarSpriteKitView(
+                viewModel: parent.avatarViewModel,
+                initialAnimation: userState.currentAnimation(),
+                initialDirection: userState.relativeDirection()
+            )
+            
+            let hostingController = UIHostingController(rootView: avatarView)
+            hostingController.view.backgroundColor = .clear
+            hostingController.view.frame = avatarContainer?.bounds ?? .zero
+            
+            avatarContainer?.addSubview(hostingController.view)
+            annotationView.addSubview(avatarContainer ?? UIView())
+            avatarContainer?.center = CGPoint(x: annotationView.bounds.midX, y: annotationView.bounds.midY)
+            
+            avatarHostingController = hostingController
+        }
+        
+        func updateAvatarView(avatarViewModel: AvatarViewModel) {
+            let avatarView = AvatarSpriteKitView(
+                viewModel: avatarViewModel,
+                initialAnimation: userState.currentAnimation(),
+                initialDirection: userState.relativeDirection()
+            )
+            
+            avatarHostingController?.rootView = avatarView
+        }
+        
+        private func updateAvatarForMovement() {
+            updateAvatarView(avatarViewModel: parent.avatarViewModel)
+        }
+        
+        private func photoAnnotationView(for annotation: MappedPOIAnnotation, photo: UIImage) -> MKAnnotationView {
+            let identifier = "POIPhoto"
+            let view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+            view.image = photo.fixedOrientation().resizedToPin()
+            view.zPriority = .max
+            view.displayPriority = .required
+            return view
+        }
+        
+        private func markerAnnotationView(for annotation: MappedPOIAnnotation) -> MKMarkerAnnotationView {
+            let identifier = "POIMarker"
+            let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+            view.markerTintColor = .systemRed
+            view.glyphText = "?"
+            view.zPriority = .max
+            view.displayPriority = .required
+            return view
         }
     }
-}
-
-class MappedPOIAnnotation: NSObject, MKAnnotation {
-    let poi: MappedPOI
-    var coordinate: CLLocationCoordinate2D { poi.coordinate }
-    var title: String? { poi.title }
-    init(poi: MappedPOI) { self.poi = poi }
 }
 
 extension UIImage {
     func resizedToPin() -> UIImage {
         let size = CGSize(width: 40, height: 40)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-        self.draw(in: CGRect(origin: .zero, size: size))
-        let result = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return result ?? self
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }
     }
     
     func fixedOrientation() -> UIImage {
-        if imageOrientation == .up { return self }
-        UIGraphicsBeginImageContextWithOptions(size, false, scale)
-        draw(in: CGRect(origin: .zero, size: size))
-        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        return normalizedImage
+        guard imageOrientation != .up else { return self }
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+}
+
+final class MappedPOIAnnotation: NSObject, MKAnnotation {
+    let poi: MappedPOI
+    var coordinate: CLLocationCoordinate2D { poi.coordinate }
+    var title: String? { poi.title }
+    
+    init(poi: MappedPOI) {
+        self.poi = poi
     }
 }
