@@ -219,7 +219,7 @@ struct CustomMapView: UIViewRepresentable {
                 }
                 
                 // Usa dimensioni più piccole per la mappa
-                let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 64, height: 64))
+                let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 128, height: 128))
                 containerView.backgroundColor = .clear
                 
                 // Usa l'avatar con scala 0.5 (metà dimensione)
@@ -228,13 +228,14 @@ struct CustomMapView: UIViewRepresentable {
                     initialAnimation: self.parent.userState.isMoving ? .walk : .idle,
                     initialDirection: self.parent.directionFromHeading(self.parent.userState.heading)
                 )
-                .withSize(width: 128, height: 128)  // Manteniamo la dimensione originale
-                .withScale(1)  // Ma applichiamo una scala di 0.5x
+                .withSize(width: 128, height: 128)
+                .withScale(0.75)
+            
                     
                     // Configura il nuovo hosting controller
                     let hostingController = UIHostingController(rootView: avatarView)
                     hostingController.view.backgroundColor = .clear
-                    hostingController.view.frame = CGRect(x: 0, y: 0, width: 64, height: 64)
+                    hostingController.view.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
                     hostingController.view.autoresizingMask = []
                     hostingController.view.clipsToBounds = false
                     

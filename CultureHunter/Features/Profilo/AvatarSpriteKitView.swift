@@ -51,9 +51,7 @@ struct AvatarSpriteKitView: UIViewRepresentable {
         context.coordinator.scene = scene
         
         // Applica scala alla scena se necessario
-                if scale != 1.0 {
-                    scene.containerNode.setScale(scale)
-                }
+        scene.containerNode.setScale(scale)
         
         return skView
     }
