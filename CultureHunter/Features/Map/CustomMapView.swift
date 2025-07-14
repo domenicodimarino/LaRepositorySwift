@@ -208,7 +208,7 @@ struct CustomMapView: UIViewRepresentable {
             let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseId)
                 ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
             
-            view.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
+            view.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
             view.canShowCallout = false
             view.centerOffset = .zero
             view.zPriority = .min
@@ -220,7 +220,7 @@ struct CustomMapView: UIViewRepresentable {
         func recreateAvatarView(in annotationView: MKAnnotationView) {
             annotationView.subviews.forEach { $0.removeFromSuperview() }
             
-            avatarContainer = UIView(frame: CGRect(x: 0, y: 0, width: 128, height: 128))
+            avatarContainer = UIView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
             avatarContainer?.backgroundColor = .clear
             
             let avatarView = AvatarSpriteKitView(
@@ -228,14 +228,16 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: userState.currentAnimation(),
                 initialDirection: userState.relativeDirection()
             )
+                .withSize(width: 80, height: 80)
             
             let hostingController = UIHostingController(rootView: avatarView)
-            hostingController.view.backgroundColor = .clear
-            hostingController.view.frame = avatarContainer?.bounds ?? .zero
-            
-            avatarContainer?.addSubview(hostingController.view)
-            annotationView.addSubview(avatarContainer ?? UIView())
-            avatarContainer?.center = CGPoint(x: annotationView.bounds.midX, y: annotationView.bounds.midY)
+                        hostingController.view.backgroundColor = .clear
+                        hostingController.view.frame = avatarContainer?.bounds ?? CGRect(origin: .zero, size: CGSize(width: 80, height: 80))
+                        hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                        
+                        avatarContainer?.addSubview(hostingController.view)
+                        annotationView.addSubview(avatarContainer ?? UIView())
+                        avatarContainer?.center = CGPoint(x: annotationView.bounds.midX, y: annotationView.bounds.midY)
             
             avatarHostingController = hostingController
         }
@@ -246,7 +248,7 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: userState.currentAnimation(),
                 initialDirection: userState.relativeDirection()
             )
-            
+                .withSize(width: 80, height: 80)
             avatarHostingController?.rootView = avatarView
         }
         

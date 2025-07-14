@@ -131,6 +131,7 @@ struct AvatarSpriteKitView: UIViewRepresentable {
     func withSize(width: CGFloat, height: CGFloat) -> AvatarSpriteKitView {
         var view = self
         view.size = CGSize(width: width, height: height)
+        view.scale = min(width, height) / 128.0
         return view
     }
     
