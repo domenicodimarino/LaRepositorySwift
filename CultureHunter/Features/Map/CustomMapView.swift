@@ -155,7 +155,7 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: animation,
                 initialDirection: direction
             )
-            .withSize(width: 64, height: 64)
+            .withSize(width: 128, height: 128)
             
             hostingController.rootView = avatarView
         }
@@ -185,7 +185,7 @@ struct CustomMapView: UIViewRepresentable {
                 initialAnimation: animation,
                 initialDirection: direction
             )
-            .withSize(width: 64, height: 64)
+            .withSize(width: 128, height: 128)
         }
     }
     
@@ -229,7 +229,6 @@ struct CustomMapView: UIViewRepresentable {
                     initialDirection: self.parent.directionFromHeading(self.parent.userState.heading)
                 )
                 .withSize(width: 128, height: 128)
-                .withScale(0.75)
             
                     
                     // Configura il nuovo hosting controller
@@ -246,9 +245,8 @@ struct CustomMapView: UIViewRepresentable {
                     // Centra correttamente
                     containerView.center = CGPoint(x: annotationView.frame.width / 2, y: annotationView.frame.height / 2)
                     
-                    // Aggiorna il riferimento
-                    self.avatarHostingController = hostingController
-                    
+            self.avatarHostingController = hostingController
+            
                     // Debug
                     print("🔄 Avatar ricreato con dimensioni: \(hostingController.view.frame.size)")
                 }
@@ -262,7 +260,7 @@ struct CustomMapView: UIViewRepresentable {
                 if view == nil {
                     // IMPORTANTE: imposta una dimensione fissa per l'annotation view
                     view = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseId)
-                    view?.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
+                    view?.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
                     
                     // Inizializza con il metodo comune
                     recreateAvatarView(in: view!)
@@ -270,7 +268,7 @@ struct CustomMapView: UIViewRepresentable {
                     view?.annotation = annotation
                     
                     // Forziamo una dimensione anche quando viene riciclata
-                    view?.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
+                    view?.frame = CGRect(x: 0, y: 0, width: 128, height: 128)
                     
                     // Ricrea anche durante il riciclo
                     recreateAvatarView(in: view!)
@@ -351,7 +349,7 @@ struct CustomMapView: UIViewRepresentable {
                                 initialAnimation: animation,
                                 initialDirection: direction
                             )
-                            .withSize(width: 64, height: 64)
+                            .withSize(width: 128, height: 128)
                             
                             hostingController.rootView = avatarView
                         }
