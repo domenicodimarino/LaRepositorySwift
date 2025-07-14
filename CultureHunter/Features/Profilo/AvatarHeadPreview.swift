@@ -9,42 +9,37 @@
 import SwiftUI
 import SpriteKit
 
-/// Componente che mostra un'anteprima della testa dell'avatar.
+// MARK: - Head Only Avatar Preview (modificata per essere più flessibile)
 struct AvatarHeadPreview: View {
     let viewModel: AvatarViewModel
-    
-    // Consente di personalizzare le dimensioni dall'esterno
-    var size: CGSize = CGSize(width: 60, height: 60)
+    var size: CGSize
     
     var body: some View {
         HeadOnlySpriteKitView(viewModel: viewModel, size: size)
             .frame(width: size.width, height: size.height)
-            .cornerRadius(10)
-            .background(Color.gray.opacity(0.1))
     }
 }
 
 /// Versione specializzata di SpriteKitView che mostra solo la testa dell'avatar
 struct HeadOnlySpriteKitView: UIViewRepresentable {
     @ObservedObject var viewModel: AvatarViewModel
-    
-    // Configurazione
-    let size: CGSize
-    var yOffset: CGFloat = 15  // Offset verticale per centrare la testa
-    
-    func makeUIView(context: Context) -> SKView {
-        let skView = SKView()
-        skView.ignoresSiblingOrder = false
-        skView.allowsTransparency = true
+        let size: CGSize
         
-        // Creiamo la scena con le dimensioni specificate
-        let scene = HeadOnlyScene(size: size, avatar: viewModel.avatar, yOffset: yOffset)
-        skView.presentScene(scene)
-        skView.backgroundColor = .clear
-        context.coordinator.scene = scene
-        
-        return skView
-    }
+        func makeUIView(context: Context) -> SKView {
+            let skView = SKView()
+            skView.ignoresSiblingOrder = false
+            skView.allowsTransparency = true
+            
+            // Calcola l'offset proporzionale
+            let yOffset = size.height * 0.25
+            
+            let scene = HeadOnlyScene(size: size, avatar: viewModel.avatar, yOffset: yOffset)
+            skView.presentScene(scene)
+            skView.backgroundColor = .clear
+            context.coordinator.scene = scene
+            
+            return skView
+        }
     
     func updateUIView(_ uiView: SKView, context: Context) {
         // Confrontiamo i valori rilevanti dell'avatar per determinare se aggiornare
@@ -123,29 +118,26 @@ final class HeadOnlyScene: SKScene {
     private func setupNodes() {
         // Dimensioni proporzionali alla scena
         let characterSize = Int(max(size.width, size.height) * 2)
-        
-        configureNode(headNode, size: characterSize, zPosition: 1)
-        configureNode(eyesNode, size: characterSize, zPosition: 2)
-        configureNode(hairNode, size: characterSize, zPosition: 3)
-        
-        // Ordine di aggiunta (non influisce sull'ordine di visualizzazione quando zPosition è impostata)
-        addChild(headNode)
-        addChild(eyesNode)
-        addChild(hairNode)
-        
-        updateTextures()
+                
+                configureNode(headNode, size: characterSize, zPosition: 1)
+                configureNode(eyesNode, size: characterSize, zPosition: 2)
+                configureNode(hairNode, size: characterSize, zPosition: 3)
+                
+                addChild(headNode)
+                addChild(eyesNode)
+                addChild(hairNode)
+                
+                updateTextures()
     }
 
     /// Configura un singolo nodo con dimensioni, posizione e zPosition
     private func configureNode(_ node: SKSpriteNode, size: Int, zPosition: CGFloat) {
         node.size = CGSize(width: size, height: size)
-        
-        // Centrato con offset
-        let center = CGPoint(x: self.size.width / 2, y: (self.size.height / 2) - yOffset)
-        node.position = center
-        
-        // Imposta esplicitamente la zPosition
-        node.zPosition = zPosition
+                
+                // Centrato con offset proporzionale
+                let center = CGPoint(x: self.size.width / 2, y: (self.size.height / 2) - yOffset)
+                node.position = center
+                node.zPosition = zPosition
     }
     
     // MARK: - Texture Management
@@ -212,7 +204,7 @@ final class HeadOnlyScene: SKScene {
 // MARK: - Preview
 
 #Preview {
-    AvatarHeadPreview(viewModel: AvatarViewModel())
+    AvatarHeadPreview(viewModel: AvatarViewModel(), size:CGSize(width: 80, height: 80))
         .frame(width: 100, height: 100)
         .previewLayout(.sizeThatFits)
         .padding()

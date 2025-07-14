@@ -110,7 +110,7 @@ struct AvatarCustomizationView: View {
     private func iconForOption(_ option: CustomizationOption) -> some View {
         switch option {
         case .style:
-            AvatarHeadPreview(viewModel: viewModel)
+            AvatarHeadPreview(viewModel: viewModel, size: CGSize(width: 60, height: 60))
             
         case .hair:
             // Accedi direttamente al valore corrente

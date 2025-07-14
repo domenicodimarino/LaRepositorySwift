@@ -23,7 +23,11 @@ struct UserMovementState {
         isMoving ? .walk : .idle
     }
 }
-
+// MARK: - Avatar View Mode
+enum AvatarViewMode {
+    case fullBody
+    case headOnly
+}
 struct CustomMapView: UIViewRepresentable {
     @Binding var trackingState: TrackingState
     var mappedPOIs: [MappedPOI]
@@ -137,11 +141,15 @@ struct CustomMapView: UIViewRepresentable {
         private var parent: CustomMapView
         private var avatarContainer: UIView?
         var lastAvatarHash: Int = 0
-        var avatarHostingController: UIHostingController<AvatarSpriteKitView>?
+        var avatarHostingController: UIHostingController<AnyView>?
         
         // Stato movimento gestito nel Coordinator
         private var userState = UserMovementState()
         private var cameraHeading: Double = 0.0
+        
+        private var currentAvatarViewMode: AvatarViewMode = .fullBody
+                private let zoomThreshold: CLLocationDistance = 1000 // Metri
+                private var needsAvatarViewUpdate = false
         
         init(parent: CustomMapView) {
             self.parent = parent
@@ -201,6 +209,28 @@ struct CustomMapView: UIViewRepresentable {
                         userState.cameraHeading = cameraHeading
                         updateAvatarForMovement()
                     }
+            
+            // Verifica se è necessario cambiare la modalità di visualizzazione
+                        let altitude = mapView.camera.altitude
+                        let newViewMode: AvatarViewMode = altitude > zoomThreshold ? .headOnly : .fullBody
+                        
+                        if newViewMode != currentAvatarViewMode {
+                            currentAvatarViewMode = newViewMode
+                            
+                            // Aggiorna la vista in modo asincrono
+                            if !needsAvatarViewUpdate {
+                                needsAvatarViewUpdate = true
+                                DispatchQueue.main.async {
+                                    self.updateAvatarViewIfNeeded(in: mapView)
+                                    self.needsAvatarViewUpdate = false
+                                }
+                            }
+                        }
+                }
+        private func updateAvatarViewIfNeeded(in mapView: MKMapView) {
+                    if let userAnnotationView = mapView.view(for: mapView.userLocation) {
+                        recreateAvatarView(in: userAnnotationView)
+                    }
                 }
         
         private func userLocationView(for annotation: MKAnnotation, in mapView: MKMapView) -> MKAnnotationView {
@@ -220,40 +250,68 @@ struct CustomMapView: UIViewRepresentable {
         func recreateAvatarView(in annotationView: MKAnnotationView) {
             annotationView.subviews.forEach { $0.removeFromSuperview() }
             
-            avatarContainer = UIView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
+            // Dimensioni basate sulla modalità di visualizzazione
+                        let size: CGSize
+                        switch currentAvatarViewMode {
+                        case .fullBody:
+                            size = CGSize(width: 80, height: 80)
+                        case .headOnly:
+                            size = CGSize(width: 40, height: 40)
+                        }
+            
+            
+            avatarContainer = UIView(frame: CGRect(origin: .zero, size: size))
             avatarContainer?.backgroundColor = .clear
             
-            let avatarView = AvatarSpriteKitView(
-                viewModel: parent.avatarViewModel,
-                initialAnimation: userState.currentAnimation(),
-                initialDirection: userState.relativeDirection()
-            )
-                .withSize(width: 80, height: 80)
-            
-            let hostingController = UIHostingController(rootView: avatarView)
+            let avatarView: AnyView
+                        switch currentAvatarViewMode {
+                        case .fullBody:
+                            let fullView = AvatarSpriteKitView(
+                                viewModel: parent.avatarViewModel,
+                                initialAnimation: userState.currentAnimation(),
+                                initialDirection: userState.relativeDirection()
+                            )
+                            .withSize(width: size.width, height: size.height)
+                            
+                            avatarView = AnyView(fullView)
+                            
+                        case .headOnly:
+                            let headOnlyView = AvatarHeadPreview(viewModel: parent.avatarViewModel, size: size)
+                            avatarView = AnyView(headOnlyView)
+                        }
+                        
+                        let hostingController = UIHostingController(rootView: avatarView)
                         hostingController.view.backgroundColor = .clear
-                        hostingController.view.frame = avatarContainer?.bounds ?? CGRect(origin: .zero, size: CGSize(width: 80, height: 80))
+                        hostingController.view.frame = avatarContainer?.bounds ?? CGRect(origin: .zero, size: size)
                         hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                         
                         avatarContainer?.addSubview(hostingController.view)
                         annotationView.addSubview(avatarContainer ?? UIView())
                         avatarContainer?.center = CGPoint(x: annotationView.bounds.midX, y: annotationView.bounds.midY)
-            
-            avatarHostingController = hostingController
+                        
+                       avatarHostingController = hostingController
         }
         
         func updateAvatarView(avatarViewModel: AvatarViewModel) {
-            let avatarView = AvatarSpriteKitView(
-                viewModel: avatarViewModel,
-                initialAnimation: userState.currentAnimation(),
-                initialDirection: userState.relativeDirection()
-            )
-                .withSize(width: 80, height: 80)
-            avatarHostingController?.rootView = avatarView
-        }
+                // Aggiorna solo se siamo in modalità fullBody
+                if case .fullBody = currentAvatarViewMode,
+                   let hostingController = avatarHostingController {
+                    
+                    let avatarView = AvatarSpriteKitView(
+                        viewModel: avatarViewModel,
+                        initialAnimation: userState.currentAnimation(),
+                        initialDirection: userState.relativeDirection()
+                    )
+                    .withSize(width: 80, height: 80)
+                    
+                    hostingController.rootView = AnyView(avatarView)
+                }
+            }
         
         private func updateAvatarForMovement() {
-            updateAvatarView(avatarViewModel: parent.avatarViewModel)
+            if case .fullBody = currentAvatarViewMode {
+                            updateAvatarView(avatarViewModel: parent.avatarViewModel)
+                        }
         }
         
         private func photoAnnotationView(for annotation: MappedPOIAnnotation, photo: UIImage) -> MKAnnotationView {
