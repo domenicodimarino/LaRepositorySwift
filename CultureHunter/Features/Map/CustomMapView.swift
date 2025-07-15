@@ -35,7 +35,7 @@ struct CustomMapView: UIViewRepresentable {
     var onPOISelected: ((MappedPOI) -> Void)?
     
     // Rimosso @State e gestito nel Coordinator
-    private let configuration: MKStandardMapConfiguration
+    private let configuration: MKMapConfiguration
     
     init(trackingState: Binding<TrackingState>,
          mappedPOIs: [MappedPOI],
@@ -46,8 +46,8 @@ struct CustomMapView: UIViewRepresentable {
         self.avatarViewModel = avatarViewModel
         self.onPOISelected = onPOISelected
         
-        var config = MKStandardMapConfiguration(elevationStyle: .realistic)
-        config.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
+        var config = MKImageryMapConfiguration(elevationStyle: .realistic)
+        //config.pointOfInterestFilter = MKPointOfInterestFilter(including: [])
         configuration = config
     }
     
@@ -70,7 +70,7 @@ struct CustomMapView: UIViewRepresentable {
         mapView.delegate = context.coordinator
         
         let coordinate = CLLocationCoordinate2D(latitude: 40.7083, longitude: 14.7088)
-        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 600, pitch: 75, heading: 0)
+        let camera = MKMapCamera(lookingAtCenter: coordinate, fromDistance: 300, pitch: 45, heading: 0)
         mapView.setCamera(camera, animated: false)
         
         for poi in mappedPOIs {
@@ -241,7 +241,7 @@ struct CustomMapView: UIViewRepresentable {
             view.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
             view.canShowCallout = false
             view.centerOffset = .zero
-            view.zPriority = .min
+            view.zPriority = .init(rawValue: 3)
             
             recreateAvatarView(in: view)
             return view
@@ -317,9 +317,46 @@ struct CustomMapView: UIViewRepresentable {
         private func photoAnnotationView(for annotation: MappedPOIAnnotation, photo: UIImage) -> MKAnnotationView {
             let identifier = "POIPhoto"
             let view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-            view.image = photo.fixedOrientation().resizedToPin()
-            view.zPriority = .max
+            
+            // Dimensioni del container per l'effetto glow
+            let containerSize = CGSize(width: 52, height: 52)
+            
+            // Crea un'immagine composita con effetto glow
+            let finalImage = UIGraphicsImageRenderer(size: containerSize).image { context in
+                // Disegna l'alone luminoso (esterno) - ora quadrato
+                let glowPath = UIBezierPath(rect: CGRect(x: 1, y: 1, width: 50, height: 50))
+                UIColor(white: 1.0, alpha: 0.8).setFill()
+                glowPath.fill()
+                
+                // Disegna un quadrato bianco (bordo)
+                let borderPath = UIBezierPath(rect: CGRect(x: 4, y: 4, width: 44, height: 44))
+                UIColor.white.setFill()
+                borderPath.fill()
+                
+                // Disegna l'immagine ridimensionata al centro
+                let resizedPhoto = photo.fixedOrientation().resizedToPin()
+                let rect = CGRect(x: 6, y: 6, width: 40, height: 40)
+                
+                // Crea una maschera quadrata per l'immagine
+                context.cgContext.addRect(rect)
+                context.cgContext.clip()
+                
+                resizedPhoto.draw(in: rect)
+            }
+            
+            // Imposta l'immagine composita come immagine della view
+            view.image = finalImage
+            
+            // Aggiungi un ulteriore effetto glow usando shadow
+            view.layer.shadowColor = UIColor.white.cgColor
+            view.layer.shadowOffset = CGSize.zero
+            view.layer.shadowRadius = 8
+            view.layer.shadowOpacity = 0.8
+            
+            view.zPriority = .init(rawValue: 2)
             view.displayPriority = .required
+            view.centerOffset = CGPoint(x: 0, y: -10) // Sposta leggermente verso l'alto
+            
             return view
         }
         
@@ -328,7 +365,7 @@ struct CustomMapView: UIViewRepresentable {
             let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
             view.markerTintColor = .systemRed
             view.glyphText = "?"
-            view.zPriority = .max
+            view.zPriority = .init(rawValue: 2)
             view.displayPriority = .required
             return view
         }

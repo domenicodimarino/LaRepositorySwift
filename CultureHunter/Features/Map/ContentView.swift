@@ -140,8 +140,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.680596,
-            longitude: 14.738688,
+            latitude: 40.68074,
+            longitude: 14.73872,
             imageName: "saragnano"
         ),
         POI(
