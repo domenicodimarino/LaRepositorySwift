@@ -87,8 +87,6 @@ struct ShopView: View {
             checkMissionCompletion()
         }
         .onReceive(missionViewModel.objectWillChange) { _ in
-            // Questo aggiornerà la view quando cambia qualsiasi proprietà pubblicata nel ViewModel
-            print("MissionViewModel changed")
         }
     }
     
