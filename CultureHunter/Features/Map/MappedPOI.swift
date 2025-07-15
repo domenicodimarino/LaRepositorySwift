@@ -14,10 +14,10 @@ struct MappedPOI: Identifiable, Hashable {
     let diaryPlaceName: String
 
     // Nuovi campi per interazione/foto
-    let isDiscovered: Bool
-    let discoveredTitle: String?
-    let photoPath: String? // Persisti il path, non la UIImage
-    let discoveredDate: Date? // <--- AGGIUNTO CAMPO DATA SCOPERTA
+    var isDiscovered: Bool
+        var discoveredTitle: String?
+        var photoPath: String?
+        var discoveredDate: Date?
     let imageName: String // <-- nome asset
 
     var photo: UIImage? {

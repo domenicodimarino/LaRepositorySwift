@@ -3,21 +3,49 @@ import UIKit
 
 class POIViewModel: ObservableObject {
     @Published var mappedPOIs: [MappedPOI] = []
-
+    private let persistenceManager = POIPersistenceManager.shared
+    
+    // MARK: - Inizializzazione
+    
+    init() {
+        // Debug per verificare lo stato di UserDefaults
+        print("🔐 Verifica UserDefaults all'avvio:")
+        print("   - Chiave usata: \(persistenceManager.discoveredPOIsKey)")
+        
+        // Stampa tutte le chiavi in UserDefaults
+        print("   - Chiavi disponibili:")
+        for key in UserDefaults.standard.dictionaryRepresentation().keys {
+            print("      * \(key)")
+        }
+        
+        // Migra i dati esistenti
+        persistenceManager.migrateExistingData()
+    }
+    
     // MARK: - Geocoding
     func geocodeAll(pois: [POI]) {
         POIGeocoder.geocode(pois: pois) { mapped in
             DispatchQueue.main.async {
-                self.mappedPOIs = self.mergeWithDiscoveredPOIs(mapped)
+                // Ora usiamo il persistence manager per applicare i dati salvati
+                var mutableMapped = mapped
+                self.persistenceManager.applyPersistedDataTo(mappedPOIs: &mutableMapped)
+                self.mappedPOIs = mutableMapped
+                
+                print("📍 Caricati \(self.mappedPOIs.count) POI, di cui \(self.mappedPOIs.filter { $0.isDiscovered }.count) scoperti")
             }
         }
     }
 
     // MARK: - Scoperta POI
     func markPOIDiscovered(id: UUID, photo: UIImage, city: String, badgeManager: BadgeManager, nomeUtente: String) {
-        guard let index = mappedPOIs.firstIndex(where: { $0.id == id }) else { return }
+        guard let index = mappedPOIs.firstIndex(where: { $0.id == id }) else {
+            print("❌ POI non trovato con ID: \(id)")
+            return
+        }
+        
         let oldPOI = mappedPOIs[index]
 
+        // Determina il titolo basato sul database Place
         let nuovoTitolo: String
         if let place = PlacesData.shared.places.first(where: { $0.name == oldPOI.diaryPlaceName }) {
             nuovoTitolo = place.name
@@ -25,9 +53,21 @@ class POIViewModel: ObservableObject {
             nuovoTitolo = "Monumento di \(nomeUtente)"
         }
 
-        guard let photoPath = saveImageToDisk(photo, for: id) else { return }
+        // Usa il persistence manager per salvare i dati
+        let photoPath = persistenceManager.savePOIDiscovery(
+            id: id,
+            photo: photo,
+            city: city,
+            title: nuovoTitolo
+        )
+        
+        if photoPath == nil {
+            print("❌ Impossibile salvare l'immagine per il POI: \(id)")
+        }
 
         let now = Date()
+        
+        // Crea il POI aggiornato
         let updatedPOI = MappedPOI(
             id: oldPOI.id,
             title: nuovoTitolo,
@@ -40,76 +80,43 @@ class POIViewModel: ObservableObject {
             discoveredTitle: nuovoTitolo,
             photoPath: photoPath,
             discoveredDate: now,
-            imageName: oldPOI.imageName // <-- AGGIUNTO!
+            imageName: oldPOI.imageName
         )
+        
+        // Aggiorna la lista in memoria
         mappedPOIs[index] = updatedPOI
+        
+        // Forza l'aggiornamento della UI
         mappedPOIs = Array(mappedPOIs)
+        
+        // Aggiorna badge
         badgeManager.updateBadgeForDiscoveredPOI(city: city, poiID: oldPOI.id)
-        persistDiscoveredPOI(id: id, photoPath: photoPath, title: nuovoTitolo, discoveredDate: now)
+        
+        print("✅ POI scoperto e salvato: \(nuovoTitolo)")
     }
-
-    // MARK: - Persistance
-
-    private let discoveredKey = "DiscoveredPOIs"
-
-    private struct DiscoveredPOIData: Codable {
-        let id: UUID
-        let photoPath: String
-        let title: String
-        let discoveredDate: Date?
+    
+    // MARK: - Metodi di accesso ai dati
+    
+    // Ottieni tutti i POI scoperti
+    func getDiscoveredPOIs() -> [MappedPOI] {
+        return mappedPOIs.filter { $0.isDiscovered }
     }
-
-    private func persistDiscoveredPOI(id: UUID, photoPath: String, title: String, discoveredDate: Date?) {
-        var saved = loadPersistedDiscoveredPOIs()
-        if let idx = saved.firstIndex(where: { $0.id == id }) {
-            saved[idx] = DiscoveredPOIData(id: id, photoPath: photoPath, title: title, discoveredDate: discoveredDate)
-        } else {
-            saved.append(DiscoveredPOIData(id: id, photoPath: photoPath, title: title, discoveredDate: discoveredDate))
+    
+    // Elimina un POI scoperto
+    func removePOIDiscovery(id: UUID) {
+        // Rimuovi i dati salvati nel persistence manager
+        persistenceManager.removePOIDiscovery(id: id)
+        
+        // Aggiorna l'array in memoria
+        if let index = mappedPOIs.firstIndex(where: { $0.id == id }) {
+            mappedPOIs[index].isDiscovered = false
+            mappedPOIs[index].photoPath = nil
+            mappedPOIs[index].discoveredTitle = nil
+            mappedPOIs[index].discoveredDate = nil
+            
+            // Forza l'aggiornamento della UI
+            mappedPOIs = Array(mappedPOIs)
+            print("🔄 UI aggiornata dopo rimozione POI")
         }
-        if let data = try? JSONEncoder().encode(saved) {
-            UserDefaults.standard.set(data, forKey: discoveredKey)
-        }
-    }
-
-    private func loadPersistedDiscoveredPOIs() -> [DiscoveredPOIData] {
-        guard let data = UserDefaults.standard.data(forKey: discoveredKey),
-              let pois = try? JSONDecoder().decode([DiscoveredPOIData].self, from: data)
-        else { return [] }
-        return pois
-    }
-
-    private func mergeWithDiscoveredPOIs(_ original: [MappedPOI]) -> [MappedPOI] {
-        let discovered = loadPersistedDiscoveredPOIs()
-        return original.map { poi in
-            if let found = discovered.first(where: { $0.id == poi.id }) {
-                return MappedPOI(
-                    id: poi.id,
-                    title: found.title,
-                    address: poi.address,
-                    coordinate: poi.coordinate,
-                    city: poi.city,
-                    province: poi.province,
-                    diaryPlaceName: poi.diaryPlaceName,
-                    isDiscovered: true,
-                    discoveredTitle: found.title,
-                    photoPath: found.photoPath,
-                    discoveredDate: found.discoveredDate,
-                    imageName: poi.imageName // <-- AGGIUNTO!
-                )
-            } else {
-                return poi
-            }
-        }
-    }
-
-    // MARK: - Save image to disk
-    private func saveImageToDisk(_ image: UIImage, for id: UUID) -> String? {
-        let filename = "poi_\(id.uuidString).jpg"
-        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
-        if let jpegData = image.jpegData(compressionQuality: 0.8) {
-            try? jpegData.write(to: url)
-            return url.path
-        }
-        return nil
     }
 }
