@@ -9,10 +9,13 @@ class MissionViewModel: ObservableObject {
     
     private var timer: Timer?
     private var missionsKey = "savedMissions"
-    private let missionHour = 10
-    private let missionMinute = 44
+    private let missionHour = 11
+    private let missionMinute = 38
     
-    init() {
+    private var avatarViewModel: AvatarViewModel?
+    
+    init(avatarViewModel: AvatarViewModel? = nil) {
+        self.avatarViewModel = avatarViewModel
         // Carica missione salvata (se presente)
         loadSavedMission()
         
@@ -26,6 +29,11 @@ class MissionViewModel: ObservableObject {
         checkForMissionsAfterAppOpen()
     }
     
+    // Metodo per impostare l'avatarViewModel dopo l'inizializzazione
+    func setAvatarViewModel(_ viewModel: AvatarViewModel) {
+        self.avatarViewModel = viewModel
+    }
+    
     deinit {
         timer?.invalidate()
     }
@@ -34,30 +42,64 @@ class MissionViewModel: ObservableObject {
     
     // Chiamare quando l'app si apre, per controllare se è necessario creare una missione
     func checkForMissionsAfterAppOpen() {
-        // Se non c'è una missione attiva, controlla se ne dobbiamo creare una nuova
-        if activeMission == nil {
-            // Controlla se l'orario attuale è dopo quello programmato per oggi
-            let now = Date()
-            let calendar = Calendar.current
+        // Controlla se è il momento di creare una nuova missione
+        if shouldCreateNewMission() {
+            createNewMission()
+        } else if let mission = activeMission, mission.startDate == nil {
+            // Se c'è una missione attiva ma non ancora avviata, la avvia
+            startMission()
+        }
+    }
+    
+    // Nuova funzione per determinare se dobbiamo creare una nuova missione
+    private func shouldCreateNewMission() -> Bool {
+        let now = Date()
+        let calendar = Calendar.current
+        
+        // Componiamo la data target di oggi
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
+        dateComponents.hour = missionHour
+        dateComponents.minute = missionMinute
+        dateComponents.second = 0
+        
+        guard let targetTime = calendar.date(from: dateComponents) else {
+            return false
+        }
+        
+        // Se l'orario attuale è prima di quello programmato, non creare missione
+        if now < targetTime {
+            return false
+        }
+        
+        // Se non c'è nessuna missione attiva, crea una nuova
+        guard let mission = activeMission else {
+            return true
+        }
+        
+        // Se la missione è completata, verifica se è di oggi
+        if mission.isCompleted {
+            guard let startDate = mission.startDate else {
+                return true // Missione senza data di inizio, sostituiscila
+            }
             
-            // Componiamo la data target di oggi
-            var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
-            dateComponents.hour = missionHour
-            dateComponents.minute = missionMinute
-            dateComponents.second = 0
+            // Se la missione completata è di un giorno precedente, crea una nuova
+            if !calendar.isDate(startDate, inSameDayAs: now) {
+                return true
+            }
             
-            if let targetTime = calendar.date(from: dateComponents) {
-                // Se l'orario attuale è dopo quello programmato, crea una missione
-                if now >= targetTime {
-                    createNewMission()
-                }
+            // Se la missione completata è di oggi, non creare una nuova
+            return false
+        }
+        
+        // Se la missione non è completata, verifica se è scaduta da più di 24 ore
+        if let startDate = mission.startDate {
+            let timeSinceStart = now.timeIntervalSince(startDate)
+            if timeSinceStart > 24 * 60 * 60 { // 24 ore
+                return true
             }
         }
         
-        // Se c'è una missione attiva ma non ancora avviata, la avvia
-        if var mission = activeMission, mission.startDate == nil {
-            startMission()
-        }
+        return false
     }
     
     // MARK: - Gestione missione
@@ -77,14 +119,24 @@ class MissionViewModel: ObservableObject {
               poiVisited else { return nil }
         
         let now = Date()
-        //DA IMPLEMENTARE COMPLETAMENTO MISSIONE
-        if now.timeIntervalSince(start) <= mission.duration {
+        let timeSinceStart = now.timeIntervalSince(start)
+        
+        // Completa la missione se entro il tempo limite
+        if timeSinceStart <= mission.duration {
             mission.isCompleted = true
             self.activeMission = mission
             saveMission()
             return mission.reward
         }
         return nil
+    }
+    
+    func completeMissionIfActive() -> Int? {
+        return tryCompleteMission(poiVisited: true)
+    }
+    
+    func addMissionReward(_ reward: Int) {
+        avatarViewModel?.addCoins(reward)
     }
     
     // MARK: - Timer e aggiornamenti UI
@@ -102,25 +154,36 @@ class MissionViewModel: ObservableObject {
     }
     
     private func updateTimeLeft() {
-        guard let mission = activeMission,
-              !mission.isCompleted,
-              let startDate = mission.startDate else {
-            timeLeftString = ""
-            return
-        }
-        
-        let now = Date()
-        let endTime = startDate.addingTimeInterval(mission.duration)
-        
-        if now >= endTime {
-            timeLeftString = "Tempo scaduto!"
-            if var expiredMission = activeMission, !expiredMission.isCompleted {
-                expiredMission.isCompleted = true
-                activeMission = expiredMission
-                saveMission()
+        // 1. Prima controlla se è ora di creare una nuova missione
+            if shouldCreateNewMission() {
+                DispatchQueue.main.async {
+                    print("È ora di creare una nuova missione!")
+                    self.createNewMission()
+                    return  // Importante: esci dalla funzione dopo aver creato la missione
+                }
             }
-            return
-        }
+            
+            // 2. Se non è ora di una nuova missione, aggiorna il timer esistente
+            guard let mission = activeMission,
+                  !mission.isCompleted,
+                  let startDate = mission.startDate else {
+                timeLeftString = ""
+                return
+            }
+            
+            let now = Date()
+            let endTime = startDate.addingTimeInterval(mission.duration)
+            
+            if now >= endTime {
+                timeLeftString = "Tempo scaduto!"
+                if var expiredMission = activeMission, !expiredMission.isCompleted {
+                    expiredMission.isCompleted = true
+                    self.activeMission = expiredMission
+                    saveMission()
+                }
+                return
+            }
+            
         
         let timeLeft = endTime.timeIntervalSince(now)
         let minutes = Int(timeLeft / 60)
@@ -201,10 +264,16 @@ class MissionViewModel: ObservableObject {
     // MARK: - Creazione missione
     
     private func createNewMission() {
+        print("📝 Creazione nuova missione - Orario: \(Date())")
+        // Rimuovi la missione precedente se presente
+        if activeMission != nil {
+            UserDefaults.standard.removeObject(forKey: missionsKey)
+        }
+        
         // Definisci possibili missioni
         let possibleMissions = [
             (description: "Visita un punto di interesse entro 120 minuti per ottenere 100 monete", reward: 100, duration: 120 * 60.0),
-            (description: "Scopri un nuovo POI entro 60 minuti e ottieni 200 monete", reward: 150, duration: 45 * 60.0)
+            (description: "Scopri un nuovo POI entro 60 minuti e ottieni 200 monete", reward: 200, duration: 45 * 60.0)
         ]
         
         // Scegli casualmente
@@ -219,6 +288,13 @@ class MissionViewModel: ObservableObject {
         
         // Avvia automaticamente
         startMission()
+        
+        // Forza l'aggiornamento su main thread
+            DispatchQueue.main.async {
+                print("✅ Nuova missione creata: \(self.activeMission?.description ?? "nessuna")")
+                self.saveMission()
+                self.objectWillChange.send() // Forza aggiornamento UI
+            }
     }
     
     // MARK: - Persistenza
@@ -233,9 +309,28 @@ class MissionViewModel: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: missionsKey),
            let mission = try? JSONDecoder().decode(Mission.self, from: data) {
             
-            // Rimuovi missioni vecchie completate
+            // Rimuovi missioni completate di giorni precedenti
             if mission.isCompleted {
-                if let startDate = mission.startDate, Date().timeIntervalSince(startDate) > 24*60*60 {
+                if let startDate = mission.startDate {
+                    let calendar = Calendar.current
+                    let now = Date()
+
+                    // Se la missione completata non è di oggi, rimuovila
+                    if !calendar.isDate(startDate, inSameDayAs: now) {
+                        UserDefaults.standard.removeObject(forKey: missionsKey)
+                        return
+                    }
+                    // Se l'orario di start della missione è precedente al nuovo orario di missione giornaliera, rimuovila
+                    var todayComponents = calendar.dateComponents([.year, .month, .day], from: now)
+                    todayComponents.hour = missionHour
+                    todayComponents.minute = missionMinute
+                    todayComponents.second = 0
+                    if let newMissionTime = calendar.date(from: todayComponents),
+                       startDate < newMissionTime && now >= newMissionTime {
+                        UserDefaults.standard.removeObject(forKey: missionsKey)
+                        return
+                    }
+                } else {
                     UserDefaults.standard.removeObject(forKey: missionsKey)
                     return
                 }
@@ -244,7 +339,6 @@ class MissionViewModel: ObservableObject {
             activeMission = mission
         }
     }
-    
     // Per il debug
     #if DEBUG
     func debugForceNewMission() {

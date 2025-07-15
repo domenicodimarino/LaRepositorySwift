@@ -284,6 +284,22 @@ class PlacesData {
             yearBuilt: "XX secolo",
             location: "Cava de' Tirreni, Salerno",
             audioName: nil
-        )
+        ),
+        Place(
+            name: "Casa del Dom",
+            imageName: "poi_locked",
+            history: "La casa del dom, molto bella e piena di gatti",
+            yearBuilt: "2018",
+            location: "Cava de' Tirreni, Salerno",
+            audioName: nil
+        ),Place(
+            name: "UNISA Edificio E",
+            imageName: "poi_locked",
+            history: "Manicomio",
+            yearBuilt: "1860",
+            location: "Fisciano, Salerno",
+            audioName: nil
+        ),
+        
     ]
 }

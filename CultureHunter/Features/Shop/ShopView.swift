@@ -10,8 +10,8 @@ import SwiftUI
 struct ShopView: View {
     // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
-    @StateObject private var shopViewModel: ShopViewModel
-    @StateObject private var missionViewModel = MissionViewModel()
+        @ObservedObject var missionViewModel: MissionViewModel
+        @StateObject private var shopViewModel: ShopViewModel
     
     @State private var showAlert = false
     @State private var showConfirmation = false
@@ -23,8 +23,9 @@ struct ShopView: View {
     
     // MARK: - Initialization
     
-    init(avatarViewModel: AvatarViewModel) {
+    init(avatarViewModel: AvatarViewModel, missionViewModel: MissionViewModel) {
         self.avatarViewModel = avatarViewModel
+        self.missionViewModel = missionViewModel
         _shopViewModel = StateObject(wrappedValue: ShopViewModel(avatarViewModel: avatarViewModel))
     }
     
@@ -80,8 +81,14 @@ struct ShopView: View {
             shopViewModel.updateOwnedStatus()
             checkMissionCompletion()
         }
-        .onChange(of: avatarViewModel.avatar.coins) { _ in
-            shopViewModel.updateOwnedStatus()
+        .onChange(of: missionViewModel.activeMission) { newMission in
+            print("Active mission changed: \(newMission?.description ?? "none")")
+            missionRewardProcessed = false
+            checkMissionCompletion()
+        }
+        .onReceive(missionViewModel.objectWillChange) { _ in
+            // Questo aggiornerà la view quando cambia qualsiasi proprietà pubblicata nel ViewModel
+            print("MissionViewModel changed")
         }
     }
     
@@ -253,5 +260,5 @@ struct ShopView: View {
 
 // Preview per la vista principale
 #Preview {
-    ShopView(avatarViewModel: AvatarViewModel())
+    ShopView(avatarViewModel: AvatarViewModel(), missionViewModel: MissionViewModel())
 }

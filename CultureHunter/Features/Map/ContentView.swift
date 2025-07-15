@@ -452,18 +452,48 @@ struct ContentView: View {
             longitude: 14.70529,
             imageName: "villa_comunale"
         ),
+        POI(
+            street: "Via Eduardo de Filippis",
+            streetNumber: "171",
+            city: "Cava de' Tirreni",
+            province: "Salerno",
+            diaryPlaceName: "Casa del Dom",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            photoPath: nil,
+            latitude: 40.70847523801939,
+            longitude: 14.709200325060241,
+            imageName: "villa_comunale"
+        ),
+        //temporaneo
+        POI(
+            street: "Via del Diritto",
+            streetNumber: "",
+            city: "Fisciano",
+            province: "Salerno",
+            diaryPlaceName: "UNISA Edificio E",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            photoPath: nil,
+            latitude: 40.77252,
+            longitude: 14.79116,
+            imageName: "villa_comunale"
+        ),
         
     ]
 
     @StateObject private var poiViewModel = POIViewModel()
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var locationManager = LocationManager()
-    @StateObject private var viewModel = AvatarViewModel()
+    @StateObject private var avatarViewModel = AvatarViewModel()
     @StateObject private var badgeManager = BadgeManager()
+    @StateObject private var missionViewModel = MissionViewModel()
 
     var body: some View {
         TabView {
-            MapTab(viewModel: poiViewModel, badgeManager: badgeManager, avatarViewModel: viewModel)
+            MapTab(viewModel: poiViewModel, badgeManager: badgeManager, avatarViewModel: avatarViewModel, missionViewModel: missionViewModel)
                 .environmentObject(locationManager)
                 .tabItem {
                     Image(systemName: "map")
@@ -479,18 +509,20 @@ struct ContentView: View {
                     Image(systemName: "rosette")
                     Text("Badge")
                 }
-            ShopView(avatarViewModel: viewModel)
+            ShopView(avatarViewModel: avatarViewModel, missionViewModel: missionViewModel)
                 .tabItem {
                     Image(systemName: "cart")
                     Text("Shop")
                 }
-            ProfileView(viewModel: viewModel)
+            ProfileView(viewModel: avatarViewModel)
                 .tabItem {
                     Image(systemName: "person")
                     Text("Profilo")
                 }
         }
         .onAppear {
+            missionViewModel.setAvatarViewModel(avatarViewModel)
+            
             notificationManager.requestPermissions()
             locationManager.requestAuthorization()
             poiViewModel.geocodeAll(pois: poiList)

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Mission: Identifiable, Codable {
+struct Mission: Identifiable, Codable, Equatable {
     let id: UUID
     let description: String
     let reward: Int
@@ -24,6 +24,13 @@ struct Mission: Identifiable, Codable {
         self.startDate = nil
         self.isCompleted = false
     }
+    
+    // Aggiungi questo se necessario per confronti specifici
+        static func == (lhs: Mission, rhs: Mission) -> Bool {
+            return lhs.id == rhs.id &&
+                   lhs.isCompleted == rhs.isCompleted &&
+                   lhs.startDate == rhs.startDate
+        }
 
     func timeLeft(from now: Date = Date()) -> TimeInterval? {
         guard let start = startDate else { return nil }

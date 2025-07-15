@@ -5,6 +5,7 @@ struct MapTab: View {
     @ObservedObject var viewModel: POIViewModel
     @ObservedObject var badgeManager: BadgeManager
     @ObservedObject var avatarViewModel: AvatarViewModel
+    @ObservedObject var missionViewModel: MissionViewModel
 
     @State private var trackingState: TrackingState = .none
     @StateObject private var locationManager = LocationManager()
@@ -51,6 +52,7 @@ struct MapTab: View {
         .sheet(isPresented: $showCamera) {
             if let poi = selectedPOI {
                 CameraPicker { image in
+                    // Registra il POI
                     viewModel.markPOIDiscovered(
                         id: poi.id,
                         photo: image,
@@ -58,6 +60,13 @@ struct MapTab: View {
                         badgeManager: badgeManager,
                         nomeUtente: "Giovanni"
                     )
+                    
+                    // Completa la missione se attiva
+                    if let reward = missionViewModel.tryCompleteMission(poiVisited: true) {
+                        // Aggiungi le monete all'avatar
+                        avatarViewModel.addCoins(reward)
+                        
+                    }
                 }
             }
         }
