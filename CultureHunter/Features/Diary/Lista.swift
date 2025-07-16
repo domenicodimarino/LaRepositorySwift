@@ -7,17 +7,26 @@ struct PlacesList: View {
 
     // Ricava automaticamente tutte le città presenti
     private var allCities: [String] {
-        let cities = Set(places.map { $0.city })
-        return ["Tutti"] + cities.sorted()
-    }
+            let cities = Set(places.map { $0.city })
+            return ["Tutti"] + cities.sorted()
+        }
 
     // Filtra i POI per città selezionata
     private var filteredPlaces: [MappedPOI] {
+        // Filtra prima per città
+        let baseList: [MappedPOI]
         if selectedCity == "Tutti" {
-            return places
+            baseList = places
         } else {
-            return places.filter { $0.city == selectedCity }
+            baseList = places.filter { $0.city == selectedCity }
         }
+        
+        // Divide in scoperti e non scoperti
+        let discovered = baseList.filter { $0.isDiscovered }
+        let notDiscovered = baseList.filter { !$0.isDiscovered }
+        
+        // Combina i due gruppi (prima scoperti, poi non scoperti)
+        return discovered + notDiscovered
     }
     
     var body: some View {
@@ -87,8 +96,6 @@ struct PlacesListRow: View {
             if place.isDiscovered {
                 Text("Info")
                     .font(.subheadline)
-                    .foregroundColor(.gray)
-                Image(systemName: "chevron.right")
                     .foregroundColor(.gray)
             }
         }
