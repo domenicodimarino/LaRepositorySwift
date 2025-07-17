@@ -3,9 +3,11 @@ import Foundation
 struct BadgeModel: Identifiable {
     let id = UUID()
     let cityName: String
-    var totalPOI: Int // <-- ora variabile!
+    var totalPOI: Int
     var certifiedPOI: Int
-    var unlockedDate: Date?   // nil se non ancora sbloccato
+    var unlockedDate: Date?
+    var discoveredImageNames: [String] = []  // <-- Usa i nomi asset
+    var cityStory: String
 
     var isUnlocked: Bool {
         certifiedPOI >= totalPOI
@@ -15,7 +17,6 @@ struct BadgeModel: Identifiable {
         "\(certifiedPOI)/\(totalPOI)"
     }
 
-    // Nome asset badge in Assets.xcassets
     var badgeImageName: String {
         let cityKey = cityName
             .lowercased()
