@@ -3,20 +3,32 @@ import SpriteKit
 
 struct CarSpriteKitView: View {
     let direction: AvatarDirection
+    let carDirection: CarDirection
+    
+    init(direction: AvatarDirection, carDirection: CarDirection? = nil) {
+        self.direction = direction
+        self.carDirection = carDirection ?? CarDirection.fromAvatarDirection(direction)
+    }
     
     var body: some View {
-        SpriteViewWrapper(direction: direction)
+        SpriteViewWrapper(direction: direction, carDirection: carDirection)
             .background(Color.clear) // Esplicita il background trasparente
     }
 }
 
 struct SpriteViewWrapper: UIViewRepresentable {
     let direction: AvatarDirection
+    let carDirection: CarDirection
+        
+        init(direction: AvatarDirection, carDirection: CarDirection? = nil) {
+            self.direction = direction
+            self.carDirection = carDirection ?? CarDirection.fromAvatarDirection(direction)
+        }
     
     func makeUIView(context: Context) -> SKView {
         let view = SKView(frame: .zero)
         view.backgroundColor = .clear
-        view.allowsTransparency = true // Importante per la trasparenza
+        view.allowsTransparency = true
         
         let scene = SKScene(size: CGSize(width: 80, height: 80))
         scene.backgroundColor = .clear
@@ -38,13 +50,8 @@ struct SpriteViewWrapper: UIViewRepresentable {
     }
     
     private func imageNameForDirection() -> String {
-        switch direction {
-        case .up: return "car_n"
-        case .right: return "car_e"
-        case .down: return "car_s"
-        case .left: return "car_w"
+            return "car_\(carDirection.rawValue)"
         }
-    }
 }
 
 extension View {

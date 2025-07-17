@@ -16,9 +16,15 @@ struct UserMovementState {
     var cameraHeading: Double = 0.0
     var transportMode: TransportMode = .walking
     var speed: Double = 0.0
+    
+    // Funzione statica per calcolare l'angolo relativo
+    static func calculateRelativeAngle(heading: Double, cameraHeading: Double) -> Double {
+        return (heading - cameraHeading + 360).truncatingRemainder(dividingBy: 360)
+    }
 
     func relativeDirection() -> AvatarDirection {
-        let relativeAngle = (heading - cameraHeading + 360).truncatingRemainder(dividingBy: 360)
+        let relativeAngle = Self.calculateRelativeAngle(heading: heading, cameraHeading: cameraHeading)
+        
         switch relativeAngle {
         case 315...360, 0..<45: return .up
         case 45..<135: return .right
@@ -27,7 +33,13 @@ struct UserMovementState {
         default: return .down
         }
     }
-
+    
+    // Nuova funzione che restituisce direttamente CarDirection
+    func carDirection() -> CarDirection {
+        let relativeAngle = Self.calculateRelativeAngle(heading: heading, cameraHeading: cameraHeading)
+        return CarDirection.fromAngle(relativeAngle)
+    }
+    
     func currentAnimation() -> AvatarAnimation {
         isMoving ? .walk : .idle
     }
@@ -286,11 +298,12 @@ struct CustomMapView: UIViewRepresentable {
             
             // Verifica se deve essere mostrata l'auto o l'avatar
             if userState.transportMode == .driving {
-                // Mostra la macchina
-                let carView = CarSpriteKitView(direction: userState.relativeDirection())
-                    .withSize(width: size.width, height: size.height)
-                
-                avatarView = AnyView(carView)
+                // Usa carDirection() per ottenere le 8 direzioni
+                    let carDir = userState.carDirection()
+                    let carView = CarSpriteKitView(direction: userState.relativeDirection(), carDirection: carDir)
+                        .withSize(width: size.width, height: size.height)
+                    
+                    avatarView = AnyView(carView)
             } else {
                 // Mostra l'avatar normale
                 switch currentAvatarViewMode {
@@ -327,8 +340,9 @@ struct CustomMapView: UIViewRepresentable {
                 let avatarView: AnyView
                 
                 if userState.transportMode == .driving {
-                    // Mostra la macchina
-                    let carView = CarSpriteKitView(direction: userState.relativeDirection())
+                    // Aggiungi il parametro carDirection qui
+                    let carDir = userState.carDirection()
+                    let carView = CarSpriteKitView(direction: userState.relativeDirection(), carDirection: carDir)
                         .withSize(width: 80, height: 80)
                     
                     avatarView = AnyView(carView)
