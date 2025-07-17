@@ -9,22 +9,23 @@ struct DiaryView: View {
     @StateObject private var audioManager = AudioManager.shared
     @State private var dragPosition: Double = 0
     @State private var isDragging: Bool = false
-    
+
     // Ottieni i dati storici dal database di Places
     private var placeData: Place? {
         return PlacesData.shared.places.first { $0.name == poi.diaryPlaceName }
     }
 
     var body: some View {
-        ScrollView {
-            
-            // FOTO TOP: contenitore con altezza dinamica
-            let isIPad = UIDevice.current.userInterfaceIdiom == .pad
-            let imageHeight: CGFloat = isIPad ? 280 : 180
-            
-            VStack(alignment: .leading, spacing: 20) {
-                // FOTO TOP: usa GeometryReader per dividere lo spazio esattamente al 50%
-                VStack(spacing: 0) {
+        ZStack {
+            Color.black
+                .edgesIgnoringSafeArea(.all)
+            ScrollView {
+                let isIPad = UIDevice.current.userInterfaceIdiom == .pad
+                let imageHeight: CGFloat = isIPad ? 280 : 180
+
+                VStack(alignment: .leading, spacing: 20) {
+                    // FOTO TOP: contenitore con altezza dinamica
+                    VStack(spacing: 0) {
                         GeometryReader { geometry in
                             HStack(spacing: 8) {
                                 // Prima immagine
@@ -33,7 +34,7 @@ struct DiaryView: View {
                                     .aspectRatio(contentMode: .fill)
                                     .frame(width: geometry.size.width / 2 - 4, height: imageHeight)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
-                                
+
                                 // Seconda immagine
                                 if poi.isDiscovered, let photoPath = poi.photoPath, let img = UIImage(contentsOfFile: photoPath) {
                                     Divider()
@@ -49,121 +50,114 @@ struct DiaryView: View {
                             }
                         }
                     }
-                    .frame(height: imageHeight) // ⭐️ Imposta altezza esplicita qui
-                
-                VStack(alignment: .leading, spacing: 15) {
-                    Text(poi.diaryPlaceName)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    HStack(spacing: 20) {
-                        VStack(alignment: .leading) {
-                            Text("Posizione")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Text(poi.address)
-                                .font(.headline)
-                        }
-                    }
-                    .padding(.vertical, 5)
-                    
-                    Divider()
-                    // Diary/History con audio (opzionale: se hai l'audio associato)
-                    VStack(spacing: 10) {
-                        HStack {
-                            Text("Storia")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Spacer()
-                            
-                            // Bottone per l'audio pre-registrato
-                            Button(action: {
-                                if audioManager.isPlaying {
-                                    audioManager.pauseAudio()
-                                } else if audioManager.currentTime > 0 {
-                                    audioManager.resumeAudio()
-                                } else {
-                                    playAudio()
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                    Text(audioManager.isPlaying ? "Pausa" : (audioManager.currentTime > 0 ? "Riprendi" : "Ascolta"))
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(audioManager.isPlaying ? Color.red : Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
+                    .frame(height: imageHeight)
+
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text(poi.diaryPlaceName)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+
+                        HStack(spacing: 20) {
+                            VStack(alignment: .leading) {
+                                Text("Posizione")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                Text(poi.address)
+                                    .font(.headline)
                             }
                         }
-                        
-                        // BARRA DI PROGRESSO AUDIO INTERATTIVA
-                        if audioManager.duration > 0 {
-                            VStack(spacing: 6) {
-                                // Barra di progresso con funzionalità di seek
-                                Slider(
-                                    value: Binding(
-                                        get: { isDragging ? dragPosition : audioManager.currentTime },
-                                        set: { newValue in
-                                            dragPosition = newValue
-                                            isDragging = true
-                                        }
-                                    ),
-                                    in: 0...max(0.1, audioManager.duration),
-                                    onEditingChanged: { editing in
-                                        if !editing && isDragging {
-                                            // Quando il trascinamento finisce, imposta la nuova posizione
-                                            audioManager.seek(to: dragPosition)
-                                            isDragging = false
-                                        }
+                        .padding(.vertical, 5)
+
+                        Divider()
+                        VStack(spacing: 10) {
+                            HStack {
+                                Text("Storia")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Spacer()
+
+                                // Bottone per l'audio pre-registrato
+                                Button(action: {
+                                    if audioManager.isPlaying {
+                                        audioManager.pauseAudio()
+                                    } else if audioManager.currentTime > 0 {
+                                        audioManager.resumeAudio()
+                                    } else {
+                                        playAudio()
                                     }
-                                )
-                                .accentColor(.blue)
-                                
-                                // Etichette temporali
-                                HStack {
-                                    Text(formatTime(isDragging ? dragPosition : audioManager.currentTime))
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    
-                                    Spacer()
-                                    
-                                    Text(formatTime(audioManager.duration))
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                                }) {
+                                    HStack {
+                                        Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
+                                        Text(audioManager.isPlaying ? "Pausa" : (audioManager.currentTime > 0 ? "Riprendi" : "Ascolta"))
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(audioManager.isPlaying ? Color.red : Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
                                 }
                             }
-                            .padding(.horizontal, 2)
-                            .padding(.bottom, 5)
+
+                            // BARRA DI PROGRESSO AUDIO INTERATTIVA
+                            if audioManager.duration > 0 {
+                                VStack(spacing: 6) {
+                                    Slider(
+                                        value: Binding(
+                                            get: { isDragging ? dragPosition : audioManager.currentTime },
+                                            set: { newValue in
+                                                dragPosition = newValue
+                                                isDragging = true
+                                            }
+                                        ),
+                                        in: 0...max(0.1, audioManager.duration),
+                                        onEditingChanged: { editing in
+                                            if !editing && isDragging {
+                                                audioManager.seek(to: dragPosition)
+                                                isDragging = false
+                                            }
+                                        }
+                                    )
+                                    .accentColor(.blue)
+
+                                    HStack {
+                                        Text(formatTime(isDragging ? dragPosition : audioManager.currentTime))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                        Text(formatTime(audioManager.duration))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.horizontal, 2)
+                                .padding(.bottom, 5)
+                            }
+                        }
+
+                        // Usa i dati storici dal Place corrispondente
+                        if let placeHistory = placeData?.history {
+                            Text(placeHistory)
+                                .font(.body)
+                                .lineSpacing(5)
+                        } else {
+                            Text("Informazioni storiche non disponibili")
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .italic()
                         }
                     }
-                    
-                    // Usa i dati storici dal Place corrispondente
-                    if let placeHistory = placeData?.history {
-                        Text(placeHistory)
-                            .font(.body)
-                            .lineSpacing(5)
-                    } else {
-                        Text("Informazioni storiche non disponibili")
-                            .font(.body)
+                    .padding(.horizontal)
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Data della scoperta")
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
-                            .italic()
+                        Text(poi.discoveredDate != nil ? formatDate(poi.discoveredDate!) : "--/--/----")
+                            .font(.headline)
                     }
+                    .padding([.horizontal, .top], 16)
+                    .padding(.bottom, 30)
                 }
-                .padding(.horizontal)
-                
-                // Data di scoperta
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Data della scoperta")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Text(poi.discoveredDate != nil ? formatDate(poi.discoveredDate!) : "--/--/----")
-                        .font(.headline)
-                }
-                .padding([.horizontal, .top], 16)
-                .padding(.bottom, 30)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -192,23 +186,20 @@ struct DiaryView: View {
             )
         })
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy"
         return formatter.string(from: date)
     }
-    
-    // Formatta il tempo in formato MM:SS
+
     private func formatTime(_ timeInSeconds: Double) -> String {
         let minutes = Int(timeInSeconds) / 60
         let seconds = Int(timeInSeconds) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
-    
-    // Funzione per avviare la riproduzione audio
+
     private func playAudio() {
-        // Usa l'audio dal Place corrispondente, se disponibile
         if let place = placeData {
             if let audioURL = audioManager.loadAudioFromBundle(named: place.effectiveAudioName) {
                 audioManager.playAudio(from: audioURL, withID: "narration")
@@ -217,7 +208,6 @@ struct DiaryView: View {
                 showError = true
             }
         } else {
-            // Fallback: prova a usare il nome del POI come nome del file audio
             let audioName = poi.diaryPlaceName.lowercased().replacingOccurrences(of: " ", with: "_")
             if let audioURL = audioManager.loadAudioFromBundle(named: audioName) {
                 audioManager.playAudio(from: audioURL, withID: "narration")
