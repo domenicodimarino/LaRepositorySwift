@@ -1,10 +1,21 @@
 import SwiftUI
 import MapKit
 
+enum TransportMode {
+    case walking
+    case driving
+    
+    static func forSpeed(_ speed: Double) -> TransportMode {
+        // Soglia in m/s: circa 25 km/h (6.9 m/s)
+        return speed > 6.9 ? .driving : .walking
+    }
+}
 struct UserMovementState {
     var isMoving: Bool = false
     var heading: Double = 0.0
     var cameraHeading: Double = 0.0
+    var transportMode: TransportMode = .walking
+    var speed: Double = 0.0
 
     func relativeDirection() -> AvatarDirection {
         let relativeAngle = (heading - cameraHeading + 360).truncatingRemainder(dividingBy: 360)
@@ -189,21 +200,25 @@ struct CustomMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
             guard let location = userLocation.location else { return }
-
+            
             cameraHeading = mapView.camera.heading
-
+            
             let speed = location.speed
             let isMoving = speed > 0.4
+            let transportMode = TransportMode.forSpeed(speed)
             let heading = location.course >= 0 ? location.course : userState.heading
-
+            
             if isMoving != userState.isMoving ||
                heading != userState.heading ||
-               cameraHeading != userState.cameraHeading {
-
+               cameraHeading != userState.cameraHeading ||
+               transportMode != userState.transportMode {
+                
                 userState = UserMovementState(
                     isMoving: isMoving,
                     heading: heading,
-                    cameraHeading: cameraHeading
+                    cameraHeading: cameraHeading,
+                    transportMode: transportMode,
+                    speed: speed
                 )
                 updateAvatarForMovement()
             }
@@ -254,7 +269,8 @@ struct CustomMapView: UIViewRepresentable {
 
         func recreateAvatarView(in annotationView: MKAnnotationView) {
             annotationView.subviews.forEach { $0.removeFromSuperview() }
-
+            
+            // Dimensioni basate sulla modalità di visualizzazione
             let size: CGSize
             switch currentAvatarViewMode {
             case .fullBody:
@@ -262,50 +278,77 @@ struct CustomMapView: UIViewRepresentable {
             case .headOnly:
                 size = CGSize(width: 40, height: 40)
             }
-
+            
             avatarContainer = UIView(frame: CGRect(origin: .zero, size: size))
             avatarContainer?.backgroundColor = .clear
-
+            
             let avatarView: AnyView
-            switch currentAvatarViewMode {
-            case .fullBody:
-                let fullView = AvatarSpriteKitView(
-                    viewModel: parent.avatarViewModel,
-                    initialAnimation: userState.currentAnimation(),
-                    initialDirection: userState.relativeDirection()
-                )
-                .withSize(width: size.width, height: size.height)
-                avatarView = AnyView(fullView)
-
-            case .headOnly:
-                let headOnlyView = AvatarHeadPreview(viewModel: parent.avatarViewModel, size: size)
-                avatarView = AnyView(headOnlyView)
+            
+            // Verifica se deve essere mostrata l'auto o l'avatar
+            if userState.transportMode == .driving {
+                // Mostra la macchina
+                let carView = CarSpriteKitView(direction: userState.relativeDirection())
+                    .withSize(width: size.width, height: size.height)
+                
+                avatarView = AnyView(carView)
+            } else {
+                // Mostra l'avatar normale
+                switch currentAvatarViewMode {
+                case .fullBody:
+                    let fullView = AvatarSpriteKitView(
+                        viewModel: parent.avatarViewModel,
+                        initialAnimation: userState.currentAnimation(),
+                        initialDirection: userState.relativeDirection()
+                    )
+                    .withSize(width: size.width, height: size.height)
+                    
+                    avatarView = AnyView(fullView)
+                    
+                case .headOnly:
+                    let headOnlyView = AvatarHeadPreview(viewModel: parent.avatarViewModel, size: size)
+                    avatarView = AnyView(headOnlyView)
+                }
             }
-
+            
             let hostingController = UIHostingController(rootView: avatarView)
             hostingController.view.backgroundColor = .clear
             hostingController.view.frame = avatarContainer?.bounds ?? CGRect(origin: .zero, size: size)
             hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-
+            
             avatarContainer?.addSubview(hostingController.view)
             annotationView.addSubview(avatarContainer ?? UIView())
             avatarContainer?.center = CGPoint(x: annotationView.bounds.midX, y: annotationView.bounds.midY)
-
+            
             avatarHostingController = hostingController
         }
 
         func updateAvatarView(avatarViewModel: AvatarViewModel) {
-            if case .fullBody = currentAvatarViewMode,
-               let hostingController = avatarHostingController {
-
-                let avatarView = AvatarSpriteKitView(
-                    viewModel: avatarViewModel,
-                    initialAnimation: userState.currentAnimation(),
-                    initialDirection: userState.relativeDirection()
-                )
-                .withSize(width: 80, height: 80)
-
-                hostingController.rootView = AnyView(avatarView)
+            if let hostingController = avatarHostingController {
+                let avatarView: AnyView
+                
+                if userState.transportMode == .driving {
+                    // Mostra la macchina
+                    let carView = CarSpriteKitView(direction: userState.relativeDirection())
+                        .withSize(width: 80, height: 80)
+                    
+                    avatarView = AnyView(carView)
+                } else {
+                    // Mostra l'avatar normale solo se in modalità fullBody
+                    if case .fullBody = currentAvatarViewMode {
+                        let fullView = AvatarSpriteKitView(
+                            viewModel: avatarViewModel,
+                            initialAnimation: userState.currentAnimation(),
+                            initialDirection: userState.relativeDirection()
+                        )
+                        .withSize(width: 80, height: 80)
+                        
+                        avatarView = AnyView(fullView)
+                    } else {
+                        return // Non aggiornare in modalità headOnly
+                    }
+                }
+                
+                hostingController.rootView = avatarView
             }
         }
 
