@@ -52,7 +52,13 @@ struct ProfileView: View {
           Form {
             Section {
               // Ora usiamo il binding al viewModel
-              TextField("Il tuo nome", text: nameBinding)
+                LabeledContent {
+                    TextField("Il tuo nome", text: nameBinding)
+                } label: {
+                    Text("Nome:")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
 
               // Link a schermata di personalizzazione avatar
               NavigationLink {
