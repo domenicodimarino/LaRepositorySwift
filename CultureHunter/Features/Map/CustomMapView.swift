@@ -58,7 +58,7 @@ struct CustomMapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.preferredConfiguration = configuration
-        mapView.isPitchEnabled = false
+        mapView.isPitchEnabled = true
         mapView.isRotateEnabled = true
         mapView.showsUserLocation = true
         mapView.showsUserTrackingButton = true
