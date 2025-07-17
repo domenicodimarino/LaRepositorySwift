@@ -31,21 +31,21 @@ struct CustomMapView: UIViewRepresentable {
     @Binding var trackingState: TrackingState
     var mappedPOIs: [MappedPOI]
     @ObservedObject var avatarViewModel: AvatarViewModel
-    var onPOISelected: ((MappedPOI) -> Void)?
-    var userLocation: CLLocation? // <-- AGGIUNGI QUESTO
+    var onPOISelected: ((MappedPOI?) -> Void)?
+    var userLocation: CLLocation?
 
     private let configuration: MKMapConfiguration
 
     init(trackingState: Binding<TrackingState>,
          mappedPOIs: [MappedPOI],
          avatarViewModel: AvatarViewModel,
-         onPOISelected: ((MappedPOI) -> Void)? = nil,
-         userLocation: CLLocation? = nil) { // <-- AGGIUNGI QUESTO
+         onPOISelected: ((MappedPOI?) -> Void)? = nil,
+         userLocation: CLLocation? = nil) {
         self._trackingState = trackingState
         self.mappedPOIs = mappedPOIs
         self.avatarViewModel = avatarViewModel
         self.onPOISelected = onPOISelected
-        self.userLocation = userLocation // <-- AGGIUNGI QUESTO
+        self.userLocation = userLocation
 
         var config = MKImageryMapConfiguration(elevationStyle: .realistic)
         configuration = config
@@ -69,7 +69,7 @@ struct CustomMapView: UIViewRepresentable {
 
         mapView.delegate = context.coordinator
 
-        // CAMERA DINAMICA
+        // Posiziona la camera inizialmente su userLocation, se disponibile
         let initialCoordinate: CLLocationCoordinate2D
         if let userLocation = userLocation {
             initialCoordinate = userLocation.coordinate
@@ -84,23 +84,26 @@ struct CustomMapView: UIViewRepresentable {
             mapView.addAnnotation(annotation)
         }
 
+        // Imposta il tracking mode all'avvio
+        if trackingState == .follow {
+            mapView.setUserTrackingMode(.follow, animated: false)
+        }
+
         return mapView
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
+        // Sincronizza sempre la modalità di tracking tra stato SwiftUI e mappa
         switch trackingState {
-        case .follow where mapView.userTrackingMode == .none:
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                if let userAnnotationView = mapView.view(for: mapView.userLocation) {
-                    context.coordinator.recreateAvatarView(in: userAnnotationView)
-                }
-            }
+        case .follow where mapView.userTrackingMode != .follow:
+            mapView.setUserTrackingMode(.follow, animated: true)
         case .none where mapView.userTrackingMode != .none:
             mapView.setUserTrackingMode(.none, animated: true)
         default:
             break
         }
 
+        // Aggiorna avatar se necessario
         if context.coordinator.lastAvatarHash != avatarViewModel.avatar.hashValue {
             context.coordinator.lastAvatarHash = avatarViewModel.avatar.hashValue
             context.coordinator.updateAvatarView(
@@ -155,12 +158,17 @@ struct CustomMapView: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
+            // Aggiorna lo stato SwiftUI quando l'utente cambia modalità sulla mappa
             parent.trackingState = mode == .none ? .none : .follow
         }
 
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
             guard let annotation = view.annotation as? MappedPOIAnnotation else { return }
             parent.onPOISelected?(annotation.poi)
+        }
+
+        func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
+            parent.onPOISelected?(nil)
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
