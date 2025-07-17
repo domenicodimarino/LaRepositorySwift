@@ -5,13 +5,11 @@ struct PlacesList: View {
 
     @State private var selectedCity: String = "Tutti"
 
-    // Ricava automaticamente tutte le città presenti
     private var allCities: [String] {
         let cities = Set(places.map { $0.city })
         return ["Tutti"] + cities.sorted()
     }
 
-    // Filtra i POI per città selezionata
     private var filteredPlaces: [MappedPOI] {
         let baseList: [MappedPOI]
         if selectedCity == "Tutti" {
@@ -26,44 +24,45 @@ struct PlacesList: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Barra città migliorata, scrollabile
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(allCities, id: \.self) { city in
-                            Button(action: {
-                                selectedCity = city
-                            }) {
-                                Text(city)
-                                    .fontWeight(selectedCity == city ? .bold : .regular)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 20)
-                                    .background(selectedCity == city ? Color.gray.opacity(0.4) : Color(.systemGray6))
-                                    .foregroundColor(selectedCity == city ? .white : .primary)
-                                    .cornerRadius(16)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.8)
+            ZStack {
+                VStack(spacing: 0) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(allCities, id: \.self) { city in
+                                Button(action: {
+                                    selectedCity = city
+                                }) {
+                                    Text(city)
+                                        .fontWeight(selectedCity == city ? .bold : .regular)
+                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 20)
+                                        .background(selectedCity == city ? Color.black.opacity(0.4) : Color(.systemGray6))
+                                        .foregroundColor(selectedCity == city ? .white : .primary)
+                                        .cornerRadius(16)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
+                                }
                             }
                         }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 4)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
 
-                List(filteredPlaces) { place in
-                    if place.isDiscovered {
-                        NavigationLink(destination: DiaryView(poi: place)) {
+                    List(filteredPlaces) { place in
+                        if place.isDiscovered {
+                            NavigationLink(destination: DiaryView(poi: place)) {
+                                PlacesListRow(place: place)
+                            }
+                        } else {
                             PlacesListRow(place: place)
+                                .contentShape(Rectangle())
+                                .disabled(true)
                         }
-                    } else {
-                        PlacesListRow(place: place)
-                            .contentShape(Rectangle())
-                            .disabled(true)
                     }
+                    .listStyle(PlainListStyle())
                 }
-                .listStyle(PlainListStyle())
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -74,6 +73,7 @@ struct PlacesList: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
 }
 
