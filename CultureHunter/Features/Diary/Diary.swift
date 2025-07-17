@@ -286,13 +286,22 @@ class PlacesData {
             audioName: nil
         ),
         Place(
+            name: "Stadio Arechi",
+            imageName: "poi_locked",
+            history: "Lo Stadio Arechi è il principale impianto sportivo della città di Salerno e rappresenta un punto di riferimento fondamentale per la vita sportiva e sociale del territorio. Inaugurato ufficialmente nel 1990, lo stadio è stato costruito per sostituire il vecchio Stadio Donato Vestuti, ormai insufficiente per le esigenze della città e della squadra locale, la Salernitana. L’Arechi è situato nella zona orientale di Salerno, non lontano dal mare, e può ospitare circa 31.000 spettatori, risultando uno degli impianti più capienti del Sud Italia. L’impianto è noto per la sua atmosfera calorosa, soprattutto durante le partite della Salernitana, grazie al sostegno appassionato dei tifosi granata. Oltre alle competizioni calcistiche, lo stadio ha ospitato numerosi eventi di rilievo, tra cui concerti, manifestazioni sportive e appuntamenti istituzionali, confermandosi come uno spazio polifunzionale e centrale per la città. Nel corso degli anni, lo Stadio Arechi è stato oggetto di vari interventi di ammodernamento per garantire sicurezza, comfort e servizi sia agli spettatori che agli atleti. Simbolo dell’identità salernitana, lo stadio continua a rappresentare un luogo di aggregazione, emozioni e ricordi per generazioni di cittadini.",
+            yearBuilt: "1988-1990",
+            location: "Salerno",
+            audioName: nil
+        ),
+        Place(
             name: "Casa del Dom",
             imageName: "poi_locked",
             history: "La casa del dom, molto bella e piena di gatti",
             yearBuilt: "2018",
             location: "Cava de' Tirreni, Salerno",
             audioName: nil
-        ),Place(
+        ),
+        Place(
             name: "UNISA Edificio E",
             imageName: "poi_locked",
             history: "Manicomio",
@@ -300,6 +309,5 @@ class PlacesData {
             location: "Fisciano, Salerno",
             audioName: nil
         ),
-        
     ]
 }

@@ -7,38 +7,51 @@ struct PlacesList: View {
 
     // Ricava automaticamente tutte le città presenti
     private var allCities: [String] {
-            let cities = Set(places.map { $0.city })
-            return ["Tutti"] + cities.sorted()
-        }
+        let cities = Set(places.map { $0.city })
+        return ["Tutti"] + cities.sorted()
+    }
 
     // Filtra i POI per città selezionata
     private var filteredPlaces: [MappedPOI] {
-        // Filtra prima per città
         let baseList: [MappedPOI]
         if selectedCity == "Tutti" {
             baseList = places
         } else {
             baseList = places.filter { $0.city == selectedCity }
         }
-        
-        // Divide in scoperti e non scoperti
         let discovered = baseList.filter { $0.isDiscovered }
         let notDiscovered = baseList.filter { !$0.isDiscovered }
-        
-        // Combina i due gruppi (prima scoperti, poi non scoperti)
         return discovered + notDiscovered
     }
-    
+
     var body: some View {
         NavigationView {
-            VStack {
-                Picker("Filtra città", selection: $selectedCity) {
-                    ForEach(allCities, id: \.self) { city in
-                        Text(city).tag(city)
+            VStack(spacing: 0) {
+                // Barra città migliorata, scrollabile
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(allCities, id: \.self) { city in
+                            Button(action: {
+                                selectedCity = city
+                            }) {
+                                Text(city)
+                                    .fontWeight(selectedCity == city ? .bold : .regular)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 20)
+                                    .background(selectedCity == city ? Color.gray.opacity(0.4) : Color(.systemGray6))
+                                    .foregroundColor(selectedCity == city ? .white : .primary)
+                                    .cornerRadius(16)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                            }
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+
                 List(filteredPlaces) { place in
                     if place.isDiscovered {
                         NavigationLink(destination: DiaryView(poi: place)) {

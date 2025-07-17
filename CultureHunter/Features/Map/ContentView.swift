@@ -466,6 +466,20 @@ struct ContentView: View {
             longitude: 14.709200325060241,
             imageName: "villa_comunale"
         ),
+        POI(
+            street: "Piazzale Alberto Piccinini",
+            streetNumber: "",
+            city: "Salerno",
+            province: "Salerno",
+            diaryPlaceName: "Stadio Arechi",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            photoPath: nil,
+            latitude: 40.645524,
+            longitude: 14.823645,
+            imageName: "stadio_arechi"
+        ),
         //temporaneo
         POI(
             street: "Via del Diritto",
@@ -480,8 +494,7 @@ struct ContentView: View {
             latitude: 40.77252,
             longitude: 14.79116,
             imageName: "villa_comunale"
-        ),
-        
+        )
     ]
 
     @StateObject private var poiViewModel = POIViewModel()

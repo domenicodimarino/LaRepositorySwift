@@ -25,14 +25,15 @@ struct MapTab: View {
                     onPOISelected: { poi in
                         selectedPOI = poi
                         showPhotoButton = shouldShowPhotoButton(for: poi)
-                    }
+                    },
+                    userLocation: locationManager.lastLocation // <-- PASSA QUESTO!
                 )
                 .edgesIgnoringSafeArea(.top)
             } else {
                 ProgressView("Caricamento POI sulla mappa…")
                     .edgesIgnoringSafeArea(.top)
             }
-            
+
             if showPhotoButton, let poi = selectedPOI, !poi.isDiscovered {
                 VStack {
                     Spacer()
@@ -52,7 +53,6 @@ struct MapTab: View {
         .sheet(isPresented: $showCamera) {
             if let poi = selectedPOI {
                 CameraPicker { image in
-                    // Registra il POI
                     viewModel.markPOIDiscovered(
                         id: poi.id,
                         photo: image,
@@ -60,12 +60,8 @@ struct MapTab: View {
                         badgeManager: badgeManager,
                         nomeUtente: "Giovanni"
                     )
-                    
-                    // Completa la missione se attiva
                     if let reward = missionViewModel.tryCompleteMission(poiVisited: true) {
-                        // Aggiungi le monete all'avatar
                         avatarViewModel.addCoins(reward)
-                        
                     }
                 }
             }
@@ -84,6 +80,6 @@ struct MapTab: View {
     private func shouldShowPhotoButton(for poi: MappedPOI) -> Bool {
         guard let userLoc = locationManager.lastLocation else { return false }
         let poiLoc = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
-        return userLoc.distance(from: poiLoc) < 100 // soglia in metri
+        return userLoc.distance(from: poiLoc) < 100
     }
 }
