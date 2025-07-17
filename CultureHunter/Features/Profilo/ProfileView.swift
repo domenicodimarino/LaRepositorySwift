@@ -3,6 +3,10 @@ import SwiftUI
 struct ProfileView: View {
   
     @ObservedObject var viewModel: AvatarViewModel
+    
+    // Keys for mission time (same as in MissionViewModel)
+        private let missionTimeHourKey = "missionTimeHourKey"
+        private let missionTimeMinuteKey = "missionTimeMinuteKey"
   
   // Proprietà calcolata per il binding al nome
   private var nameBinding: Binding<String> {
@@ -79,8 +83,25 @@ struct ProfileView: View {
                 }
               }
             }
+              Section {
+                                          // Mission time picker
+                                          DatePicker("Orario missione giornaliera",
+                                                    selection: Binding<Date>(
+                                                      get: {
+                                                          let hour = UserDefaults.standard.integer(forKey: self.missionTimeHourKey)
+                                                          let minute = UserDefaults.standard.integer(forKey: self.missionTimeMinuteKey)
+                                                          return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
+                                                      },
+                                                      set: { newDate in
+                                                          let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                                                          UserDefaults.standard.set(components.hour ?? 17, forKey: self.missionTimeHourKey)
+                                                          UserDefaults.standard.set(components.minute ?? 45, forKey: self.missionTimeMinuteKey)
+                                                      }
+                                                    ),
+                                                    displayedComponents: .hourAndMinute)
+                                      }
           }
-          .frame(height: 300)  // regola in base al contenuto
+          .frame(height: 350)  // regola in base al contenuto
           .cornerRadius(16)
         }
         .padding()

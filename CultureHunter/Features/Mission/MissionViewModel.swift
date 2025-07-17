@@ -9,11 +9,36 @@ class MissionViewModel: ObservableObject {
     
     private var timer: Timer?
     private var missionsKey = "savedMissions"
-    private let missionHour = 17
-    private let missionMinute = 45
     private let lastMissionCreationDateKey = "lastMissionCreationDateKey"
     
+    // New keys for mission time
+       private let missionTimeHourKey = "missionTimeHourKey"
+       private let missionTimeMinuteKey = "missionTimeMinuteKey"
+    
+    // Computed properties for mission time
+        private var missionHour: Int {
+            let hour = UserDefaults.standard.integer(forKey: missionTimeHourKey)
+            return hour != 0 ? hour : 17 // Default to 17:00
+        }
+        
+        private var missionMinute: Int {
+            let minute = UserDefaults.standard.integer(forKey: missionTimeMinuteKey)
+            return minute != 0 ? minute : 45 // Default to 45 minutes
+        }
+    
     private var avatarViewModel: AvatarViewModel?
+    
+    private var notificationObserver: NSObjectProtocol?
+    
+    private let notificationManager = NotificationManager()
+        
+        private func rescheduleNotifications() {
+            // Cancel existing notifications first
+            notificationManager.cancelMissionNotifications()
+            
+            // Then schedule new ones
+            scheduleNextDailyMission()
+        }
     
     init(avatarViewModel: AvatarViewModel? = nil) {
         self.avatarViewModel = avatarViewModel
@@ -28,16 +53,48 @@ class MissionViewModel: ObservableObject {
         
         // Controlla se dobbiamo creare una missione (all'apertura dell'app)
         checkForMissionsAfterAppOpen()
+        
+        // Set default mission time if needed
+                if UserDefaults.standard.object(forKey: missionTimeHourKey) == nil {
+                    UserDefaults.standard.set(17, forKey: missionTimeHourKey)
+                }
+                if UserDefaults.standard.object(forKey: missionTimeMinuteKey) == nil {
+                    UserDefaults.standard.set(45, forKey: missionTimeMinuteKey)
+                }
+                
+                // Observe UserDefaults changes
+                setupObservers()
+    }
+    
+    deinit {
+            if let observer = notificationObserver {
+                NotificationCenter.default.removeObserver(observer)
+            }
+        }
+        
+    private func setupObservers() {
+        notificationObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            // Add check to prevent unnecessary calls
+            guard self.missionHour != UserDefaults.standard.integer(forKey: missionTimeHourKey) ||
+                  self.missionMinute != UserDefaults.standard.integer(forKey: missionTimeMinuteKey)
+            else { return }
+            
+            self.notificationManager.cancelMissionNotifications()
+            UserDefaults.standard.removeObject(forKey: self.lastMissionCreationDateKey)
+            self.scheduleNextDailyMission()
+        }
     }
     
     // Metodo per impostare l'avatarViewModel dopo l'inizializzazione
     func setAvatarViewModel(_ viewModel: AvatarViewModel) {
         self.avatarViewModel = viewModel
     }
-    
-    deinit {
-        timer?.invalidate()
-    }
+
     
     // MARK: - Gestione app aperta/chiusa
     
@@ -57,13 +114,13 @@ class MissionViewModel: ObservableObject {
         let now = Date()
         let calendar = Calendar.current
         
-        // Controlla se abbiamo già creato una missione oggi
+        // Check if we have a mission scheduled for today
         if let lastCreationDate = UserDefaults.standard.object(forKey: lastMissionCreationDateKey) as? Date,
            calendar.isDate(lastCreationDate, inSameDayAs: now) {
             return false
         }
         
-        // Componiamo la data target di oggi
+        // Calculate today's mission time
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
         dateComponents.hour = missionHour
         dateComponents.minute = missionMinute
@@ -73,40 +130,8 @@ class MissionViewModel: ObservableObject {
             return false
         }
         
-        // Se l'orario attuale è prima di quello programmato, non creare missione
-        if now < targetTime {
-            return false
-        }
-        
-        // Se non c'è nessuna missione attiva, crea una nuova
-        guard let mission = activeMission else {
-            return true
-        }
-        
-        // Se la missione è completata, verifica se è di oggi
-        if mission.isCompleted {
-            guard let startDate = mission.startDate else {
-                return true // Missione senza data di inizio, sostituiscila
-            }
-            
-            // Se la missione completata è di un giorno precedente, crea una nuova
-            if !calendar.isDate(startDate, inSameDayAs: now) {
-                return true
-            }
-            
-            // Se la missione completata è di oggi, non creare una nuova
-            return false
-        }
-        
-        // Se la missione non è completata, verifica se è scaduta da più di 24 ore
-        if let startDate = mission.startDate {
-            let timeSinceStart = now.timeIntervalSince(startDate)
-            if timeSinceStart > 24 * 60 * 60 { // 24 ore
-                return true
-            }
-        }
-        
-        return false
+        // Create mission if current time is after target time
+        return now >= targetTime
     }
     
     // MARK: - Gestione missione
@@ -302,6 +327,12 @@ class MissionViewModel: ObservableObject {
             self.saveMission()
             self.objectWillChange.send() // Forza aggiornamento UI
         }
+        if let mission = activeMission {
+                    notificationManager.sendMissionNotification(
+                        description: mission.description,
+                        reward: mission.reward
+                    )
+                }
     }
     
     // MARK: - Persistenza
