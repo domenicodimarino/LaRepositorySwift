@@ -9,4 +9,5 @@
 enum TrackingState {
     case none
     case follow
+    case followWithHeading
 }

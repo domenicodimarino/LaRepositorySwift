@@ -107,24 +107,34 @@ struct CustomMapView: UIViewRepresentable {
             mapView.addAnnotation(annotation)
         }
 
-        // Imposta il tracking mode all'avvio
-        if trackingState == .follow {
-            mapView.setUserTrackingMode(.follow, animated: false)
-        }
+        // 1. UPDATE TRACKING MODE INITIALIZATION
+            // Set initial tracking mode based on trackingState
+            switch trackingState {
+            case .follow:
+                mapView.setUserTrackingMode(.follow, animated: false)
+            case .followWithHeading:  // NEW CASE FOR HEADING MODE
+                mapView.setUserTrackingMode(.followWithHeading, animated: false)
+            case .none:
+                // Explicitly set to none
+                mapView.setUserTrackingMode(.none, animated: false)
+            }
 
         return mapView
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         // Sincronizza sempre la modalità di tracking tra stato SwiftUI e mappa
-        switch trackingState {
-        case .follow where mapView.userTrackingMode != .follow:
-            mapView.setUserTrackingMode(.follow, animated: true)
-        case .none where mapView.userTrackingMode != .none:
-            mapView.setUserTrackingMode(.none, animated: true)
-        default:
-            break
-        }
+        // Sync tracking state
+            switch trackingState {
+            case .follow where mapView.userTrackingMode != .follow:
+                mapView.setUserTrackingMode(.follow, animated: true)
+            case .followWithHeading where mapView.userTrackingMode != .followWithHeading:  // New case
+                mapView.setUserTrackingMode(.followWithHeading, animated: true)
+            case .none where mapView.userTrackingMode != .none:
+                mapView.setUserTrackingMode(.none, animated: true)
+            default:
+                break
+            }
 
         // Aggiorna avatar se necessario
         if context.coordinator.lastAvatarHash != avatarViewModel.avatar.hashValue {
@@ -181,8 +191,16 @@ struct CustomMapView: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, didChange mode: MKUserTrackingMode, animated: Bool) {
-            // Aggiorna lo stato SwiftUI quando l'utente cambia modalità sulla mappa
-            parent.trackingState = mode == .none ? .none : .follow
+            switch mode {
+                case .none:
+                    parent.trackingState = .none
+                case .follow:
+                    parent.trackingState = .follow
+                case .followWithHeading:
+                    parent.trackingState = .followWithHeading  // Handle heading mode
+                @unknown default:
+                    break
+                }
         }
 
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
