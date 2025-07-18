@@ -17,8 +17,6 @@ struct DiaryView: View {
 
     var body: some View {
         ZStack {
-            Color.black
-                .edgesIgnoringSafeArea(.all)
             ScrollView {
                 let isIPad = UIDevice.current.userInterfaceIdiom == .pad
                 let imageHeight: CGFloat = isIPad ? 280 : 180
