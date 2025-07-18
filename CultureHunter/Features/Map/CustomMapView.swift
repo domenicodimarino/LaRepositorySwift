@@ -291,7 +291,7 @@ struct CustomMapView: UIViewRepresentable {
             view.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
             view.canShowCallout = false
             view.centerOffset = .zero
-            view.zPriority = .init(rawValue: 3)
+            view.zPriority = .init(rawValue: 15)
 
             recreateAvatarView(in: view)
             return view
@@ -416,7 +416,7 @@ struct CustomMapView: UIViewRepresentable {
             view.layer.shadowOffset = CGSize.zero
             view.layer.shadowRadius = 8
             view.layer.shadowOpacity = 0.8
-            view.zPriority = .init(rawValue: 2)
+            view.zPriority = .init(rawValue: 3)
             view.displayPriority = .required
             view.centerOffset = CGPoint(x: 0, y: -10)
 
@@ -428,7 +428,7 @@ struct CustomMapView: UIViewRepresentable {
             let view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: identifier)
             view.markerTintColor = .systemRed
             view.glyphText = "?"
-            view.zPriority = .init(rawValue: 2)
+            view.zPriority = .init(rawValue: 5)
             view.displayPriority = .required
             return view
         }
