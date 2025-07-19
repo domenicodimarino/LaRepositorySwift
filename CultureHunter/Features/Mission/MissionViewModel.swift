@@ -10,21 +10,28 @@ class MissionViewModel: ObservableObject {
     private var timer: Timer?
     private var missionsKey = "savedMissions"
     private let lastMissionCreationDateKey = "lastMissionCreationDateKey"
+    private var isRescheduling = false
     
     // New keys for mission time
        private let missionTimeHourKey = "missionTimeHourKey"
        private let missionTimeMinuteKey = "missionTimeMinuteKey"
     
     // Computed properties for mission time
-        private var missionHour: Int {
-            let hour = UserDefaults.standard.integer(forKey: missionTimeHourKey)
-            return hour != 0 ? hour : 17 // Default to 17:00
+    private var missionHour: Int {
+        // Check if the key exists at all
+        if UserDefaults.standard.object(forKey: missionTimeHourKey) == nil {
+            return 17 // Default to 17:00
         }
-        
-        private var missionMinute: Int {
-            let minute = UserDefaults.standard.integer(forKey: missionTimeMinuteKey)
-            return minute != 0 ? minute : 45 // Default to 45 minutes
+        return UserDefaults.standard.integer(forKey: missionTimeHourKey)
+    }
+
+    private var missionMinute: Int {
+        // Check if the key exists at all
+        if UserDefaults.standard.object(forKey: missionTimeMinuteKey) == nil {
+            return 45 // Default to 45 minutes
         }
+        return UserDefaults.standard.integer(forKey: missionTimeMinuteKey)
+    }
     
     private var avatarViewModel: AvatarViewModel?
     
@@ -79,13 +86,22 @@ class MissionViewModel: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             guard let self = self else { return }
+            
+            // Add reentrancy guard here
+            guard !self.isRescheduling else { return }
+            self.isRescheduling = true
+            defer { self.isRescheduling = false }
+            
             // Add check to prevent unnecessary calls
             guard self.missionHour != UserDefaults.standard.integer(forKey: missionTimeHourKey) ||
                   self.missionMinute != UserDefaults.standard.integer(forKey: missionTimeMinuteKey)
             else { return }
             
             self.notificationManager.cancelMissionNotifications()
-            UserDefaults.standard.removeObject(forKey: self.lastMissionCreationDateKey)
+            
+            // DON'T reset last mission creation date here
+            // UserDefaults.standard.removeObject(forKey: self.lastMissionCreationDateKey)
+            
             self.scheduleNextDailyMission()
         }
     }
@@ -114,13 +130,13 @@ class MissionViewModel: ObservableObject {
         let now = Date()
         let calendar = Calendar.current
         
-        // Check if we have a mission scheduled for today
+        // Check if we already have a mission for today
         if let lastCreationDate = UserDefaults.standard.object(forKey: lastMissionCreationDateKey) as? Date,
            calendar.isDate(lastCreationDate, inSameDayAs: now) {
             return false
         }
         
-        // Calculate today's mission time
+        // Calculate today's mission time with new time
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
         dateComponents.hour = missionHour
         dateComponents.minute = missionMinute
@@ -130,7 +146,7 @@ class MissionViewModel: ObservableObject {
             return false
         }
         
-        // Create mission if current time is after target time
+        // Only create mission if we're past the target time
         return now >= targetTime
     }
     
@@ -258,36 +274,40 @@ class MissionViewModel: ObservableObject {
             trigger: trigger
         )
         
+        let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .medium
+            formatter.timeZone = TimeZone.current
+            
+            print("Scheduling next mission notification at: \(formatter.string(from: nextDate))")
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                print("Errore nella programmazione della notifica: \(error.localizedDescription)")
+                print("Error scheduling notification: \(error.localizedDescription)")
             } else {
-                print("Notifica programmata per le \(self.missionHour):\(self.missionMinute)")
+                // Format with leading zeros for minutes
+                let formattedMinute = String(format: "%02d", self.missionMinute)
+                print("Notification scheduled for \(self.missionHour):\(formattedMinute) local time")
             }
         }
     }
     
-    // Calcola la data della prossima missione
+    // In getNextMissionDate() - fix date wrapping at midnight
     private func getNextMissionDate() -> Date {
-        let now = Date()
         let calendar = Calendar.current
+        let now = Date()
         
-        // Crea i componenti per oggi all'ora specificata
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: now)
-        dateComponents.hour = missionHour
-        dateComponents.minute = missionMinute
-        dateComponents.second = 0
+        // Create components for today's mission time
+        var targetComponents = DateComponents()
+        targetComponents.hour = missionHour
+        targetComponents.minute = missionMinute
         
-        guard let todayTarget = calendar.date(from: dateComponents) else {
-            return now
-        }
-        
-        // Se l'orario di oggi è già passato, programma per domani
-        if now >= todayTarget {
-            return calendar.date(byAdding: .day, value: 1, to: todayTarget) ?? now
-        }
-        
-        return todayTarget
+        // Find next matching time in local timezone
+        return calendar.nextDate(
+            after: now,
+            matching: targetComponents,
+            matchingPolicy: .nextTimePreservingSmallerComponents
+        ) ?? now
     }
     
     // MARK: - Creazione missione

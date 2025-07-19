@@ -6,6 +6,7 @@ import Combine  // Importante: aggiungi questa importazione
 class NotificationManager: ObservableObject {  // Aggiungi conformità a ObservableObject
     // Puoi aggiungere proprietà osservabili se necessario
     @Published var lastNotificationSent: Date? = nil
+    private let notificationQueue = DispatchQueue(label: "notification.queue")
     
     // Richiedi il permesso per le notifiche (chiamare all'avvio dell'app)
     func requestPermissions() {
@@ -109,7 +110,9 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         }
     }
     func cancelMissionNotifications() {
-        let identifier = "mission_notification"
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        DispatchQueue.main.async {
+            let identifier = "mission_notification"
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        }
     }
 }
