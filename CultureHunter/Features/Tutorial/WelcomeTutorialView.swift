@@ -75,13 +75,13 @@ struct AppInfoTutorialView: View {
             case .diary:
                 tutorialPage(
                     title: "Il diario 📔",
-                    description: "Tutti i punti di interesse registrati sono visibili nel tuo diario.",
-                    videoName: "diary_tutorial"
+                    description: "Qui puoi vedere tutti i punti di interesse registrati e quelli ancora da scoprire, divisi per città.",
+                    videoName: "diario_tutorial"
                 )
             case .poi:
                 tutorialPage(
                     title: "Il punto di interesse 🏛️",
-                    description: "Per ogni punto di interesse puoi leggere o ascoltare la sua storia.",
+                    description: "Per ogni punto di interesse puoi leggere o ascoltare la sua storia, oltre a vedere la sua foto.",
                     videoName: "poi_tutorial"
                 )
             case .badges:
@@ -93,14 +93,14 @@ struct AppInfoTutorialView: View {
             case .shop:
                 tutorialPage(
                     title: "Lo shop 🛍️",
-                    description: "Con le monete ottenute, puoi personalizzare il tuo avatar.",
+                    description: "Con le monete ottenute scoprendo i punti e completando le missioni, puoi personalizzare il tuo avatar!",
                     videoName: "shop_tutorial"
                 )
             case .profile:
                 tutorialPage(
                     title: "Il profilo 👤",
-                    description: "Dalla schermata del profilo puoi cambiare il tuo nome e l'aspetto dell'avatar.",
-                    videoName: "profile_tutorial"
+                    description: "Dalla schermata del profilo puoi cambiare il tuo nome, l'aspetto e abbigliamento dell'avatar, e anche cambiare l'orario della missione giornaliera",
+                    videoName: "profilo_tutorial"
                 )
             }
             
@@ -128,6 +128,7 @@ struct AppInfoTutorialView: View {
             
             Text(title)
                 .font(.title.bold())
+                .padding(.top)
             
             // Video player con bordo per garantire visibilità
             FullscreenVideoPlayer(videoName: videoName)
@@ -137,13 +138,12 @@ struct AppInfoTutorialView: View {
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                 )
-                .padding()
-            
+                .padding(.top)
             
             
             Text(description)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.horizontal)
             
             Spacer()
             
