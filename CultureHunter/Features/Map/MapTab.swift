@@ -122,6 +122,6 @@ struct MapTab: View {
             private func shouldShowPhotoButton(for poi: MappedPOI) -> Bool {
                 guard let userLoc = locationManager.lastLocation else { return false }
                 let poiLoc = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
-                return userLoc.distance(from: poiLoc) < 20
+                return userLoc.distance(from: poiLoc) < 25
             }
         }
