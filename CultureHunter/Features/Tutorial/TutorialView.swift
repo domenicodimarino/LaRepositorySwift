@@ -19,7 +19,7 @@ struct TutorialView: View {
             title: "Benvenuto!",
             description: "Scopri la città, esplora punti di interesse, guadagna badge e personalizza il tuo avatar.",
             imageName: "welcome_image",
-            bottomImages: ["church_icon", "castle_icon"]
+            bottomImages: ["church_icon", "tower_icon"]
         ),
         // Aggiungi le altre pagine del tutorial informativo
     ]

@@ -7,7 +7,8 @@
 
 
 import SwiftUI
-
+import SDWebImageSwiftUI
+//40,70016° N, 14,70753° E
 // Schermata di benvenuto
 struct WelcomeTutorialView: View {
     let onNext: () -> Void
@@ -16,16 +17,17 @@ struct WelcomeTutorialView: View {
         VStack {
             Spacer()
             
-            Image("welcome_image") // Sostituisci con la tua immagine
+            // Puoi usare una GIF animata anche qui
+            AnimatedImage(name: "welcome_page.gif", bundle: .main)
                 .resizable()
-                .scaledToFit()
-                .frame(height: 120)
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 250)
             
             Text("Benvenuto!")
                 .font(.largeTitle.bold())
                 .padding(.top)
             
-            Text("Scopri la città, esplora punti di interesse, guadagna badge e personalizza il tuo avatar divertendoti!")
+            Text("Scopri la città, esplora punti di interesse, ottieni badge e personalizza il tuo avatar divertendoti!")
                 .multilineTextAlignment(.center)
                 .padding()
             
@@ -33,15 +35,15 @@ struct WelcomeTutorialView: View {
             
             // Immagini edifici in basso (opzionale)
             HStack(spacing: 24) {
-                Image("church_icon") // Sostituisci con le tue immagini
+                Image("church_icon") // Puoi mantenere immagini statiche dove preferisci
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 60)
+                    .frame(height: 150)
                 
-                Image("castle_icon")
+                Image("tower_icon")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 60)
+                    .frame(height: 150)
             }
             .padding()
             
@@ -68,37 +70,37 @@ struct AppInfoTutorialView: View {
                 tutorialPage(
                     title: "La mappa 🗺️",
                     description: "Guarda la mappa per scoprire punti di interesse, raggiungili e scatta una foto per registrarli.",
-                    imageName: "map_screenshot"
+                    videoName: "map_tutorial"
                 )
             case .diary:
                 tutorialPage(
                     title: "Il diario 📔",
                     description: "Tutti i punti di interesse registrati sono visibili nel tuo diario.",
-                    imageName: "diary_screenshot"
+                    videoName: "diary_tutorial"
                 )
             case .poi:
                 tutorialPage(
                     title: "Il punto di interesse 🏛️",
                     description: "Per ogni punto di interesse puoi leggere o ascoltare la sua storia.",
-                    imageName: "poi_screenshot"
+                    videoName: "poi_tutorial"
                 )
             case .badges:
                 tutorialPage(
                     title: "I badge 🏅",
                     description: "Registrando tutti i punti di interesse di una città, puoi ottenere il suo badge!",
-                    imageName: "badges_screenshot"
+                    videoName: "badges_tutorial"
                 )
             case .shop:
                 tutorialPage(
                     title: "Lo shop 🛍️",
                     description: "Con le monete ottenute, puoi personalizzare il tuo avatar.",
-                    imageName: "shop_screenshot"
+                    videoName: "shop_tutorial"
                 )
             case .profile:
                 tutorialPage(
                     title: "Il profilo 👤",
                     description: "Dalla schermata del profilo puoi cambiare il tuo nome e l'aspetto dell'avatar.",
-                    imageName: "profile_screenshot"
+                    videoName: "profile_tutorial"
                 )
             }
             
@@ -121,17 +123,23 @@ struct AppInfoTutorialView: View {
         }
     }
     
-    private func tutorialPage(title: String, description: String, imageName: String) -> some View {
+    private func tutorialPage(title: String, description: String, videoName: String) -> some View {
         VStack {
-            Image(imageName) // Sostituisci con le tue immagini
-                .resizable()
-                .scaledToFit()
-                .frame(height: 300)
-                .cornerRadius(20)
-                .padding()
             
             Text(title)
                 .font(.title.bold())
+            
+            // Video player con bordo per garantire visibilità
+            FullscreenVideoPlayer(videoName: videoName)
+                .frame(height: 450)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+                .padding()
+            
+            
             
             Text(description)
                 .multilineTextAlignment(.center)
@@ -160,10 +168,11 @@ struct FinalTutorialView: View {
         VStack {
             Spacer()
             
-            Image("final_image") // Sostituisci con la tua immagine
+            // GIF di celebrazione/completamento
+            AnimatedImage(name: "road.gif", bundle: .main)
                 .resizable()
-                .scaledToFit()
-                .frame(height: 120)
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 250)
             
             Text("Ci siamo!")
                 .font(.largeTitle.bold())
@@ -175,17 +184,17 @@ struct FinalTutorialView: View {
             
             Spacer()
             
-            // Immagini edifici in basso (opzionale)
+            // Immagini edifici in basso
             HStack(spacing: 24) {
-                Image("church_icon") // Sostituisci con le tue immagini
+                Image("church_icon")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 60)
+                    .frame(height: 150)
                 
-                Image("castle_icon")
+                Image("tower_icon")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 60)
+                    .frame(height: 150)
             }
             .padding()
             

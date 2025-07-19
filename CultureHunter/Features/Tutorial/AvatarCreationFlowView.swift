@@ -5,6 +5,15 @@ struct AvatarCreationFlowView: View {
     let onNext: () -> Void
     let onPrevious: () -> Void
     
+    // Aggiungi il binding al nome qui
+        private var nameBinding: Binding<String> {
+            Binding<String>(
+                get: { self.viewModel.avatarViewModel.avatar.name },
+                set: { self.viewModel.avatarViewModel.setName($0) }
+            )
+        }
+        
+    
     var body: some View {
         VStack {
             // Header del tutorial
@@ -16,11 +25,27 @@ struct AvatarCreationFlowView: View {
             Group {
                 switch viewModel.avatarCreationStep {
                 case .style:
-                    // Usa StyleView normalmente ma passa l'azione personalizzata!
-                    StyleView(
-                        viewModel: viewModel.avatarViewModel,
-                        onCustomAction: { viewModel.nextAvatarStep() }
-                    )
+                    VStack(spacing: 20) {
+                                            // Campo nome con stile coerente
+                                            VStack(alignment: .leading, spacing: 8) {
+                                                Text("Come ti chiami?")
+                                                    .font(.headline)
+                                                    .foregroundColor(.primary)
+                                                
+                                                TextField("Inserisci il tuo nome", text: nameBinding)
+                                                    .padding()
+                                                    .background(Color(.systemGray6))
+                                                    .cornerRadius(10)
+                                                    .padding(.horizontal)
+                                            }
+                                            .padding(.horizontal)
+                                            
+                                            // Usa StyleView normalmente ma passa l'azione personalizzata!
+                                            StyleView(
+                                                viewModel: viewModel.avatarViewModel,
+                                                onCustomAction: { viewModel.nextAvatarStep() }
+                                            )
+                                        }
                     
                 case .hair:
                     HairSelectionViewWrapper(

@@ -73,6 +73,7 @@ class TutorialViewModel: ObservableObject {
         
         hasSeenTutorial = true
         hasCreatedAvatar = true
+        avatarViewModel.save()
     }
     
     // Stati del tutorial
