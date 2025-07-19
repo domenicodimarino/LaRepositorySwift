@@ -26,14 +26,31 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
 @main
 struct CultureHunterApp: App {
+    @StateObject private var appState = AppState()
+    @StateObject private var avatarViewModel = AvatarViewModel() // Crea qui l'avatarViewModel
+    
     init() {
-        // Imposta il delegate all’avvio dell’app
+        // Imposta il delegate all'avvio dell'app
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(avatarViewModel: avatarViewModel) // Passa l'avatarViewModel
+                .environmentObject(appState)
+                .onAppear {
+                    appState.checkFirstLaunch()
+                }
+                .sheet(isPresented: $appState.showingTutorial) {
+                    TutorialView(isPresented: $appState.showingTutorial)
+                }
+                .fullScreenCover(isPresented: $appState.showingAvatarCreation) {
+                    // Passa l'avatarViewModel condiviso
+                    MasterTutorialView(
+                        isPresented: $appState.showingAvatarCreation,
+                        avatarViewModel: avatarViewModel
+                    )
+                }
         }
     }
 }

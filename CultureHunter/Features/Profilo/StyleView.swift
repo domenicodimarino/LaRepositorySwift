@@ -4,6 +4,9 @@ struct StyleView: View {
     @ObservedObject var viewModel: AvatarViewModel
     @Environment(\.presentationMode) var presentationMode
     
+    // NUOVO: callback opzionale per personalizzare l'azione del bottone
+        var onCustomAction: (() -> Void)?
+    
     // Il selectedIndex viene inizializzato dal genere attuale dell'avatar
     @State private var selectedIndex: Int?
     
@@ -121,18 +124,21 @@ struct StyleView: View {
             
             // Bottone "Avanti"
             Button(action: {
-                if let selectedIndex = selectedIndex {
-                    // Verifica se l'utente sta cambiando genere
-                    let newGender: Gender = selectedIndex == 0 ? .male : .female
-                    if viewModel.avatar.gender != newGender {
-                        // Semplicemente sostituisce l'avatar con la preview
-                        viewModel.avatar = previewViewModel.avatar
-                    }
-                }
-                
-                // Torna alla schermata precedente
-                presentationMode.wrappedValue.dismiss()
-            }) {
+                            if let selectedIndex = selectedIndex {
+                                let newGender: Gender = selectedIndex == 0 ? .male : .female
+                                if viewModel.avatar.gender != newGender {
+                                    viewModel.avatar = previewViewModel.avatar
+                                }
+                            }
+                            
+                            // IMPORTANTE: Usa l'azione personalizzata se fornita
+                            if let customAction = onCustomAction {
+                                customAction()
+                            } else {
+                                // Altrimenti usa il comportamento predefinito
+                                presentationMode.wrappedValue.dismiss()
+                            }
+                        }) {
                 ZStack {
                     Rectangle()
                         .foregroundColor(.clear)

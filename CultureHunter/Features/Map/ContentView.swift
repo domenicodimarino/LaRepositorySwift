@@ -496,11 +496,11 @@ struct ContentView: View {
             imageName: "villa_comunale"
         )
     ]
-
+        @ObservedObject var avatarViewModel: AvatarViewModel
     @StateObject private var poiViewModel = POIViewModel()
         @StateObject private var notificationManager = NotificationManager()
         @StateObject private var locationManager = LocationManager()
-        @StateObject private var avatarViewModel = AvatarViewModel()
+        
         @StateObject private var badgeManager = BadgeManager()
         @StateObject private var missionViewModel = MissionViewModel()
 
