@@ -5,18 +5,18 @@ import UserNotifications
 struct ContentView: View {
     let poiList = [
         POI(
-        street: "Via Giuseppe Armenante",
-        streetNumber: "21",
-        city: "Cava de' Tirreni",
-        province: "Salerno",
-        diaryPlaceName: "Casa mia",
-        isDiscovered: false,
-        discoveredTitle: nil,
-        photo: nil,
-        photoPath: nil,
-        latitude: 40.70355755997264,
-        longitude: 14.690757149236486,
-        imageName: "casa_mia"
+            street: "Via Giuseppe Armenante",
+            streetNumber: "21",
+            city: "Cava de' Tirreni",
+            province: "Salerno",
+            diaryPlaceName: "Casa mia",
+            isDiscovered: false,
+            discoveredTitle: nil,
+            photo: nil,
+            photoPath: nil,
+            latitude: 40.70355755997264,
+            longitude: 14.690757149236486,
+            imageName: "casa_mia"
         ),
         POI(
             street: "Via Lannio",
@@ -126,8 +126,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.680065,
-            longitude: 14.760362,
+            latitude: 40.680203,
+            longitude: 14.759559,
             imageName: "duomo_salerno"
         ),
         POI(
@@ -322,8 +322,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.699917,
-            longitude: 14.706942,
+            latitude: 40.700062,
+            longitude: 14.707315,
             imageName: "duomo_cava"
         ),
         POI(
@@ -336,8 +336,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.70093,
-            longitude: 14.707154,
+            latitude: 40.700954,
+            longitude: 14.707278,
             imageName: "chiesa_sanrocco"
         ),
         POI(
@@ -364,8 +364,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.698052,
-            longitude: 14.708832,
+            latitude: 40.698125,
+            longitude: 14.709047,
             imageName: "purgatorio"
         ),
         POI(
@@ -378,8 +378,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.695756,
-            longitude: 14.709451,
+            latitude: 40.695836,
+            longitude: 14.709857,
             imageName: "santuario"
         ),
         POI(
@@ -392,8 +392,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.695935,
-            longitude: 14.71124,
+            latitude: 40.695771,
+            longitude: 14.711024,
             imageName: "madonna_olmo"
         ),
         POI(
@@ -406,8 +406,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.68214,
-            longitude: 14.689933,
+            latitude: 40.682057,
+            longitude: 14.691142,
             imageName: "abbazia"
         ),
         POI(
@@ -476,8 +476,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.645524,
-            longitude: 14.823645,
+            latitude: 40.645228,
+            longitude: 14.822551,
             imageName: "stadio_arechi"
         ),
         //temporaneo
