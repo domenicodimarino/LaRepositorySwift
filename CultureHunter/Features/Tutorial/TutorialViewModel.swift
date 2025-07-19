@@ -18,28 +18,32 @@ class TutorialViewModel: ObservableObject {
     // Avatar ViewModel per la creazione
     @Published var avatarViewModel = AvatarViewModel()
     
-    // Costruttore che accetta l'avatarViewModel
-        init(avatarViewModel: AvatarViewModel) {
+    private let skipAvatarCreation: Bool
+    
+        init(avatarViewModel: AvatarViewModel, skipAvatarCreation: Bool = false) {
             self.avatarViewModel = avatarViewModel
-            // Inizializza altre proprietà
+            self.skipAvatarCreation = skipAvatarCreation
             self.currentSection = .welcome
             self.appInfoStep = .map
             self.avatarCreationStep = .style
         }
-    
     // Flag per tracciare lo stato
     @AppStorage("hasSeenTutorial") var hasSeenTutorial = false
     @AppStorage("hasCreatedAvatar") var hasCreatedAvatar = false
     
     // Metodi di navigazione
     func nextAppInfoStep() {
-        if let next = AppInfoStep(rawValue: appInfoStep.rawValue + 1) {
-            appInfoStep = next
-        } else {
-            // Abbiamo finito le info, passiamo alla creazione avatar
-            currentSection = .avatarCreation
+            if let next = AppInfoStep(rawValue: appInfoStep.rawValue + 1) {
+                appInfoStep = next
+            } else {
+                // Usa il nuovo flag qui!
+                if skipAvatarCreation {
+                    currentSection = .final
+                } else {
+                    currentSection = .avatarCreation
+                }
+            }
         }
-    }
     
     func prevAppInfoStep() {
         if let prev = AppInfoStep(rawValue: appInfoStep.rawValue - 1) {

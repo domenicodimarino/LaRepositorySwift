@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileView: View {
   
     @ObservedObject var viewModel: AvatarViewModel
+    @EnvironmentObject var appState: AppState
     
     // Keys for mission time (same as in MissionViewModel)
         private let missionTimeHourKey = "missionTimeHourKey"
@@ -86,14 +87,14 @@ struct ProfileView: View {
                 }
               }
               // Link a riavvio tutorial
-              NavigationLink {
-                //InventoryView()
-              } label: {
-                HStack {
-                  Text("Riavvia Tutorial")
-                  Spacer()
+                Button {
+                    appState.openTutorial()
+                } label: {
+                    HStack {
+                        Text("Riavvia Tutorial")
+                        Spacer()
+                    }
                 }
-              }
             }
               Section {
                                           // Mission time picker

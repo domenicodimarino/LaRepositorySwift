@@ -12,11 +12,12 @@ struct MasterTutorialView: View {
     @StateObject private var viewModel: TutorialViewModel
     @Binding var isPresented: Bool
     
-    // Costruttore che accetta l'avatarViewModel esterno
-        init(isPresented: Binding<Bool>, avatarViewModel: AvatarViewModel) {
+        init(isPresented: Binding<Bool>, avatarViewModel: AvatarViewModel, skipAvatarCreation: Bool = false) {
             self._isPresented = isPresented
-            // Inizializza TutorialViewModel con l'avatarViewModel passato
-            self._viewModel = StateObject(wrappedValue: TutorialViewModel(avatarViewModel: avatarViewModel))
+            self._viewModel = StateObject(wrappedValue: TutorialViewModel(
+                avatarViewModel: avatarViewModel,
+                skipAvatarCreation: skipAvatarCreation
+            ))
         }
     
     var body: some View {

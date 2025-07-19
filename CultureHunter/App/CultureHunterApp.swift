@@ -42,13 +42,17 @@ struct CultureHunterApp: App {
                     appState.checkFirstLaunch()
                 }
                 .sheet(isPresented: $appState.showingTutorial) {
-                    TutorialView(isPresented: $appState.showingTutorial)
+                    MasterTutorialView(
+                        isPresented: $appState.showingTutorial,
+                        avatarViewModel: avatarViewModel,
+                        skipAvatarCreation: true  // <-- Qui!
+                    )
                 }
                 .fullScreenCover(isPresented: $appState.showingAvatarCreation) {
-                    // Passa l'avatarViewModel condiviso
                     MasterTutorialView(
                         isPresented: $appState.showingAvatarCreation,
-                        avatarViewModel: avatarViewModel
+                        avatarViewModel: avatarViewModel,
+                        skipAvatarCreation: false // default, mostra anche avatar
                     )
                 }
         }
