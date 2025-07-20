@@ -20,66 +20,69 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
 
     // Invia UNA SOLA notifica locale, opzionalmente con immagine e POI personalizzato
     func sendPOINearbyNotificationWithImage(for poi: MappedPOI? = nil) {
-            let content = UNMutableNotificationContent()
-        
-            if let poi = poi {
-                content.title = "Sei vicino a \(poi.title)"
-                content.body = "Scatta una foto per scoprire di più su \(poi.title) e guadagnare crediti!"
+        // Non notificare se il POI è già scoperto
+        if let poi = poi, poi.isDiscovered {
+            print("POI già scoperto, nessuna notifica inviata.")
+            return
+        }
+        let content = UNMutableNotificationContent()
+    
+        if let poi = poi {
+            content.title = "Sei vicino a \(poi.title)"
+            content.body = "Scatta una foto per scoprire di più su \(poi.title) e guadagnare crediti!"
+        } else {
+            content.title = "Nuovo punto di interesse nei dintorni!"
+            content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
+        }
+        content.sound = .default
+
+        // Opzionale: allega immagine se presente negli assets (nome: "Notifications")
+        if let image = UIImage(named: "Notifications"),
+           let attachment = self.createImageAttachment(image: image, identifier: "poiImage") {
+            content.attachments = [attachment]
+        }
+
+        // Usa sempre lo stesso identifier per non accumulare notifiche
+        let identifier = poi?.id.uuidString ?? "poi_notification"
+
+        // Rimuovi prima eventuali notifiche pendenti con lo stesso identifier
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: nil // Immediato
+        )
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
+            if let error = error {
+                print("Errore invio notifica: \(error.localizedDescription)")
             } else {
-                content.title = "Nuovo punto di interesse nei dintorni!"
-                content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
-            }
-            content.sound = .default
-
-            // Opzionale: allega immagine se presente negli assets (nome: "Notifications")
-            if let image = UIImage(named: "Notifications"),
-               let attachment = self.createImageAttachment(image: image, identifier: "poiImage") {
-                content.attachments = [attachment]
-            }
-
-            // Usa sempre lo stesso identifier per non accumulare notifiche
-            let identifier = poi?.id.uuidString ?? "poi_notification"
-
-            // Rimuovi prima eventuali notifiche pendenti con lo stesso identifier
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-
-            let request = UNNotificationRequest(
-                identifier: identifier,
-                content: content,
-                trigger: nil // Immediato
-            )
-            UNUserNotificationCenter.current().add(request) { [weak self] error in
-                if let error = error {
-                    print("Errore invio notifica: \(error.localizedDescription)")
-                } else {
-                    print("Notifica inviata con successo!")
-                    DispatchQueue.main.async {
-                        self?.lastNotificationSent = Date()
-                    }
+                print("Notifica inviata con successo!")
+                DispatchQueue.main.async {
+                    self?.lastNotificationSent = Date()
                 }
             }
-        
-        
+        }
     }
     
     // Invia una notifica per una nuova missione
     func sendMissionNotification(description: String, reward: Int) {
-            let content = UNMutableNotificationContent()
-                    content.title = "Nuova missione disponibile!"
-                    content.body = "💰 \(description) - Ricompensa: \(reward) monete"
-                    content.sound = .default
-                    
-                    let identifier = "mission_notification"
-                    
-                    // Remove existing notifications
-                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-                    
-                    let request = UNNotificationRequest(
-                        identifier: identifier,
-                        content: content,
-                        trigger: nil
-                    )
-            
+        let content = UNMutableNotificationContent()
+        content.title = "Nuova missione disponibile!"
+        content.body = "💰 \(description) - Ricompensa: \(reward) monete"
+        content.sound = .default
+        
+        let identifier = "mission_notification"
+        
+        // Remove existing notifications
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+        
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: nil
+        )
+        
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
@@ -90,9 +93,6 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
                 }
             }
         }
-        
-        
-        
     }
 
     // Crea UNNotificationAttachment da un'immagine in memoria
@@ -109,6 +109,7 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
             return nil
         }
     }
+    
     func cancelMissionNotifications() {
         DispatchQueue.main.async {
             let identifier = "mission_notification"
