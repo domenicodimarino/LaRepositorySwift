@@ -88,7 +88,7 @@ struct AppInfoTutorialView: View {
                 tutorialPage(
                     title: "I badge 🏅",
                     description: "Registrando tutti i punti di interesse di una città, puoi ottenere il suo badge!",
-                    videoName: "badges_tutorial"
+                    videoName: "badge_tutorial"
                 )
             case .shop:
                 tutorialPage(
@@ -131,14 +131,11 @@ struct AppInfoTutorialView: View {
                 .padding(.top)
             
             // Video player con bordo per garantire visibilità
-            FullscreenVideoPlayer(videoName: videoName)
+            RoundedVideoContainer(videoName: videoName, cornerRadius: 0)
                 .frame(height: 450)
-                .cornerRadius(20)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
-                .padding(.top)
+                .clipShape(RoundedRectangle(cornerRadius: 40))
+
+
             
             
             Text(description)
