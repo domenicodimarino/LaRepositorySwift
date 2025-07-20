@@ -47,10 +47,10 @@ struct MasterTutorialView: View {
                 
             case .final:
                 // Schermata finale
-                FinalTutorialView {
-                    viewModel.completeTutorial()
-                    isPresented = false
-                }
+                FinalTutorialView(onComplete: {
+                                    viewModel.completeTutorial()
+                                    isPresented = false
+                                }, avatarViewModel: viewModel.avatarViewModel)
             }
         }
         .animation(.easeInOut, value: viewModel.currentSection)

@@ -28,11 +28,19 @@ struct AvatarCreationFlowView: View {
                     VStack(spacing: 20) {
                                             // Campo nome con stile coerente
                                             VStack(alignment: .leading, spacing: 8) {
-                                                Text("Come ti chiami?")
-                                                    .font(.headline)
+                                                Text("Per iniziare, assegna un nome al tuo avatar.")
+                                                    .multilineTextAlignment(.center)
+                                                    .font(.body)
                                                     .foregroundColor(.primary)
+                                                    .padding(.horizontal)
                                                 
-                                                TextField("Inserisci il tuo nome", text: nameBinding)
+                                                LabeledContent {
+                                                    TextField("Il tuo nome", text: nameBinding)
+                                                } label: {
+                                                    Text("Nome:")
+                                                        .fontWeight(.semibold)
+                                                        .foregroundColor(.blue)
+                                                }
                                                     .padding()
                                                     .background(Color(.systemGray6))
                                                     .cornerRadius(10)

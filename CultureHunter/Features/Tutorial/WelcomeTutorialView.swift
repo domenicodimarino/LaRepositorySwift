@@ -154,16 +154,27 @@ struct AppInfoTutorialView: View {
 // Schermata finale
 struct FinalTutorialView: View {
     let onComplete: () -> Void
+    @ObservedObject var avatarViewModel: AvatarViewModel
     
     var body: some View {
         VStack {
             Spacer()
             
-            // GIF di celebrazione/completamento
-            AnimatedImage(name: "road.gif", bundle: .main)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(height: 250)
+            // Container for the avatar walking over the road
+            ZStack(alignment: .bottom) {
+                // Road background
+                AnimatedImage(name: "road.gif", bundle: .main)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 250)
+                
+                // Walking avatar
+                AvatarSpriteKitView(viewModel: avatarViewModel)
+                    .withAnimation(.walk, direction: .right)
+                    .frame(width: 128, height: 128)
+                    .offset(x: -75, y: -50) // Adjust this to position avatar on the road
+            }
+            .frame(height: 250)
             
             Text("Ci siamo!")
                 .font(.largeTitle.bold())
@@ -175,7 +186,7 @@ struct FinalTutorialView: View {
             
             Spacer()
             
-            // Immagini edifici in basso
+            // Building icons
             HStack(spacing: 24) {
                 Image("church_icon")
                     .resizable()
