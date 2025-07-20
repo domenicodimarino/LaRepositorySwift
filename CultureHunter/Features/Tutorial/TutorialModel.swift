@@ -32,6 +32,7 @@ enum AvatarCreationStep: Int, CaseIterable {
     case hair = 1       // Scelta capelli (HairSelectionView)
     case eyes = 2       // Colore occhi (EyeColorView)
     case skin = 3       // Carnagione (CarnagioneView)
+    case missionTime = 4 // New step for mission time
 }
 
 // Rappresenta una pagina del tutorial
@@ -41,4 +42,16 @@ struct TutorialPage {
     let description: String
     let imageName: String?
     let bottomImages: [String]?
+    
+    // Add a computed property for mission time view
+    static var missionTime: TutorialPage {
+        TutorialPage(
+            type: .avatarCreation(.missionTime),
+            title: "Orario Missione",
+            description: "Scegli quando ricevere la missione giornaliera",
+            imageName: nil,
+            bottomImages: nil
+        )
+    }
 }
+

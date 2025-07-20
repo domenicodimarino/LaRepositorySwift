@@ -67,6 +67,12 @@ struct AvatarCreationFlowView: View {
                         onComplete: onNext,
                         onBack: onPrevious
                     )
+                case .missionTime:
+                    MissionTimeView(
+                                        missionHour: $viewModel.missionHour,
+                                        missionMinute: $viewModel.missionMinute,
+                                        onNext: onNext
+                                    )
                 }
             }
             .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))

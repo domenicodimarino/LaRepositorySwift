@@ -18,6 +18,10 @@ class TutorialViewModel: ObservableObject {
     // Avatar ViewModel per la creazione
     @Published var avatarViewModel = AvatarViewModel()
     
+    // Mission time properties
+        @Published var missionHour: Int = UserDefaults.standard.integer(forKey: "missionTimeHourKey")
+        @Published var missionMinute: Int = UserDefaults.standard.integer(forKey: "missionTimeMinuteKey")
+    
     private let skipAvatarCreation: Bool
     
         init(avatarViewModel: AvatarViewModel, skipAvatarCreation: Bool = false) {
@@ -77,6 +81,9 @@ class TutorialViewModel: ObservableObject {
         
         hasSeenTutorial = true
         hasCreatedAvatar = true
+        // Save mission time
+                UserDefaults.standard.set(missionHour, forKey: "missionTimeHourKey")
+                UserDefaults.standard.set(missionMinute, forKey: "missionTimeMinuteKey")
         avatarViewModel.save()
     }
     
