@@ -9,28 +9,26 @@
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
-    var isEnabled: Bool = true
-    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.title3.bold())
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(isEnabled ? Color.black : Color.gray)
-            .cornerRadius(25)
-            .padding(.horizontal, 40)
-            .opacity(configuration.isPressed && isEnabled ? 0.8 : 1.0)
-            .disabled(!isEnabled)
+            .frame(height: 60)
+            .background(Color.black)
+            .cornerRadius(15)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
     }
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding()
-            .background(Color.gray.opacity(0.2))
+            .font(.title3.bold())
             .foregroundColor(.black)
+            .frame(maxWidth: .infinity)
+            .frame(height: 60)
+            .background(Color.gray.opacity(0.2))
             .cornerRadius(15)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
     }

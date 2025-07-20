@@ -51,6 +51,7 @@ struct WelcomeTutorialView: View {
                 onNext()
             }
             .buttonStyle(PrimaryButtonStyle())
+            .padding(.horizontal, 32)
             .padding(.bottom, 40)
         }
     }
@@ -75,13 +76,13 @@ struct AppInfoTutorialView: View {
             case .diary:
                 tutorialPage(
                     title: "Il diario 📔",
-                    description: "Qui puoi vedere tutti i punti di interesse registrati e quelli ancora da scoprire, divisi per città.",
+                    description: "Qui puoi vedere tutti i punti di interesse registrati e quelli ancora da scoprire, divisi per città, e puoi cliccarli per sapere più informazioni.",
                     videoName: "diario_tutorial"
                 )
             case .poi:
                 tutorialPage(
                     title: "Il punto di interesse 🏛️",
-                    description: "Per ogni punto di interesse puoi leggere o ascoltare la sua storia, oltre a vedere la sua foto.",
+                    description: "Per ogni punto di interesse puoi leggere o ascoltare la sua storia, oltre a vedere la sua foto e quella scattata da te.",
                     videoName: "poi_tutorial"
                 )
             case .badges:
@@ -99,27 +100,21 @@ struct AppInfoTutorialView: View {
             case .profile:
                 tutorialPage(
                     title: "Il profilo 👤",
-                    description: "Dalla schermata del profilo puoi cambiare il tuo nome, l'aspetto e abbigliamento dell'avatar, e anche cambiare l'orario della missione giornaliera",
+                    description: "Dalla schermata del profilo puoi cambiare il tuo nome, l'aspetto e abbigliamento dell'avatar, e anche cambiare l'orario della missione giornaliera.",
                     videoName: "profilo_tutorial"
                 )
             }
             
             // Navigazione
-            HStack {
-                Button("Indietro") {
-                    onPrevious()
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                
-                Spacer()
-                
-                Button("Avanti") {
-                    onNext()
-                }
-                .buttonStyle(PrimaryButtonStyle(isEnabled: true))
+            HStack(spacing: 16) {
+                Button("Indietro", action: onPrevious)
+                    .buttonStyle(SecondaryButtonStyle())
+
+                Button("Avanti", action: onNext)
+                    .buttonStyle(PrimaryButtonStyle())
             }
-            .padding(.horizontal, 40)
-            .padding(.bottom, 30)
+            .padding(.horizontal, 32)
+            .padding(.bottom, 24)
         }
     }
     
@@ -134,9 +129,8 @@ struct AppInfoTutorialView: View {
             RoundedVideoContainer(videoName: videoName, cornerRadius: 0)
                 .frame(height: 450)
                 .clipShape(RoundedRectangle(cornerRadius: 40))
+                .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 4)
 
-
-            
             
             Text(description)
                 .multilineTextAlignment(.center)
@@ -149,7 +143,7 @@ struct AppInfoTutorialView: View {
                 ForEach(0..<AppInfoStep.allCases.count, id: \.self) { index in
                     Circle()
                         .fill(step.rawValue == index ? Color.black : Color.gray.opacity(0.3))
-                        .frame(width: 10, height: 10)
+                        .frame(width: 20, height: 20)
                 }
             }
             .padding(.bottom, 20)
@@ -199,6 +193,7 @@ struct FinalTutorialView: View {
                 onComplete()
             }
             .buttonStyle(PrimaryButtonStyle())
+            .padding(.horizontal, 32)
             .padding(.bottom, 40)
         }
     }
