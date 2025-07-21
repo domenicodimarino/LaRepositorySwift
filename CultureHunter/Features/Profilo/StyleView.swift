@@ -3,6 +3,7 @@ import SwiftUI
 struct StyleView: View {
     @ObservedObject var viewModel: AvatarViewModel
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.colorScheme) var colorScheme
     
     // NUOVO: callback opzionale per personalizzare l'azione del bottone
         var onCustomAction: (() -> Void)?
@@ -143,10 +144,10 @@ struct StyleView: View {
                     Rectangle()
                         .foregroundColor(.clear)
                         .frame(width: 276.42, height: 102.34)
-                        .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+                        .background(colorScheme == .dark ? Color.white : Color.black)
                         .cornerRadius(28.88)
                     Text("Avanti")
-                        .foregroundColor(.white)
+                        .foregroundColor(colorScheme == .dark ? .black : .white)
                         .font(.title2)
                         .bold()
                 }

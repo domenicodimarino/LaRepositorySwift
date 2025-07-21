@@ -38,8 +38,7 @@ struct HairSelectionViewWrapper: View {
                     .buttonStyle(PrimaryButtonStyle())
                 }
                 .padding(.horizontal, 40)
-                .padding(.bottom, 30)
-                .background(Color.white.opacity(0.8))
+                .background(Material.ultraThinMaterial)
             }
         }
     }
@@ -75,8 +74,7 @@ struct EyeColorViewWrapper: View {
                     .buttonStyle(PrimaryButtonStyle())
                 }
                 .padding(.horizontal, 40)
-                .padding(.bottom, 30)
-                .background(Color.white.opacity(0.8))
+                .background(Material.ultraThinMaterial)
             }
         }
     }
@@ -112,8 +110,7 @@ struct CarnagioneViewWrapper: View {
                     .buttonStyle(PrimaryButtonStyle())
                 }
                 .padding(.horizontal, 40)
-                .padding(.bottom, 30)
-                .background(Color.white.opacity(0.8))
+                .background(Material.ultraThinMaterial)
             }
         }
     }

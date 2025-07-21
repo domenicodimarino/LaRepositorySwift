@@ -9,26 +9,34 @@
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.title3.bold())
-            .foregroundColor(.white)
+            .foregroundColor(colorScheme == .dark ? .black : .white)
             .frame(maxWidth: .infinity)
             .frame(height: 60)
-            .background(Color.black)
+            .background(colorScheme == .dark ? Color.white : Color.black)
             .cornerRadius(15)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
     }
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.title3.bold())
-            .foregroundColor(.black)
+            .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
             .frame(height: 60)
-            .background(Color.gray.opacity(0.2))
+            .background(Color(.secondarySystemBackground))
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Color.primary, lineWidth: 1)
+            )
             .cornerRadius(15)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
     }

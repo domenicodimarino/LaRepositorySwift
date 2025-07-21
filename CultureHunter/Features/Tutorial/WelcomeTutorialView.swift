@@ -25,7 +25,9 @@ struct WelcomeTutorialView: View {
             
             Text("Benvenuto!")
                 .font(.largeTitle.bold())
-                .padding(.top)
+                    .padding(.top)
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2) // Ombra leggera
+                    .foregroundColor(.primary)
             
             Text("Scopri la città, esplora punti di interesse, ottieni badge e personalizza il tuo avatar divertendoti!")
                 .multilineTextAlignment(.center)
@@ -142,7 +144,7 @@ struct AppInfoTutorialView: View {
             HStack(spacing: 8) {
                 ForEach(0..<AppInfoStep.allCases.count, id: \.self) { index in
                     Circle()
-                        .fill(step.rawValue == index ? Color.black : Color.gray.opacity(0.3))
+                        .fill(step.rawValue == index ? .primary : Color.gray.opacity(0.3))
                         .frame(width: 20, height: 20)
                 }
             }
