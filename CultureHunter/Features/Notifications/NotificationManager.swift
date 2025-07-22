@@ -1,14 +1,12 @@
 import Foundation
 import UserNotifications
 import UIKit
-import Combine  // Importante: aggiungi questa importazione
+import Combine
 
-class NotificationManager: ObservableObject {  // Aggiungi conformità a ObservableObject
-    // Puoi aggiungere proprietà osservabili se necessario
+class NotificationManager: ObservableObject {
     @Published var lastNotificationSent: Date? = nil
     private let notificationQueue = DispatchQueue(label: "notification.queue")
     
-    // Richiedi il permesso per le notifiche (chiamare all'avvio dell'app)
     func requestPermissions() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if let error = error {
@@ -18,15 +16,20 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         }
     }
 
-    // Invia UNA SOLA notifica locale, opzionalmente con immagine e POI personalizzato
-    func sendPOINearbyNotificationWithImage(for poi: MappedPOI? = nil) {
-        // Non notificare se il POI è già scoperto
-        if let poi = poi, poi.isDiscovered {
-            print("POI già scoperto, nessuna notifica inviata.")
+    /// Invia notifica solo se il POI non è scoperto, oppure non invia la notifica generica se non vuoi
+    func sendPOINearbyNotificationWithImage(for poi: MappedPOI? = nil, allowGeneric: Bool = false) {
+        // Notifica specifica per POI non scoperto
+        if let poi = poi {
+            if poi.isDiscovered {
+                print("POI già scoperto, nessuna notifica inviata.")
+                return
+            }
+        } else if !allowGeneric {
+            print("Nessun POI specifico, nessuna notifica generica inviata.")
             return
         }
+        
         let content = UNMutableNotificationContent()
-    
         if let poi = poi {
             content.title = "Sei vicino a \(poi.title)"
             content.body = "Scatta una foto per scoprire di più su \(poi.title) e guadagnare crediti!"
@@ -36,23 +39,15 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         }
         content.sound = .default
 
-        // Opzionale: allega immagine se presente negli assets (nome: "Notifications")
         if let image = UIImage(named: "Notifications"),
            let attachment = self.createImageAttachment(image: image, identifier: "poiImage") {
             content.attachments = [attachment]
         }
 
-        // Usa sempre lo stesso identifier per non accumulare notifiche
         let identifier = poi?.id.uuidString ?? "poi_notification"
-
-        // Rimuovi prima eventuali notifiche pendenti con lo stesso identifier
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
 
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: nil // Immediato
-        )
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
                 print("Errore invio notifica: \(error.localizedDescription)")
@@ -65,7 +60,6 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         }
     }
     
-    // Invia una notifica per una nuova missione
     func sendMissionNotification(description: String, reward: Int) {
         let content = UNMutableNotificationContent()
         content.title = "Nuova missione disponibile!"
@@ -73,21 +67,13 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         content.sound = .default
         
         let identifier = "mission_notification"
-        
-        // Remove existing notifications
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
         
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: nil
-        )
-        
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             } else {
-                // Only wrap Published property updates
                 DispatchQueue.main.async {
                     self.lastNotificationSent = Date()
                 }
@@ -95,7 +81,6 @@ class NotificationManager: ObservableObject {  // Aggiungi conformità a Observa
         }
     }
 
-    // Crea UNNotificationAttachment da un'immagine in memoria
     private func createImageAttachment(image: UIImage, identifier: String) -> UNNotificationAttachment? {
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("\(identifier)_\(UUID().uuidString).jpg")

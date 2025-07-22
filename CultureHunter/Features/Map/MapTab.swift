@@ -34,7 +34,18 @@ struct MapTab: View {
                         avatarViewModel: avatarViewModel,
                         onPOISelected: { poi in
                             selectedPOI = poi
-                            showPhotoButton = poi != nil ? shouldShowPhotoButton(for: poi!) : false
+                            if let poi = poi {
+                                if poi.isDiscovered {
+                                    // Vai direttamente al diario!
+                                    diaryPOI = poi
+                                    showDiaryView = true
+                                    showPhotoButton = false
+                                } else {
+                                    showPhotoButton = shouldShowPhotoButton(for: poi)
+                                }
+                            } else {
+                                showPhotoButton = false
+                            }
                         },
                         userLocation: locationManager.lastLocation
                     )
@@ -145,7 +156,7 @@ struct MapTab: View {
                             photo: image,
                             city: poi.city,
                             badgeManager: badgeManager,
-                            nomeUtente: "Giovanni"
+                            nomeUtente: ""
                         )
                         if let reward = missionViewModel.tryCompleteMission(poiVisited: true) {
                             avatarViewModel.addCoins(reward)
@@ -187,6 +198,6 @@ struct MapTab: View {
     private func shouldShowPhotoButton(for poi: MappedPOI) -> Bool {
         guard let userLoc = locationManager.lastLocation else { return false }
         let poiLoc = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
-        return userLoc.distance(from: poiLoc) < 25
+        return userLoc.distance(from: poiLoc) < 30
     }
 }
