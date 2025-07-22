@@ -18,6 +18,10 @@ struct MappedPOI: Identifiable, Hashable {
     var discoveredDate: Date?
     let imageName: String
 
+    // --- Nuovi campi dinamici ---
+    var yearBuilt: String?     // Anno costruzione (opzionale)
+    var history: String?       // Storia generata (opzionale)
+
     var photo: UIImage? {
         guard let photoPath else { return nil }
         return UIImage(contentsOfFile: photoPath)

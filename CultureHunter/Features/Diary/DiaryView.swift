@@ -5,10 +5,13 @@ struct DiaryView: View {
     let poi: MappedPOI
     @State private var errorMessage: String? = nil
     @State private var showError: Bool = false
+    @State private var isReading: Bool = false
 
-    @StateObject private var audioManager = AudioManager.shared
     @State private var dragPosition: Double = 0
     @State private var isDragging: Bool = false
+    
+    @State private var speechSynthesizer = AVSpeechSynthesizer()
+    @State private var synthesizerDelegate: SpeechSynthesizerDelegate?
 
     private var placeData: Place? {
         return PlacesData.shared.places.first { $0.name == poi.diaryPlaceName }
@@ -71,59 +74,28 @@ struct DiaryView: View {
                                 Spacer()
 
                                 Button(action: {
-                                    if audioManager.isPlaying {
-                                        audioManager.pauseAudio()
-                                    } else if audioManager.currentTime > 0 {
-                                        audioManager.resumeAudio()
-                                    } else {
-                                        playAudio()
+                                    if isReading {
+                                        stopReading()
+                                    }
+                                    else {
+                                        if let placeHistory = placeData?.history{
+                                            readText(placeHistory)
+                                        }
+                                        
                                     }
                                 }) {
                                     HStack {
-                                        Image(systemName: audioManager.isPlaying ? "pause.fill" : "play.fill")
-                                        Text(audioManager.isPlaying ? "Pausa" : (audioManager.currentTime > 0 ? "Riprendi" : "Ascolta"))
+                                        Image(systemName: isReading ? "pause.fill" : "play.fill")
+                                        Text(isReading ? "Stop" : "Ascolta")
                                     }
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
-                                    .background(audioManager.isPlaying ? Color.red : Color.blue)
+                                    .background(isReading ? Color.red : Color.blue)
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                                 }
                             }
-
-                            if audioManager.duration > 0 {
-                                VStack(spacing: 6) {
-                                    Slider(
-                                        value: Binding(
-                                            get: { isDragging ? dragPosition : audioManager.currentTime },
-                                            set: { newValue in
-                                                dragPosition = newValue
-                                                isDragging = true
-                                            }
-                                        ),
-                                        in: 0...max(0.1, audioManager.duration),
-                                        onEditingChanged: { editing in
-                                            if !editing && isDragging {
-                                                audioManager.seek(to: dragPosition)
-                                                isDragging = false
-                                            }
-                                        }
-                                    )
-                                    .accentColor(.blue)
-
-                                    HStack {
-                                        Text(formatTime(isDragging ? dragPosition : audioManager.currentTime))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                        Text(formatTime(audioManager.duration))
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .padding(.horizontal, 2)
-                                .padding(.bottom, 5)
-                            }
+ 
                         }
 
                         if let placeHistory = placeData?.history {
@@ -159,7 +131,7 @@ struct DiaryView: View {
                     .fontWeight(.bold)
             }
         }
-        .onDisappear { audioManager.stopAllAudio() }
+        .onDisappear { stopReading() }
         .onAppear {
             do {
                 try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
@@ -190,22 +162,103 @@ struct DiaryView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
 
-    private func playAudio() {
-        if let place = placeData {
-            if let audioURL = audioManager.loadAudioFromBundle(named: place.effectiveAudioName) {
-                audioManager.playAudio(from: audioURL, withID: "narration")
-            } else {
-                errorMessage = "Audio narrativo non disponibile per questo luogo"
-                showError = true
+    // Funzione per leggere il testo
+    private func readText(_ text: String) {
+        do {
+            // Assicurati che la sessione audio sia attiva
+            try AVAudioSession.sharedInstance().setActive(true)
+            
+            // Crea l'utterance
+            let utterance = AVSpeechUtterance(string: text)
+            
+            // Prova a impostare la voce italiana, altrimenti usa la voce predefinita
+            if let italianVoice = AVSpeechSynthesisVoice(language: "it-IT") {
+                utterance.voice = italianVoice
+            } else if let defaultVoice = AVSpeechSynthesisVoice(language: "en-US") {
+                // Fallback alla voce inglese se l'italiano non è disponibile
+                utterance.voice = defaultVoice
+                print("Voce italiana non disponibile, utilizzo voce inglese")
             }
-        } else {
-            let audioName = poi.diaryPlaceName.lowercased().replacingOccurrences(of: " ", with: "_")
-            if let audioURL = audioManager.loadAudioFromBundle(named: audioName) {
-                audioManager.playAudio(from: audioURL, withID: "narration")
-            } else {
-                errorMessage = "Audio narrativo non disponibile per questo luogo"
-                showError = true
+            
+            utterance.rate = 0.5
+            utterance.pitchMultiplier = 1.0
+            utterance.volume = 1.0 // Volume massimo
+            
+            // Crea un nuovo delegato e mantieni un riferimento forte
+            synthesizerDelegate = SpeechSynthesizerDelegate(onComplete: {
+                DispatchQueue.main.async {
+                    self.isReading = false
+                    print("Lettura completata")
+                }
+            }, onStart: {
+                print("Lettura iniziata")
+            }, onError: { error in
+                DispatchQueue.main.async {
+                    self.isReading = false
+                    self.errorMessage = "Errore durante la lettura: \(error)"
+                    self.showError = true
+                    print("Errore durante la lettura: \(error)")
+                }
+            })
+            
+            // Assegna il delegato
+            speechSynthesizer.delegate = synthesizerDelegate
+            
+            // Inizia a parlare
+            if speechSynthesizer.isSpeaking {
+                speechSynthesizer.stopSpeaking(at: .immediate)
             }
+            
+            // Correzione: il metodo speak(_:) non restituisce un valore booleano
+            speechSynthesizer.speak(utterance)
+            print("Avvio sintesi vocale")
+            isReading = true
+            
+        } catch {
+            errorMessage = "Errore di inizializzazione audio: \(error.localizedDescription)"
+            showError = true
+            print("Errore di inizializzazione audio: \(error)")
         }
+    }
+    
+    // Funzione per fermare la lettura
+    private func stopReading() {
+        if speechSynthesizer.isSpeaking {
+            speechSynthesizer.stopSpeaking(at: .immediate)
+        }
+        isReading = false
+    }
+}
+// Delegato migliorato per la sintesi vocale
+class SpeechSynthesizerDelegate: NSObject, AVSpeechSynthesizerDelegate {
+    private let onComplete: () -> Void
+    private let onStart: () -> Void
+    private let onError: (String) -> Void
+    
+    init(onComplete: @escaping () -> Void, onStart: @escaping () -> Void, onError: @escaping (String) -> Void) {
+        self.onComplete = onComplete
+        self.onStart = onStart
+        self.onError = onError
+        super.init()
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        onStart()
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        onComplete()
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        onError("Lettura annullata")
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
+        onError("Lettura in pausa")
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
+        onStart()
     }
 }
