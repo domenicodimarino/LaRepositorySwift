@@ -7,15 +7,14 @@ struct DiaryView: View {
     @State private var errorMessage: String? = nil
     @State private var showError: Bool = false
     @State private var isReading: Bool = false
-    @State private var loadingHistory: Bool = false // <-- PER IL LOADING
-        @State private var localHistory: String? = nil  // <-- PER FORZARE IL REFRESH DELLA VIEW
+    @State private var loadingHistory: Bool = false
+    @State private var localHistory: String? = nil
 
-    
     @State private var speechSynthesizer = AVSpeechSynthesizer()
     @State private var synthesizerDelegate: SpeechSynthesizerDelegate?
 
     private var placeData: Place? {
-        return PlacesData.shared.places.first { $0.name == poi.diaryPlaceName }
+        PlacesData.shared.places.first { $0.name == poi.diaryPlaceName }
     }
 
     var body: some View {
@@ -73,16 +72,11 @@ struct DiaryView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                                 Spacer()
-
                                 Button(action: {
                                     if isReading {
                                         stopReading()
-                                    }
-                                    else {
-                                        if let placeHistory = poi.history{
-                                            readText(placeHistory)
-                                        }
-                                        
+                                    } else if let placeHistory = localHistory {
+                                        readText(placeHistory)
                                     }
                                 }) {
                                     HStack {
@@ -96,10 +90,11 @@ struct DiaryView: View {
                                     .cornerRadius(8)
                                 }
                             }
- 
                         }
 
-                        if let placeHistory = poi.history {
+                        if loadingHistory {
+                            ProgressView("Caricamento storia...")
+                        } else if let placeHistory = localHistory {
                             Text(placeHistory)
                                 .font(.body)
                                 .lineSpacing(5)
@@ -141,21 +136,31 @@ struct DiaryView: View {
                 errorMessage = "Errore di inizializzazione audio: \(error.localizedDescription)"
                 showError = true
             }
-            
-            if poi.history == nil && !loadingHistory {
-                            loadingHistory = true
-                            fetchHistoryForPOI(poi: poi) { storia in
-                                DispatchQueue.main.async {
-                                    loadingHistory = false
-                                    if let storia = storia, !storia.isEmpty {
-                                        localHistory = storia
-                                        // Salva la storia anche nel modello e su disco!
-                                        viewModel.updateHistory(for: poi.id, history: storia)
-                                        viewModel.persistenceManager.savePOIHistory(id: poi.id, history: storia)
-                                    }
-                                }
-                            }
+
+            // PATCH: Carica la storia persistente, oppure genera SOLO SE NON ESISTE!
+            if let savedHistory = viewModel.persistenceManager.loadPOIHistory(id: poi.id) {
+                localHistory = savedHistory
+            } else if let history = poi.history, !history.isEmpty {
+                localHistory = history
+            } else if !loadingHistory {
+                loadingHistory = true
+                fetchHistoryForPOI(poi: poi) { storia in
+                    DispatchQueue.main.async {
+                        loadingHistory = false
+                        if let storia = storia, !storia.isEmpty {
+                            localHistory = storia
+                            viewModel.updateHistory(for: poi.id, history: storia)
+                            viewModel.persistenceManager.savePOIHistory(id: poi.id, history: storia)
                         }
+                    }
+                }
+            }
+        }
+        .onReceive(viewModel.$mappedPOIs) { mappedPOIs in
+            // Aggiorna la storia locale se cambia nel modello!
+            if let updatedPOI = mappedPOIs.first(where: { $0.id == poi.id }) {
+                localHistory = updatedPOI.history
+            }
         }
         .alert(isPresented: $showError, content: {
             Alert(
@@ -178,103 +183,46 @@ struct DiaryView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
 
-    // Funzione per leggere il testo
     private func readText(_ text: String) {
         do {
-            // Assicurati che la sessione audio sia attiva
             try AVAudioSession.sharedInstance().setActive(true)
-            
-            // Crea l'utterance
             let utterance = AVSpeechUtterance(string: text)
-            
-            // Prova a impostare la voce italiana, altrimenti usa la voce predefinita
             if let italianVoice = AVSpeechSynthesisVoice(language: "it-IT") {
                 utterance.voice = italianVoice
             } else if let defaultVoice = AVSpeechSynthesisVoice(language: "en-US") {
-                // Fallback alla voce inglese se l'italiano non è disponibile
                 utterance.voice = defaultVoice
                 print("Voce italiana non disponibile, utilizzo voce inglese")
             }
-            
             utterance.rate = 0.5
             utterance.pitchMultiplier = 1.0
-            utterance.volume = 1.0 // Volume massimo
-            
-            // Crea un nuovo delegato e mantieni un riferimento forte
+            utterance.volume = 1.0
             synthesizerDelegate = SpeechSynthesizerDelegate(onComplete: {
                 DispatchQueue.main.async {
                     self.isReading = false
-                    print("Lettura completata")
                 }
-            }, onStart: {
-                print("Lettura iniziata")
-            }, onError: { error in
+            }, onStart: {}, onError: { error in
                 DispatchQueue.main.async {
                     self.isReading = false
                     self.errorMessage = "Errore durante la lettura: \(error)"
                     self.showError = true
-                    print("Errore durante la lettura: \(error)")
                 }
             })
-            
-            // Assegna il delegato
             speechSynthesizer.delegate = synthesizerDelegate
-            
-            // Inizia a parlare
             if speechSynthesizer.isSpeaking {
                 speechSynthesizer.stopSpeaking(at: .immediate)
             }
-            
-            // Correzione: il metodo speak(_:) non restituisce un valore booleano
             speechSynthesizer.speak(utterance)
-            print("Avvio sintesi vocale")
             isReading = true
-            
         } catch {
             errorMessage = "Errore di inizializzazione audio: \(error.localizedDescription)"
             showError = true
-            print("Errore di inizializzazione audio: \(error)")
         }
     }
-    
-    // Funzione per fermare la lettura
+
     private func stopReading() {
         if speechSynthesizer.isSpeaking {
             speechSynthesizer.stopSpeaking(at: .immediate)
         }
         isReading = false
-    }
-}
-// Delegato migliorato per la sintesi vocale
-class SpeechSynthesizerDelegate: NSObject, AVSpeechSynthesizerDelegate {
-    private let onComplete: () -> Void
-    private let onStart: () -> Void
-    private let onError: (String) -> Void
-    
-    init(onComplete: @escaping () -> Void, onStart: @escaping () -> Void, onError: @escaping (String) -> Void) {
-        self.onComplete = onComplete
-        self.onStart = onStart
-        self.onError = onError
-        super.init()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        onStart()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        onComplete()
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-        onError("Lettura annullata")
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
-        onError("Lettura in pausa")
-    }
-    
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
-        onStart()
     }
 }

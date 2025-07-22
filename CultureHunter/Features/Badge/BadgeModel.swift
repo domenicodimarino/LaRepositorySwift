@@ -1,6 +1,6 @@
 import Foundation
 
-struct BadgeModel: Identifiable, Codable {
+struct BadgeModel: Identifiable, Codable, Equatable {
     let id: UUID
     let cityName: String
     var totalPOI: Int

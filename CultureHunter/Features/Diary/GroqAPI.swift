@@ -9,7 +9,7 @@ import Foundation
 
 // Helper per chiamare Groq e ottenere la storia
 func fetchHistoryForPOI(poi: MappedPOI, completion: @escaping (String?) -> Void) {
-    let systemPrompt = "Sei una guida turistica italiana. Scrivi una breve storia coinvolgente e ben scritta per questo luogo, senza inventare dati non forniti."
+    let systemPrompt = "Scrivi una breve storia sull'origine di questo luogo e sull'utilizzo che ne è stato fatto nel tempo, fino ai giorni nostri, senza aggiungere informazioni non fornite né fare riferimento alla città in cui si trova."
     let userPrompt = """
     Luogo: \(poi.diaryPlaceName)
     Città: \(poi.city)

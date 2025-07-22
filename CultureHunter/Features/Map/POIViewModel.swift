@@ -95,7 +95,7 @@ class POIViewModel: ObservableObject {
         
         mappedPOIs = Array(mappedPOIs)
         
-        badgeManager.updateBadgeForDiscoveredPOI(city: city, poiID: oldPOI.id, imageName: oldPOI.imageName ?? "")
+        badgeManager.updateBadgeForDiscoveredPOI(city: city, poiID: oldPOI.id, imageName: oldPOI.imageName ?? "", mappedPOIs: mappedPOIs)
         
         print("✅ POI scoperto e salvato: \(nuovoTitolo)")
     }

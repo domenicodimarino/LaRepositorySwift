@@ -3,6 +3,7 @@ import SwiftUI
 struct BadgeView: View {
     @ObservedObject var manager: BadgeManager
     @State private var selectedBadge: BadgeModel?
+    let allMappedPOIs: [MappedPOI] // <--- aggiungi questo parametro!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 32) {
@@ -10,7 +11,7 @@ struct BadgeView: View {
                 .font(.largeTitle)
                 .bold()
                 .padding(.top)
-            
+
             ForEach(manager.badges) { badge in
                 Button(action: {
                     if badge.isUnlocked {
@@ -21,7 +22,7 @@ struct BadgeView: View {
                         Image(badge.badgeImageName)
                             .resizable()
                             .frame(width: 128, height: 128)
-                        
+
                         VStack(alignment: .leading, spacing: 4) {
                             Text(badge.cityName)
                                 .font(.title2)
@@ -45,10 +46,17 @@ struct BadgeView: View {
         }
         .padding()
         .sheet(item: $selectedBadge) { badge in
-            BadgeDetailView(badge: badge)
+            if let idx = manager.badges.firstIndex(where: { $0.id == badge.id }) {
+                let cityPOIs = allMappedPOIs.filter { $0.city == badge.cityName }
+                BadgeDetailView(
+                    badge: $manager.badges[idx],
+                    manager: manager,
+                    mappedPOIs: cityPOIs
+                )
+            }
         }
     }
-    
+
     func dateString(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yyyy"

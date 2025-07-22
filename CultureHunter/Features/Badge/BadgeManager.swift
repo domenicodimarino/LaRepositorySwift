@@ -6,27 +6,37 @@ class BadgeManager: ObservableObject {
     }
     private var certifiedPOIIDs: Set<UUID> = []
     private let badgesKey = "badges_progress"
-
-    private let cityStories: [String: String] = [
-        "Salerno": "Salerno è una storica città campana affacciata sul mar Tirreno, nota per la sua posizione strategica tra la Costiera Amalfitana e il Cilento, ma soprattutto per il suo prestigioso passato. Nel Medioevo, Salerno fu capitale del Principato Longobardo (IX-XI sec.) e visse il suo massimo splendore con la Scuola Medica Salernitana, considerata la prima e più importante istituzione medica d’Europa, anticipando le università moderne. Dopo il periodo normanno, la città visse secoli alterni tra dominazioni sveve, angioine, aragonesi e spagnole, conservando un ruolo chiave nei traffici marittimi e nella vita religiosa e culturale. Nel XX secolo, Salerno ebbe un ruolo storico durante la Seconda guerra mondiale: nel 1943, dopo lo sbarco degli Alleati, divenne capitale d’Italia per alcuni mesi, ospitando il governo provvisorio. Oggi Salerno è una città dinamica e in continua trasformazione. È nota per il centro storico medievale, il lungomare, il Duomo di San Matteo (XI sec.), le Luci d’Artista invernali e il mix equilibrato tra storia, arte, mare e innovazione.",
-        "Cetara": "Cetara è un affascinante borgo marinaro della Costiera Amalfitana, noto per la sua profonda identità legata al mare e alla pesca, in particolare del tonno e delle alici, da cui si ricava la celebre colatura di alici, prodotto tradizionale di origini antichissime. Il nome “Cetara” deriva dal latino cetaria, ovvero “luogo dove si lavorano i grossi pesci” (come i tonni). Le sue origini risalgono all’epoca medievale, quando fu fondata come colonia di pescatori saraceni, insediati qui probabilmente per la posizione strategica della costa. Nel Medioevo e nel Rinascimento, Cetara fu spesso bersaglio di attacchi pirateschi, per cui fu costruita una torre vicereale di difesa costiera (ancora visibile e ben conservata). Nel corso dei secoli, Cetara ha sempre mantenuto la sua vocazione marinara, diventando uno dei porti più attivi per la pesca del tonno rosso. Ancora oggi la pesca rappresenta una parte vitale dell’economia locale, insieme al turismo gastronomico. Oggi è un piccolo gioiello sospeso tra tradizione e bellezza naturale, famoso per il suo centro pittoresco, la spiaggia ai piedi del paese, la chiesa di San Pietro Apostolo e soprattutto per la colatura di alici, presidio Slow Food e simbolo della cultura cetarese.",
-        "Cava de' Tirreni": "Cava de’ Tirreni è una città campana dal passato ricco e affascinante, situata tra i Monti Lattari e la Costiera Amalfitana. Le sue origini risalgono a tempi antichi, ma è nel Medioevo che inizia a svilupparsi come centro urbano, grazie alla fondazione, nel 1011, dell’Abbazia Benedettina della Santissima Trinità da parte di Sant’Alferio. L’abbazia divenne presto un importante centro religioso e culturale del Sud Italia. Attorno a questo polo spirituale nacque il borgo medievale, oggi rappresentato dal celebre corso porticato (Corso Umberto I), simbolo della città. Nel 1497, per la sua fedeltà alla monarchia, Cava ricevette dal re Federico d’Aragona il titolo di “Città Fedelissima”, che ancora oggi porta con orgoglio. Tra il XVI e il XVIII secolo, fu un centro culturale, tipografico e commerciale, attirando anche viaggiatori europei in epoca Grand Tour. Nell’Ottocento e Novecento si espanse, integrando molte frazioni e diventando un punto strategico tra l’entroterra e il mare. Oggi è una città moderna, viva, ricca di storia, tradizioni popolari (come la Disfida dei Trombonieri) e vicina a bellezze come Salerno e la Costiera Amalfitana. L’Abbazia è ancora attiva e il suo centro storico è una delle mete più caratteristiche della Campania.",
-    ]
+    
+    func saveBadgesProgress() {
+        if let data = try? JSONEncoder().encode(badges) {
+            UserDefaults.standard.set(data, forKey: badgesKey)
+        }
+    }
 
     init() {
         if let data = UserDefaults.standard.data(forKey: badgesKey),
            let saved = try? JSONDecoder().decode([BadgeModel].self, from: data) {
             badges = saved.map { badge in
                 var b = badge
-                b.cityStory = cityStories[badge.cityName] ?? b.cityStory
+                b.cityStory = badge.cityStory
+                // PATCH: imposta la data se il badge è già sbloccato!
+                if b.certifiedPOI >= b.totalPOI && b.unlockedDate == nil {
+                    b.unlockedDate = Date()
+                }
                 return b
             }
         } else {
             badges = [
-                BadgeModel(cityName: "Salerno", totalPOI: 16, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["castello_arechi","chiesa_monte_morti","chiesa_sangiorgio","chiesa_ssannunziata","duomo_salerno","giardino_minerva","museo_archeologico","museo_diocesano_salerno","museo_sbarco","museo_virtuale","piazza_liberta","porto_salerno","saragnano","stadio_arechi","teatro_verdi","velia"], cityStory: cityStories["Salerno"] ?? ""),
-                BadgeModel(cityName: "Cetara", totalPOI: 5, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["chiesa_sanpietro","costantinopoli","fabbrica_nettuno","piazza_sanfra","torre_di_cetara"], cityStory: cityStories["Cetara"] ?? ""),
-                BadgeModel(cityName: "Cava de' Tirreni", totalPOI: 11, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["caduti", "abbazia","chiesa_avvocatella","chiesa_sanlo","duomo_cava","giardini_sangio","madonna_olmo","purgatorio","santuario","villa_comunale","chiesa_sanrocco"], cityStory: cityStories["Cava de' Tirreni"] ?? ""),
+                BadgeModel(cityName: "Salerno", totalPOI: 16, certifiedPOI: 16, unlockedDate: nil, discoveredImageNames: ["castello_arechi","chiesa_monte_morti","chiesa_sangiorgio","chiesa_ssannunziata","duomo_salerno","giardino_minerva","museo_archeologico","museo_diocesano_salerno","museo_sbarco","museo_virtuale","piazza_liberta","porto_salerno","saragnano","stadio_arechi","teatro_verdi","velia"], cityStory: ""),
+                BadgeModel(cityName: "Cetara", totalPOI: 5, certifiedPOI: 5, unlockedDate: nil, discoveredImageNames: ["chiesa_sanpietro","costantinopoli","fabbrica_nettuno","piazza_sanfra","torre_di_cetara"], cityStory: ""),
+                BadgeModel(cityName: "Cava de' Tirreni", totalPOI: 11, certifiedPOI: 11, unlockedDate: nil, discoveredImageNames: ["caduti", "abbazia","chiesa_avvocatella","chiesa_sanlo","duomo_cava","giardini_sangio","madonna_olmo","purgatorio","santuario","villa_comunale","chiesa_sanrocco"], cityStory: ""),
             ]
+            // PATCH: imposta la data per tutti i badge già sbloccati
+            for i in badges.indices {
+                if badges[i].certifiedPOI >= badges[i].totalPOI && badges[i].unlockedDate == nil {
+                    badges[i].unlockedDate = Date()
+                }
+            }
         }
     }
 
@@ -43,12 +53,12 @@ class BadgeManager: ObservableObject {
                 certifiedPOI: 0,
                 unlockedDate: nil,
                 discoveredImageNames: imageName != nil ? [imageName!] : [],
-                cityStory: cityStories[city] ?? ""
+                cityStory: ""
             ))
         }
     }
 
-    func updateBadgeForDiscoveredPOI(city: String, poiID: UUID, imageName: String?) {
+    func updateBadgeForDiscoveredPOI(city: String, poiID: UUID, imageName: String?, mappedPOIs: [MappedPOI]) {
         guard !certifiedPOIIDs.contains(poiID) else { return }
         certifiedPOIIDs.insert(poiID)
         guard let index = badges.firstIndex(where: { $0.cityName == city }) else { return }
@@ -58,6 +68,15 @@ class BadgeManager: ObservableObject {
         }
         if badges[index].certifiedPOI >= badges[index].totalPOI, badges[index].unlockedDate == nil {
             badges[index].unlockedDate = Date()
+            // Genera la storia della città con Groq
+            generateCityStoryWithGroq(cityName: city, mappedPOIs: mappedPOIs) { [weak self] storia in
+                DispatchQueue.main.async {
+                    if let storia = storia {
+                        self?.badges[index].cityStory = storia
+                        self?.saveBadgesProgress()
+                    }
+                }
+            }
         }
     }
 
@@ -66,14 +85,67 @@ class BadgeManager: ObservableObject {
             badges[i].certifiedPOI = 0
             badges[i].unlockedDate = nil
             badges[i].discoveredImageNames = []
-            badges[i].cityStory = cityStories[badges[i].cityName] ?? ""
+            badges[i].cityStory = ""
         }
         certifiedPOIIDs.removeAll()
     }
 
-    private func saveBadgesProgress() {
-        if let data = try? JSONEncoder().encode(badges) {
-            UserDefaults.standard.set(data, forKey: badgesKey)
+    // Funzione per chiamare Groq e generare la storia della città
+    private func generateCityStoryWithGroq(cityName: String, mappedPOIs: [MappedPOI], completion: @escaping (String?) -> Void) {
+        let poiNames = mappedPOIs.filter { $0.city == cityName }.map { $0.diaryPlaceName }
+        let systemPrompt = """
+        Racconta una storia coinvolgente di come è nata la città di \(cityName) e come la troviamo ad oggi. 
+        """
+        let userPrompt = ""
+        let messagesPayload = [
+            ["role": "system", "content": systemPrompt],
+            ["role": "user", "content": userPrompt]
+        ]
+        guard let url = URL(string: "https://api.groq.com/openai/v1/chat/completions") else { completion(nil); return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer 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", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body: [String: Any] = [
+            "model": "llama3-70b-8192",
+            "messages": messagesPayload,
+            "temperature": 0.7
+        ]
+        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else { completion(nil); return }
+        request.httpBody = httpBody
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let choices = json["choices"] as? [[String: Any]],
+                  let message = choices.first?["message"] as? [String: Any],
+                  let content = message["content"] as? String else {
+                completion(nil)
+                return
+            }
+            completion(content.trimmingCharacters(in: .whitespacesAndNewlines))
+        }.resume()
+    }
+}
+
+extension BadgeManager {
+    /// Carica la storia della città, se non presente la genera con Groq
+    func fetchCityStoryIfNeeded(for city: String, mappedPOIs: [MappedPOI], completion: @escaping (String?) -> Void) {
+        // Cerca il badge corrispondente
+        if let badge = badges.first(where: { $0.cityName == city }), !badge.cityStory.isEmpty {
+            completion(badge.cityStory)
+        } else if let idx = badges.firstIndex(where: { $0.cityName == city }) {
+            // Genera la storia con Groq
+            generateCityStoryWithGroq(cityName: city, mappedPOIs: mappedPOIs) { [weak self] storia in
+                DispatchQueue.main.async {
+                    if let storia = storia {
+                        self?.badges[idx].cityStory = storia
+                        self?.saveBadgesProgress()
+                    }
+                    completion(storia)
+                }
+            }
+        } else {
+            completion(nil)
         }
     }
 }

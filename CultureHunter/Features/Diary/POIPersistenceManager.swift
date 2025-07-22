@@ -1,11 +1,3 @@
-//
-//  POIPersistenceManager.swift
-//  CultureHunter
-//
-//  Created by Domenico Di Marino on 15/07/25.
-//
-
-
 import Foundation
 import UIKit
 import CoreLocation
@@ -248,5 +240,10 @@ class POIPersistenceManager {
             savedData[index] = updated
             saveToUserDefaults(data: savedData)
         }
+    }
+
+    // PATCH: carica la storia persistente per un POI
+    func loadPOIHistory(id: UUID) -> String? {
+        return getSavedPOIData().first(where: { $0.id == id })?.history
     }
 }

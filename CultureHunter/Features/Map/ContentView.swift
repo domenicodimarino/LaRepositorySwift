@@ -38,7 +38,7 @@ struct ContentView: View {
             city: "Salerno",
             province: "Salerno",
             diaryPlaceName: "Castello di Arechi",
-            isDiscovered: false,
+            isDiscovered: true,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -52,7 +52,7 @@ struct ContentView: View {
             city: "Salerno",
             province: "Salerno",
             diaryPlaceName: "Giardino della Minerva",
-            isDiscovered: false,
+            isDiscovered: true,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -523,7 +523,7 @@ struct ContentView: View {
                         Text("Diario")
                     }
 
-                BadgeView(manager: badgeManager)
+                BadgeView(manager: badgeManager, allMappedPOIs: poiViewModel.mappedPOIs)
                     .tabItem {
                         Image(systemName: "rosette")
                         Text("Badge")
