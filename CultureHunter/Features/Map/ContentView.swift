@@ -42,8 +42,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.684451,
-            longitude: 14.754735,
+            latitude: 40.684072,
+            longitude: 14.755469,
             imageName: "castello_arechi"
         ),
         POI(
@@ -70,8 +70,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.671693,
-            longitude: 14.737993,
+            latitude: 40.671686,
+            longitude: 14.73752,
             imageName: "porto_salerno"
         ),
         POI(
@@ -252,8 +252,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.64708,
-            longitude: 14.701778,
+            latitude: 40.647154,
+            longitude: 14.701637,
             imageName: "chiesa_sanpietro"
         ),
         POI(
@@ -266,8 +266,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.651286,
-            longitude: 14.69749,
+            latitude: 40.651264,
+            longitude: 14.697518,
             imageName: "costantinopoli"
         ),
         POI(
@@ -378,8 +378,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.695836,
-            longitude: 14.709857,
+            latitude: 40.695865,
+            longitude: 14.71005,
             imageName: "santuario"
         ),
         POI(
@@ -420,8 +420,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.685,
-            longitude: 14.703707,
+            latitude: 40.685062,
+            longitude: 14.703943,
             imageName: "chiesa_avvocatella"
         ),
         POI(
@@ -434,8 +434,8 @@ struct ContentView: View {
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
-            latitude: 40.701124,
-            longitude: 14.71481,
+            latitude: 40.701055,
+            longitude: 14.714703,
             imageName: "chiesa_sanlo"
         ),
         POI(
