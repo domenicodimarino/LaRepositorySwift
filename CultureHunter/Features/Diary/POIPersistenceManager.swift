@@ -21,10 +21,11 @@ class POIPersistenceManager {
         let photoFileName: String?
         let discoveredTitle: String?
         let city: String
+        let history: String?
     }
     
     
-    func savePOIDiscovery(id: UUID, photo: UIImage?, city: String, title: String?) -> String? {
+    func savePOIDiscovery(id: UUID, photo: UIImage?, city: String, title: String?, history: String?) -> String? {
             var photoPath: String? = nil
             var photoFileName: String? = nil
             
@@ -39,7 +40,8 @@ class POIPersistenceManager {
             discoveredDate: Date(),
             photoFileName: photoFileName,
             discoveredTitle: title,
-            city: city
+            city: city,
+            history: history
         )
         
         var savedData = getSavedPOIData()
@@ -166,7 +168,7 @@ class POIPersistenceManager {
                     mappedPOIs[i].discoveredTitle = savedPOI.discoveredTitle
                     mappedPOIs[i].photoPath = finalPhotoPath
                     mappedPOIs[i].discoveredDate = savedPOI.discoveredDate
-                    
+                    mappedPOIs[i].history = savedPOI.history
                     updatedCount += 1
                     print("✅ POI aggiornato: \(mappedPOIs[i].title)")
                 }
@@ -217,7 +219,8 @@ class POIPersistenceManager {
                         discoveredDate: oldData.discoveredDate,
                         photoFileName: fileName,
                         discoveredTitle: oldData.discoveredTitle,
-                        city: oldData.city
+                        city: oldData.city,
+                        history: oldData.history
                     )
                     print("🔄 Migrato: \(fileName) da \(oldPath)")
                 }
@@ -228,5 +231,22 @@ class POIPersistenceManager {
         
         saveToUserDefaults(data: migratedData)
         print("✅ Migrazione completata: \(migratedData.count) record")
+    }
+    // Salva o aggiorna solo la storia per un POI già scoperto
+    func savePOIHistory(id: UUID, history: String?) {
+        var savedData = getSavedPOIData()
+        if let index = savedData.firstIndex(where: { $0.id == id }) {
+            let old = savedData[index]
+            let updated = SavedPOIData(
+                id: old.id,
+                discoveredDate: old.discoveredDate,
+                photoFileName: old.photoFileName,
+                discoveredTitle: old.discoveredTitle,
+                city: old.city,
+                history: history // aggiorna la storia!
+            )
+            savedData[index] = updated
+            saveToUserDefaults(data: savedData)
+        }
     }
 }

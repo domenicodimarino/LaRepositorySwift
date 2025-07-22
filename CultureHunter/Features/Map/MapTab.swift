@@ -133,7 +133,7 @@ struct MapTab: View {
                 NavigationLink(
                     destination: Group {
                         if let diaryPOI = diaryPOI {
-                            DiaryView(poi: diaryPOI)
+                            DiaryView(poi: diaryPOI, viewModel: viewModel)
                         }
                     },
                     isActive: $showDiaryView

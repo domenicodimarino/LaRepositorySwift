@@ -4,6 +4,7 @@ struct PlacesList: View {
     let places: [MappedPOI]
 
     @State private var selectedCity: String = "Tutti"
+    @ObservedObject var viewModel: POIViewModel
 
     private var allCities: [String] {
         let cities = Set(places.map { $0.city })
@@ -52,7 +53,7 @@ struct PlacesList: View {
 
                     List(filteredPlaces) { place in
                         if place.isDiscovered {
-                            NavigationLink(destination: DiaryView(poi: place)) {
+                            NavigationLink(destination: DiaryView(poi: place, viewModel: viewModel)) {
                                 PlacesListRow(place: place)
                             }
                         } else {

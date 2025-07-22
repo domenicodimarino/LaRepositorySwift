@@ -3,12 +3,13 @@ import AVFoundation
 
 struct DiaryView: View {
     let poi: MappedPOI
+    @ObservedObject var viewModel: POIViewModel
     @State private var errorMessage: String? = nil
     @State private var showError: Bool = false
     @State private var isReading: Bool = false
+    @State private var loadingHistory: Bool = false // <-- PER IL LOADING
+        @State private var localHistory: String? = nil  // <-- PER FORZARE IL REFRESH DELLA VIEW
 
-    @State private var dragPosition: Double = 0
-    @State private var isDragging: Bool = false
     
     @State private var speechSynthesizer = AVSpeechSynthesizer()
     @State private var synthesizerDelegate: SpeechSynthesizerDelegate?
@@ -78,7 +79,7 @@ struct DiaryView: View {
                                         stopReading()
                                     }
                                     else {
-                                        if let placeHistory = placeData?.history{
+                                        if let placeHistory = poi.history{
                                             readText(placeHistory)
                                         }
                                         
@@ -98,7 +99,7 @@ struct DiaryView: View {
  
                         }
 
-                        if let placeHistory = placeData?.history {
+                        if let placeHistory = poi.history {
                             Text(placeHistory)
                                 .font(.body)
                                 .lineSpacing(5)
@@ -140,6 +141,21 @@ struct DiaryView: View {
                 errorMessage = "Errore di inizializzazione audio: \(error.localizedDescription)"
                 showError = true
             }
+            
+            if poi.history == nil && !loadingHistory {
+                            loadingHistory = true
+                            fetchHistoryForPOI(poi: poi) { storia in
+                                DispatchQueue.main.async {
+                                    loadingHistory = false
+                                    if let storia = storia, !storia.isEmpty {
+                                        localHistory = storia
+                                        // Salva la storia anche nel modello e su disco!
+                                        viewModel.updateHistory(for: poi.id, history: storia)
+                                        viewModel.persistenceManager.savePOIHistory(id: poi.id, history: storia)
+                                    }
+                                }
+                            }
+                        }
         }
         .alert(isPresented: $showError, content: {
             Alert(

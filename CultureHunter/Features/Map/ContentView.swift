@@ -24,7 +24,7 @@ struct ContentView: View {
             city: "Cetara",
             province: "Salerno",
             diaryPlaceName: "Torre di Cetara",
-            isDiscovered: false,
+            isDiscovered: true,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -517,7 +517,7 @@ struct ContentView: View {
                     Text("Mappa")
                 }
 
-                PlacesList(places: poiViewModel.mappedPOIs)
+                PlacesList(places: poiViewModel.mappedPOIs, viewModel: poiViewModel)
                     .tabItem {
                         Image(systemName: "book.closed")
                         Text("Diario")

@@ -3,7 +3,7 @@ import UIKit
 
 class POIViewModel: ObservableObject {
     @Published var mappedPOIs: [MappedPOI] = []
-    private let persistenceManager = POIPersistenceManager.shared
+    let persistenceManager = POIPersistenceManager.shared
     
     
     init() {
@@ -29,6 +29,11 @@ class POIViewModel: ObservableObject {
             }
         }
     }
+    func updateHistory(for id: UUID, history: String?) {
+        if let index = mappedPOIs.firstIndex(where: { $0.id == id }) {
+            mappedPOIs[index].history = history
+        }
+    }
     
     func markPOIDiscovered(id: UUID, photo: UIImage, city: String, badgeManager: BadgeManager, nomeUtente: String) {
         guard let index = mappedPOIs.firstIndex(where: { $0.id == id }) else {
@@ -49,7 +54,8 @@ class POIViewModel: ObservableObject {
             id: id,
             photo: photo,
             city: city,
-            title: nuovoTitolo
+            title: nuovoTitolo,
+            history: oldPOI.history
         )
         
         if photoPath == nil {
@@ -73,7 +79,19 @@ class POIViewModel: ObservableObject {
             imageName: oldPOI.imageName
         )
         
+        // Con questa:
         mappedPOIs[index] = updatedPOI
+
+        // Se la storia è assente, chiama Groq
+        if mappedPOIs[index].history == nil {
+            fetchHistoryForPOI(poi: updatedPOI) { storia in
+                DispatchQueue.main.async {
+                    self.updateHistory(for: updatedPOI.id, history: storia)
+                    
+                    self.persistenceManager.savePOIHistory(id: updatedPOI.id, history: storia)
+                }
+            }
+        }
         
         mappedPOIs = Array(mappedPOIs)
         
