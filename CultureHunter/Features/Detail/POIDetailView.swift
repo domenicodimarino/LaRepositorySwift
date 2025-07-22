@@ -12,7 +12,6 @@ struct POIDetailView: View {
     var body: some View {
         VStack(spacing: 24) {
             if poi.isDiscovered {
-                // POI scoperto
                 if let image = poi.photo {
                     Image(uiImage: image)
                         .resizable()
@@ -30,9 +29,7 @@ struct POIDetailView: View {
                 Text(poi.address)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                // Qui puoi aggiungere badge, diario, ecc.
             } else {
-                // POI misterioso
                 Image(systemName: "questionmark.circle")
                     .resizable()
                     .frame(width: 100, height: 100)

@@ -7,7 +7,6 @@ struct MissionBanner: View {
     var body: some View {
         Group {
             if missionViewModel.activeMission == nil {
-                // Nessuna missione disponibile (tema scuro incluso)
                 let backgroundColor = colorScheme == .dark ? Color(white: 0.15) : Color(red: 0.85, green: 0.85, blue: 0.85)
                 let borderColor = colorScheme == .dark ? Color.white.opacity(0.4) : .black
                 let captionColor = colorScheme == .dark ? Color.white.opacity(0.7) : .secondary
@@ -30,7 +29,6 @@ struct MissionBanner: View {
             }
 
             else if let mission = missionViewModel.activeMission, mission.isCompleted {
-                // MISSIONE COMPLETATA!!
                 missionContainer(
                     background: Color.green.opacity(0.2),
                     border: .green,
@@ -48,7 +46,6 @@ struct MissionBanner: View {
                 )
             }
             else if missionViewModel.timeLeftString == "Tempo scaduto!" {
-                // MISSIONE SCADUTA!
                 missionContainer(
                     background: Color.red.opacity(0.2),
                     border: .red,
@@ -66,7 +63,6 @@ struct MissionBanner: View {
                 )
             }
             else if let mission = missionViewModel.activeMission {
-                // MISSIONE IN CORSO!
                 missionContainer(
                     background: Color(red: 0.85, green: 0.85, blue: 0.85),
                     border: .black,
@@ -106,7 +102,6 @@ struct MissionBanner: View {
         }
     }
     
-    // Helper function to create consistent mission containers
     private func missionContainer<Content: View>(
         background: Color,
         border: Color,

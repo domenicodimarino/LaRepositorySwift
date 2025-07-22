@@ -1,12 +1,9 @@
 import SwiftUI
 
-// Card per visualizzare un articolo dello shop
 struct ShopItemCard: View {
-    // MARK: - Properties
     let item: ShopItem
     let onBuy: () -> Void
     
-    // MARK: - Constants
     private enum ViewMetrics {
         static let cardWidth: CGFloat = 73
         static let cardHeight: CGFloat = 98
@@ -16,13 +13,11 @@ struct ShopItemCard: View {
         static let itemImageSize: CGFloat = 60
     }
     
-    // MARK: - View
-    
     var body: some View {
         Button(action: onBuy) {
             itemCardView
         }
-        .disabled(item.isOwned) // Disabilita il pulsante se l'articolo è già posseduto
+        .disabled(item.isOwned)
     }
     
     private var itemCardView: some View {
@@ -32,16 +27,14 @@ struct ShopItemCard: View {
         }
         .frame(width: ViewMetrics.cardWidth, height: 108)
         .overlay(
-            // Mostra l'icona "sold" per gli articoli posseduti
             Group {
                 if item.isOwned {
-                    Image("sold_icon") // Sostituisci con il nome reale dell'icona
+                    Image("sold_icon")
                         .resizable()
                         .frame(width: 64, height: 64)
                         .padding(4)
                         .foregroundColor(.white)
                         .shadow(radius: 1)
-                        // Se l'immagine non esiste, usa un'immagine di sistema
                         .onAppear {
                             if UIImage(named: "sold_icon") == nil {
                                 print("Immagine 'sold_icon' non trovata, usa un'immagine di sistema")
@@ -59,10 +52,9 @@ struct ShopItemCard: View {
                 .foregroundColor(.clear)
                 .frame(width: ViewMetrics.cardWidth, height: ViewMetrics.cardHeight)
                 .background(
-                    // Usa un colore più scuro per gli articoli posseduti, simile a CustomizationCard
                     item.isOwned
-                        ? Color(red: 0.49, green: 0.49, blue: 0.49) // Colore più scuro
-                        : Color(red: 0.85, green: 0.85, blue: 0.85) // Colore normale
+                        ? Color(red: 0.49, green: 0.49, blue: 0.49)
+                        : Color(red: 0.85, green: 0.85, blue: 0.85)
                 )
                 .cornerRadius(ViewMetrics.cornerRadius)
                 .overlay(
@@ -74,7 +66,7 @@ struct ShopItemCard: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: ViewMetrics.itemImageSize, height: ViewMetrics.itemImageSize)
-                .opacity(item.isOwned ? 0.8 : 1.0) // Riduce leggermente l'opacità degli articoli posseduti
+                .opacity(item.isOwned ? 0.8 : 1.0)
         }
     }
     

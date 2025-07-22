@@ -12,7 +12,7 @@ struct Mission: Identifiable, Codable, Equatable {
     let id: UUID
     let description: String
     let reward: Int
-    let duration: TimeInterval   // secondi
+    let duration: TimeInterval
     var startDate: Date?
     var isCompleted: Bool
 
@@ -25,7 +25,6 @@ struct Mission: Identifiable, Codable, Equatable {
         self.isCompleted = false
     }
     
-    // Aggiungi questo se necessario per confronti specifici
         static func == (lhs: Mission, rhs: Mission) -> Bool {
             return lhs.id == rhs.id &&
                    lhs.isCompleted == rhs.isCompleted &&

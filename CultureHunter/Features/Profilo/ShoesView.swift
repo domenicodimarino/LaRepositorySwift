@@ -27,9 +27,3 @@ struct ShoesView: View {
         )
     }
 }
-
-#Preview {
-    NavigationView {
-        ShoesView(viewModel: AvatarViewModel())
-    }
-}

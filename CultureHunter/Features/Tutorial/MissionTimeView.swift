@@ -23,7 +23,6 @@ struct MissionTimeView: View {
             
             Spacer()
             
-            // Time picker with custom design
             VStack {
                 HStack {
                     Picker("Ora", selection: $missionHour) {
@@ -68,7 +67,6 @@ struct MissionTimeView: View {
         }
         .padding()
         .onAppear {
-            // Set default time if needed
             if missionHour == 0 && missionMinute == 0 {
                 missionHour = 17
                 missionMinute = 45

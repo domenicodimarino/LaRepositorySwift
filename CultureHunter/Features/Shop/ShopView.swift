@@ -7,17 +7,7 @@
 
 import SwiftUI
 
-//
-//  ShopView.swift
-//  CultureHunter
-//
-//  Created by Domenico Di Marino on 07/07/25.
-//
-
-import SwiftUI
-
 struct ShopView: View {
-    // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
     @ObservedObject var missionViewModel: MissionViewModel
     @StateObject private var shopViewModel: ShopViewModel
@@ -30,15 +20,11 @@ struct ShopView: View {
     @State private var justPurchasedItem: ShopItem? = nil
     @State private var missionRewardProcessed = false
     
-    // MARK: - Initialization
-    
     init(avatarViewModel: AvatarViewModel, missionViewModel: MissionViewModel) {
         self.avatarViewModel = avatarViewModel
         self.missionViewModel = missionViewModel
         _shopViewModel = StateObject(wrappedValue: ShopViewModel(avatarViewModel: avatarViewModel))
     }
-    
-    // MARK: - View
     
     var body: some View {
         VStack {
@@ -57,7 +43,6 @@ struct ShopView: View {
                 dismissButton: .default(Text("OK"))
             )
         }
-        // Alert di conferma (prima dell'acquisto)
         .alert("Conferma acquisto", isPresented: $showConfirmation) {
             Button("No", role: .cancel) { }
             Button("Sì") {
@@ -70,7 +55,6 @@ struct ShopView: View {
                 Text("Vuoi acquistare questo articolo?")
             }
         }
-        // Nuovo alert per indossare l'articolo
         .alert("Indossare articolo", isPresented: $showWearConfirmation) {
             Button("No", role: .cancel) {
                 alertMessage = "Puoi indossarlo dall'inventario quando vuoi."
@@ -99,22 +83,17 @@ struct ShopView: View {
         }
     }
     
-    // MARK: - Mission Management
-    
     private func checkMissionCompletion() {
-        // Durante lo sviluppo, puoi cambiare questo a 'true' per testare
         #if DEBUG
         let simulatePoiVisited = false
         #else
         let simulatePoiVisited = false
         #endif
         
-        // Verifica il completamento della missione solo se non è già stato elaborato
         if !missionRewardProcessed, let reward = missionViewModel.tryCompleteMission(poiVisited: simulatePoiVisited) {
             avatarViewModel.addCoins(reward)
             missionRewardProcessed = true
             
-            // Feedback visivo opzionale
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 alertMessage = "Missione completata! +\(reward) monete."
                 showAlert = true
@@ -122,15 +101,13 @@ struct ShopView: View {
         }
     }
     
-    // MARK: - View Components
-    
     private var headerSection: some View {
         Text("Shop")
             .font(.largeTitle)
             .fontWeight(.bold)
             .kerning(0.4)
             .multilineTextAlignment(.center)
-            .foregroundColor(.primary) // Maintains adaptive color
+            .foregroundColor(.primary)
             .padding(.top)
     }
     
@@ -164,7 +141,7 @@ struct ShopView: View {
             Text("Le tue monete: ")
                 .font(.body)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary) // Adaptive text color
+                .foregroundColor(.primary)
             
             Image("coin")
                 .resizable()
@@ -176,7 +153,7 @@ struct ShopView: View {
             Text("\(shopViewModel.coins)")
                 .font(.body)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary) // Adaptive text color
+                .foregroundColor(.primary)
         }
     }
     
@@ -193,7 +170,7 @@ struct ShopView: View {
             Text(title)
                 .font(.title)
                 .fontWeight(.bold)
-                .foregroundColor(.primary) // Adaptive text color
+                .foregroundColor(.primary)
                 .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -212,8 +189,6 @@ struct ShopView: View {
             }
         }
     }
-    
-    // MARK: - Actions
     
     private func buySelectedItem() {
         guard let item = selectedItem else { return }

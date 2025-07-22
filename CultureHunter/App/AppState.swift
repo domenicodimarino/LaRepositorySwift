@@ -17,7 +17,6 @@ class AppState: ObservableObject {
     
     func checkFirstLaunch() {
         if !hasCreatedAvatar {
-            // Prima installazione - mostra solo creazione avatar
             showingAvatarCreation = true
         }
     }

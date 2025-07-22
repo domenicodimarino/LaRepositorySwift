@@ -6,9 +6,7 @@
 //
 import SwiftUI
 
-// Definizione combinata
 struct ComplexionColors {
-    // Il modello di carnagione ora fa parte della stessa struttura
     struct Complexion: Identifiable, Hashable {
         let id = UUID()
         let assetName: String
@@ -18,7 +16,6 @@ struct ComplexionColors {
         }
     }
     
-    // Mappa colori
     static let map: [String: Color] = [
         "amber": Color(red: 0.98, green: 0.84, blue: 0.65),
         "light": Color(red: 0.98, green: 0.85, blue: 0.73),
@@ -29,7 +26,6 @@ struct ComplexionColors {
         "taupe": Color(red: 0.75, green: 0.55, blue: 0.4)
     ]
     
-    // Lista di tutte le carnagioni, già ordinate come preferisci
     static let all: [Complexion] = [
         Complexion(assetName: "light"),
         Complexion(assetName: "amber"),

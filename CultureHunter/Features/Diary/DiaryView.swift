@@ -10,7 +10,6 @@ struct DiaryView: View {
     @State private var dragPosition: Double = 0
     @State private var isDragging: Bool = false
 
-    // Ottieni i dati storici dal database di Places
     private var placeData: Place? {
         return PlacesData.shared.places.first { $0.name == poi.diaryPlaceName }
     }
@@ -22,18 +21,15 @@ struct DiaryView: View {
                 let imageHeight: CGFloat = isIPad ? 280 : 180
 
                 VStack(alignment: .leading, spacing: 20) {
-                    // FOTO TOP: contenitore con altezza dinamica
                     VStack(spacing: 0) {
                         GeometryReader { geometry in
                             HStack(spacing: 8) {
-                                // Prima immagine
                                 Image(poi.imageName)
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
                                     .frame(width: geometry.size.width / 2 - 4, height: imageHeight)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                                // Seconda immagine
                                 if poi.isDiscovered, let photoPath = poi.photoPath, let img = UIImage(contentsOfFile: photoPath) {
                                     Divider()
                                     Image(uiImage: img)
@@ -74,7 +70,6 @@ struct DiaryView: View {
                                     .fontWeight(.bold)
                                 Spacer()
 
-                                // Bottone per l'audio pre-registrato
                                 Button(action: {
                                     if audioManager.isPlaying {
                                         audioManager.pauseAudio()
@@ -96,7 +91,6 @@ struct DiaryView: View {
                                 }
                             }
 
-                            // BARRA DI PROGRESSO AUDIO INTERATTIVA
                             if audioManager.duration > 0 {
                                 VStack(spacing: 6) {
                                     Slider(
@@ -132,7 +126,6 @@ struct DiaryView: View {
                             }
                         }
 
-                        // Usa i dati storici dal Place corrispondente
                         if let placeHistory = placeData?.history {
                             Text(placeHistory)
                                 .font(.body)

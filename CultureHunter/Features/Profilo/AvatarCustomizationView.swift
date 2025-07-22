@@ -3,14 +3,11 @@ import SwiftUI
 struct AvatarCustomizationView: View {
     @ObservedObject var viewModel: AvatarViewModel
     
-    // MARK: - Data Models
-    
-    // Utilizzo di un enum per rappresentare i vari tipi di opzioni in modo più tipizzato
     enum CustomizationOption: Identifiable {
-        case style                   // Cambio stile (uomo/donna)
-        case hair                    // Capelli
-        case complexion              // Carnagione
-        case eyeColor                // Colore occhi
+        case style
+        case hair
+        case complexion
+        case eyeColor
         
         var id: String { title }
         
@@ -24,12 +21,7 @@ struct AvatarCustomizationView: View {
         }
     }
     
-    // MARK: - Properties
-    
-    // Usa una lista fissa di opzioni, poiché l'ordine e le opzioni non cambiano
     private let options: [CustomizationOption] = [.style, .hair, .complexion, .eyeColor]
-    
-    // MARK: - Body
     
     var body: some View {
         ZStack {
@@ -47,7 +39,6 @@ struct AvatarCustomizationView: View {
         .navigationTitle("Il tuo aspetto")
     }
     
-    // MARK: - View Components
     
     private var avatarPreviewSection: some View {
         ZStack(alignment: .bottom) {
@@ -72,11 +63,9 @@ struct AvatarCustomizationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
         .padding(.horizontal)
-        // Aggiungi un ID univoco basato sui dati dell'avatar per forzare l'aggiornamento
         .id("optionsList-\(viewModel.avatar.hair)-\(viewModel.avatar.skin)-\(viewModel.avatar.eyes)")
     }
     
-    // MARK: - Helper Functions
     
     @ViewBuilder
     private func navigationLinkForOption(_ option: CustomizationOption) -> some View {
@@ -113,7 +102,6 @@ struct AvatarCustomizationView: View {
             AvatarHeadPreview(viewModel: viewModel, size: CGSize(width: 60, height: 60))
             
         case .hair:
-            // Accedi direttamente al valore corrente
             Image(viewModel.avatar.hair)
                 .resizable()
                 .scaledToFit()
@@ -142,7 +130,6 @@ struct AvatarCustomizationView: View {
         }
     }
     
-    // Accediamo direttamente ai valori aggiornati quando necessario
     private func getComplexionColor() -> Color {
         let currentSkin = viewModel.avatar.skin
         if let complexion = ComplexionColors.findComplexion(in: currentSkin) {
@@ -171,13 +158,5 @@ struct AvatarCustomizationView: View {
         case .eyeColor:
             EyeColorView(viewModel: viewModel)
         }
-    }
-}
-
-// MARK: - Preview
-
-#Preview {
-    NavigationView {
-        AvatarCustomizationView(viewModel: AvatarViewModel())
     }
 }

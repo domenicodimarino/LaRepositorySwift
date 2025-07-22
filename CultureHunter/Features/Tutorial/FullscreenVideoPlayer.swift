@@ -11,7 +11,7 @@ import AVKit
 
 struct FullscreenVideoPlayer: UIViewControllerRepresentable {
     let videoName: String
-    var cornerRadius: CGFloat = 0 // 1. Add corner radius parameter
+    var cornerRadius: CGFloat = 0
     
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
@@ -41,11 +41,10 @@ struct FullscreenVideoPlayer: UIViewControllerRepresentable {
     }
     
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        applyRoundedCorners(uiViewController) // 2. Apply corner radius
+        applyRoundedCorners(uiViewController)
         makeBackgroundTransparent(uiViewController)
     }
     
-    // 3. New method to handle corner rounding
     private func applyRoundedCorners(_ controller: AVPlayerViewController) {
         guard cornerRadius > 0 else { return }
 
@@ -57,7 +56,6 @@ struct FullscreenVideoPlayer: UIViewControllerRepresentable {
             contentOverlayView.clipsToBounds = true
         }
 
-        // Delay masking to allow layout to be completed
         DispatchQueue.main.async {
             guard let videoLayer = findVideoLayer(in: controller.view) else { return }
 
@@ -101,7 +99,6 @@ struct FullscreenVideoPlayer: UIViewControllerRepresentable {
     
 }
 
-// 4. Add corner radius parameter to videoBackground modifier
 extension View {
     func videoBackground(_ videoName: String, cornerRadius: CGFloat = 0) -> some View {
         ZStack {

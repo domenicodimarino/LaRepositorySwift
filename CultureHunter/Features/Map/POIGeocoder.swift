@@ -4,7 +4,6 @@ import UIKit
 
 class POIGeocoder {
     static func geocode(poi: POI, completion: @escaping (MappedPOI?) -> Void) {
-        // Se il POI ha già lat/lon, usale direttamente!
         if let lat = poi.latitude, let lon = poi.longitude {
             let mapped = MappedPOI(
                 id: poi.id,
@@ -18,12 +17,11 @@ class POIGeocoder {
                 discoveredTitle: poi.discoveredTitle,
                 photoPath: poi.photoPath,
                 discoveredDate: poi.discoveredDate,
-                imageName: poi.imageName // <-- AGGIUNTO!
+                imageName: poi.imageName
             )
             completion(mapped)
             return
         }
-        // Se non ci sono coordinate, prova la geocodifica dell'indirizzo
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(poi.address, completionHandler: { placemarks, _ in
             if let location = placemarks?.first?.location {
@@ -39,7 +37,7 @@ class POIGeocoder {
                     discoveredTitle: poi.discoveredTitle,
                     photoPath: poi.photoPath,
                     discoveredDate: poi.discoveredDate,
-                    imageName: poi.imageName // <-- AGGIUNTO!
+                    imageName: poi.imageName
                 )
                 completion(mapped)
             } else {

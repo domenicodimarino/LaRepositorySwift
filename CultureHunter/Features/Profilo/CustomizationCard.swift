@@ -7,19 +7,15 @@
 
 import SwiftUI
 
-/// Card generica per la personalizzazione che può contenere qualsiasi tipo di contenuto
 struct CustomizationCard<Content: View>: View {
-    // Proprietà comuni
     let isSelected: Bool
     let onSelect: () -> Void
     
-    // Costruttore del contenuto interno (usando ViewBuilder)
     @ViewBuilder let content: () -> Content
     
     var body: some View {
         Button(action: onSelect) {
             ZStack {
-                // Sfondo card - comune a tutti
                 Rectangle()
                     .foregroundColor(.clear)
                     .frame(width: 73, height: 98)
@@ -35,7 +31,6 @@ struct CustomizationCard<Content: View>: View {
                             .stroke(.black, lineWidth: 3)
                     )
                 
-                // Contenuto personalizzato (diverso per ogni tipo di card)
                 content()
             }
             .overlay(
@@ -54,9 +49,6 @@ struct CustomizationCard<Content: View>: View {
     }
 }
 
-// MARK: - Implementazioni specializzate
-
-/// Card specializzata per capelli
 struct HairCard: View {
     let imageName: String
     let isSelected: Bool
@@ -72,7 +64,6 @@ struct HairCard: View {
     }
 }
 
-/// Card carnagione - Usa direttamente ComplexionColors.Complexion
 struct ComplexionCard: View {
     let complexion: ComplexionColors.Complexion
     let isSelected: Bool
@@ -85,7 +76,6 @@ struct ComplexionCard: View {
             self.onSelect = onSelect
         }
     
-    // Costruttore per compatibilità con codice esistente
     init(complexionName: String, isSelected: Bool, onSelect: @escaping () -> Void) {
         self.complexion = ComplexionColors.all.first { $0.assetName == complexionName } ??
                           ComplexionColors.all.first!
@@ -105,20 +95,18 @@ struct ComplexionCard: View {
         }
     }
 }
-///card per colore degli occhi
+
 struct EyeColorCard: View {
     let eyeColor: EyeColors.EyeColor
     let isSelected: Bool
     let onSelect: () -> Void
     
-    // Inizializzatore primario
     init(eyeColor: EyeColors.EyeColor, isSelected: Bool, onSelect: @escaping () -> Void) {
         self.eyeColor = eyeColor
         self.isSelected = isSelected
         self.onSelect = onSelect
     }
     
-    // Inizializzatore di compatibilità se necessario
     init(eyeColorName: String, isSelected: Bool, onSelect: @escaping () -> Void) {
         self.eyeColor = EyeColors.all.first { $0.assetName == eyeColorName } ??
                          EyeColors.all.first!
@@ -129,7 +117,6 @@ struct EyeColorCard: View {
     var body: some View {
         CustomizationCard(isSelected: isSelected, onSelect: onSelect) {
             ZStack {
-                // Simuliamo un occhio stilizzato
                 Circle()
                     .fill(.white)
                     .frame(width: 55, height: 55)
@@ -138,33 +125,14 @@ struct EyeColorCard: View {
                             .stroke(Color.black, lineWidth: 1)
                     )
                 
-                // Iride (il colore vero e proprio)
                 Circle()
                     .fill(eyeColor.color)
                     .frame(width: 35, height: 35)
                 
-                // Pupilla
                 Circle()
                     .fill(.black)
                     .frame(width: 15, height: 15)
             }
         }
-    }
-}
-
-// MARK: - Previews
-
-#Preview("Hair Card") {
-    VStack {
-        HairCard(imageName: "120 hair Plain black", isSelected: true, onSelect: {})
-        HairCard(imageName: "120 hair Plain blonde", isSelected: false, onSelect: {})
-    }
-}
-
-#Preview("Complexion Card") {
-    VStack {
-        ComplexionCard(complexionName: "light", isSelected: true, onSelect: {})
-        ComplexionCard(complexionName: "amber", isSelected: false, onSelect: {})
-        ComplexionCard(complexionName: "brown", isSelected: false, onSelect: {})
     }
 }

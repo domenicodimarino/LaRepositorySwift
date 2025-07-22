@@ -16,9 +16,7 @@ class NotificationManager: ObservableObject {
         }
     }
 
-    /// Invia notifica solo se il POI non è scoperto, oppure non invia la notifica generica se non vuoi
     func sendPOINearbyNotificationWithImage(for poi: MappedPOI? = nil, allowGeneric: Bool = false) {
-        // Notifica specifica per POI non scoperto
         if let poi = poi {
             if poi.isDiscovered {
                 print("POI già scoperto, nessuna notifica inviata.")

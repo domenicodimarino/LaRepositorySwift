@@ -8,7 +8,6 @@
 import SwiftUI
 import UserNotifications
 
-// Delegate per mostrare notifiche anche con app in foreground
 class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationDelegate()
 
@@ -19,7 +18,6 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        // Mostra la notifica anche se l'app è aperta
         completionHandler([.banner, .sound, .list])
     }
 }
@@ -27,16 +25,15 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 @main
 struct CultureHunterApp: App {
     @StateObject private var appState = AppState()
-    @StateObject private var avatarViewModel = AvatarViewModel() // Crea qui l'avatarViewModel
+    @StateObject private var avatarViewModel = AvatarViewModel()
     
     init() {
-        // Imposta il delegate all'avvio dell'app
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(avatarViewModel: avatarViewModel) // Passa l'avatarViewModel
+            ContentView(avatarViewModel: avatarViewModel)
                 .environmentObject(appState)
                 .onAppear {
                     appState.checkFirstLaunch()
@@ -45,14 +42,14 @@ struct CultureHunterApp: App {
                     MasterTutorialView(
                         isPresented: $appState.showingTutorial,
                         avatarViewModel: avatarViewModel,
-                        skipAvatarCreation: true  // <-- Qui!
+                        skipAvatarCreation: true
                     )
                 }
                 .fullScreenCover(isPresented: $appState.showingAvatarCreation) {
                     MasterTutorialView(
                         isPresented: $appState.showingAvatarCreation,
                         avatarViewModel: avatarViewModel,
-                        skipAvatarCreation: false // default, mostra anche avatar
+                        skipAvatarCreation: false
                     )
                 }
         }

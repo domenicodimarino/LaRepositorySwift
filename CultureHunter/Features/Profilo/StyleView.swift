@@ -5,13 +5,10 @@ struct StyleView: View {
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.colorScheme) var colorScheme
     
-    // NUOVO: callback opzionale per personalizzare l'azione del bottone
-        var onCustomAction: (() -> Void)?
+    var onCustomAction: (() -> Void)?
     
-    // Il selectedIndex viene inizializzato dal genere attuale dell'avatar
     @State private var selectedIndex: Int?
     
-    // ViewModel temporaneo per l'anteprima del genere alternativo
     @State private var previewViewModel = AvatarViewModel()
     
     var body: some View {
@@ -30,7 +27,6 @@ struct StyleView: View {
             HStack {
                 Spacer()
                 
-                // Avatar maschile
                 Button(action: {
                     selectedIndex = 0
                 }) {
@@ -51,11 +47,9 @@ struct StyleView: View {
                             )
                         
                         if viewModel.avatar.gender == .male {
-                            // Se l'utente è già uomo, mostra il suo avatar attuale
                             AvatarSpriteKitView(viewModel: viewModel)
                                 .frame(width: 137, height: 137)
                         } else {
-                            // Altrimenti mostra l'anteprima maschile
                             AvatarSpriteKitView(viewModel: previewViewModel)
                                 .frame(width: 137, height: 137)
                         }
@@ -76,7 +70,6 @@ struct StyleView: View {
                 
                 Spacer()
                 
-                // Avatar femminile
                 Button(action: {
                     selectedIndex = 1
                 }) {
@@ -97,11 +90,9 @@ struct StyleView: View {
                             )
                         
                         if viewModel.avatar.gender == .female {
-                            // Se l'utente è già donna, mostra il suo avatar attuale
                             AvatarSpriteKitView(viewModel: viewModel)
                                 .frame(width: 137, height: 137)
                         } else {
-                            // Altrimenti mostra l'anteprima femminile
                             AvatarSpriteKitView(viewModel: previewViewModel)
                                 .frame(width: 137, height: 137)
                         }
@@ -122,8 +113,6 @@ struct StyleView: View {
                 
                 Spacer()
             }
-            
-            // Bottone "Avanti"
             Button(action: {
                             if let selectedIndex = selectedIndex {
                                 let newGender: Gender = selectedIndex == 0 ? .male : .female
@@ -132,11 +121,9 @@ struct StyleView: View {
                                 }
                             }
                             
-                            // IMPORTANTE: Usa l'azione personalizzata se fornita
                             if let customAction = onCustomAction {
                                 customAction()
                             } else {
-                                // Altrimenti usa il comportamento predefinito
                                 presentationMode.wrappedValue.dismiss()
                             }
                         }) {
@@ -158,31 +145,23 @@ struct StyleView: View {
             .opacity(selectedIndex == nil ? 0.6 : 1.0)
         }
         .onAppear {
-            // Imposta la selezione iniziale basata sul genere attuale
             selectedIndex = viewModel.avatar.gender == .male ? 0 : 1
             
-            // Prepara il ViewModel per l'anteprima dell'altro genere
             setupPreviewViewModel()
         }
     }
     
-    // Configura il ViewModel per l'anteprima del genere alternativo
     private func setupPreviewViewModel() {
-        // Copia l'avatar attuale
         previewViewModel.avatar = viewModel.avatar
-        
-        // Cambia il genere nell'anteprima
+    
         let currentGender = viewModel.avatar.gender
         let oppositeGender: Gender = currentGender == .male ? .female : .male
         
-        // Imposta il genere opposto
         previewViewModel.avatar.gender = oppositeGender
         
-        // Cambia i prefissi degli asset per riflettere il nuovo genere
         let oldPrefix = currentGender == .male ? "male_" : "female_"
         let newPrefix = oppositeGender == .male ? "male_" : "female_"
         
-        // Aggiorna tutti gli asset sostituendo solo il prefisso
         previewViewModel.avatar.head = previewViewModel.avatar.head.replacingOccurrences(of: oldPrefix, with: newPrefix)
         previewViewModel.avatar.hair = previewViewModel.avatar.hair.replacingOccurrences(of: oldPrefix, with: newPrefix)
         previewViewModel.avatar.skin = previewViewModel.avatar.skin.replacingOccurrences(of: oldPrefix, with: newPrefix)
@@ -193,6 +172,3 @@ struct StyleView: View {
     }
 }
 
-#Preview {
-    StyleView(viewModel: AvatarViewModel())
-}

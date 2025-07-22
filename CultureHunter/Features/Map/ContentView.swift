@@ -480,7 +480,6 @@ struct ContentView: View {
             longitude: 14.822551,
             imageName: "stadio_arechi"
         ),
-        //temporaneo
         POI(
             street: "Via del Diritto",
             streetNumber: "",

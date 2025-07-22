@@ -13,7 +13,6 @@ import Combine
 class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     static let shared = AudioManager()
     
-    // Aggiungi questi per supportare la barra di progresso
     @Published var currentTime: Double = 0
     @Published var duration: Double = 0
     @Published var isPlaying: Bool = false
@@ -23,14 +22,10 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var currentID: String?
     private var timer: Timer?
     
-    // Assicuriamoci che il singleton venga inizializzato correttamente
     private override init() {
         super.init()
     }
     
-    // MARK: - Audio Bundle
-    
-    /// Carica un audio dal bundle dell'app
     func loadAudioFromBundle(named filename: String, withExtension ext: String = "mp3") -> URL? {
         if let path = Bundle.main.path(forResource: filename, ofType: ext) {
             return URL(fileURLWithPath: path)
@@ -39,9 +34,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         return nil
     }
     
-    // MARK: - Gestione audio dinamici
-    
-    /// Salva un audio nella directory documenti
     func saveAudio(data: Data, withName name: String) -> URL? {
         let audioDirectory = getOrCreateAudioDirectory()
         let fileURL = audioDirectory.appendingPathComponent("\(name).mp3")
@@ -56,7 +48,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
     
-    /// Carica un audio dalla directory documenti
     func loadAudioFromDocuments(named name: String) -> URL? {
         let audioDirectory = getOrCreateAudioDirectory()
         let fileURL = audioDirectory.appendingPathComponent("\(name).mp3")
@@ -69,7 +60,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
     
-    /// Rimuove un audio dalla directory documenti
     func removeAudio(named name: String) -> Bool {
         guard let fileURL = loadAudioFromDocuments(named: name) else { return false }
         
@@ -83,9 +73,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
     
-    // MARK: - Audio playback
-    
-    /// Riproduce un file audio
     func playAudio(from url: URL, withID id: String = UUID().uuidString) {
         stopAllAudio()
         
@@ -96,21 +83,17 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
             audioPlayers[id] = audioPlayer
             currentID = id
             
-            // Imposta la durata totale
             duration = audioPlayer.duration
             
-            // Avvia la riproduzione
             audioPlayer.play()
             isPlaying = true
             
-            // Inizia il timer per aggiornare la posizione
             startProgressTimer()
         } catch {
             print("❌ Errore nella riproduzione dell'audio: \(error)")
         }
     }
     
-    /// Ferma la riproduzione di un audio
     func stopAudio(withID id: String) {
         audioPlayers[id]?.stop()
         audioPlayers.removeValue(forKey: id)
@@ -123,7 +106,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
     
-    /// Ferma tutti gli audio in riproduzione
     func stopAllAudio() {
         for (id, player) in audioPlayers {
             player.stop()
@@ -136,7 +118,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         currentTime = 0
     }
     
-    /// Metti in pausa la riproduzione corrente
     func pauseAudio() {
         guard let id = currentID, let player = audioPlayers[id] else { return }
         player.pause()
@@ -144,7 +125,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         stopProgressTimer()
     }
     
-    /// Riprende la riproduzione corrente
     func resumeAudio() {
         guard let id = currentID, let player = audioPlayers[id] else { return }
         player.play()
@@ -152,14 +132,11 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         startProgressTimer()
     }
     
-    /// Vai a una posizione specifica nell'audio corrente
     func seek(to time: Double) {
         guard let id = currentID, let player = audioPlayers[id] else { return }
         player.currentTime = time
         currentTime = time
     }
-    
-    // MARK: - Progress tracking
     
     private func startProgressTimer() {
         stopProgressTimer()
@@ -177,7 +154,6 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         timer = nil
     }
     
-    /// Ottiene o crea la directory dedicata agli audio
     private func getOrCreateAudioDirectory() -> URL {
         let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioDirectory = documentsDirectory.appendingPathComponent("Audio", isDirectory: true)
@@ -193,10 +169,7 @@ class AudioManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         return audioDirectory
     }
     
-    // MARK: - AVAudioPlayerDelegate methods
-    
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        // Trova l'ID del player che ha finito
         for (id, p) in audioPlayers {
             if p === player {
                 DispatchQueue.main.async { [weak self] in

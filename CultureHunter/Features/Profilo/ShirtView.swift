@@ -27,9 +27,3 @@ struct ShirtView: View {
         )
     }
 }
-
-#Preview {
-    NavigationView {
-        ShirtView(viewModel: AvatarViewModel())
-    }
-}

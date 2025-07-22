@@ -10,15 +10,13 @@ struct MappedPOI: Identifiable, Hashable {
     let city: String
     let province: String
 
-    // Collegamento al Diario
     let diaryPlaceName: String
 
-    // Nuovi campi per interazione/foto
     var isDiscovered: Bool
-        var discoveredTitle: String?
-        var photoPath: String?
-        var discoveredDate: Date?
-    let imageName: String // <-- nome asset
+    var discoveredTitle: String?
+    var photoPath: String?
+    var discoveredDate: Date?
+    let imageName: String
 
     var photo: UIImage? {
         guard let photoPath else { return nil }
@@ -30,7 +28,6 @@ struct MappedPOI: Identifiable, Hashable {
         lhs.title == rhs.title &&
         lhs.coordinate.latitude == rhs.coordinate.latitude &&
         lhs.coordinate.longitude == rhs.coordinate.longitude
-        // photo, discoveredTitle e discoveredDate ignorati per uguaglianza
     }
 
     func hash(into hasher: inout Hasher) {

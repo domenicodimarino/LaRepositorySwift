@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 import UIKit
-import CryptoKit // Use CryptoKit instead of CommonCrypto
+import CryptoKit
 
 struct POI: Identifiable, Hashable {
     let street: String
@@ -19,22 +19,17 @@ struct POI: Identifiable, Hashable {
     var longitude: Double?
     let imageName: String
     
-    // Use a computed property for a consistent ID
     var id: UUID {
-        // Create a deterministic ID based on the place name and location
         let uniqueString = "\(diaryPlaceName)_\(latitude ?? 0)_\(longitude ?? 0)"
         
-        // Create a SHA-256 hash using CryptoKit
         if let data = uniqueString.data(using: .utf8) {
             let hash = SHA256.hash(data: data)
             let hashString = hash.compactMap { String(format: "%02x", $0) }.joined()
             
-            // Format first part as UUID
             let uuidFormat = String(hashString.prefix(32)).insertingSeparators()
             return UUID(uuidString: uuidFormat) ?? UUID()
         }
         
-        // Fallback to random UUID if hashing fails
         return UUID()
     }
     
@@ -68,7 +63,6 @@ struct POI: Identifiable, Hashable {
         discoveredDate: Date? = nil,
         imageName: String
     ) {
-        // Don't assign to id here since it's a computed property
         self.street = street
         self.streetNumber = streetNumber
         self.city = city
@@ -85,7 +79,6 @@ struct POI: Identifiable, Hashable {
     }
 }
 
-// Helper extension to format a string as UUID
 extension String {
     func insertingSeparators() -> String {
         var result = self

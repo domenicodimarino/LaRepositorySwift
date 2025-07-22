@@ -5,7 +5,6 @@ struct AvatarCreationFlowView: View {
     let onNext: () -> Void
     let onPrevious: () -> Void
     
-    // Aggiungi il binding al nome qui
         private var nameBinding: Binding<String> {
             Binding<String>(
                 get: { self.viewModel.avatarViewModel.avatar.name },
@@ -16,17 +15,14 @@ struct AvatarCreationFlowView: View {
     
     var body: some View {
         VStack {
-            // Header del tutorial
             Text("Creazione Avatar")
                 .font(.largeTitle.bold())
                 .padding(.top)
             
-            // Componente corrispondente al passo attuale
             Group {
                 switch viewModel.avatarCreationStep {
                 case .style:
                     VStack(spacing: 20) {
-                                            // Campo nome con stile coerente
                                             VStack(alignment: .leading, spacing: 8) {
                                                 Text("Per iniziare, assegna un nome al tuo avatar.")
                                                     .multilineTextAlignment(.center)
@@ -48,7 +44,6 @@ struct AvatarCreationFlowView: View {
                                             }
                                             .padding(.horizontal)
                                             
-                                            // Usa StyleView normalmente ma passa l'azione personalizzata!
                                             StyleView(
                                                 viewModel: viewModel.avatarViewModel,
                                                 onCustomAction: { viewModel.nextAvatarStep() }

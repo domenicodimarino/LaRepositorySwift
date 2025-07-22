@@ -15,18 +15,15 @@ struct MapTab: View {
     @State private var showPhotoButton = false
     @State private var showCamera = false
 
-    // Per navigation Diary
     @State private var showDiaryView = false
     @State private var diaryPOI: MappedPOI?
     @State private var shouldShowDiaryAfterCamera = false
 
-    // Animazione caricamento diario
     @State private var showDiaryLoading = false
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // MAPPA
                 if !viewModel.mappedPOIs.isEmpty {
                     CustomMapView(
                         trackingState: $trackingState,
@@ -36,7 +33,6 @@ struct MapTab: View {
                             selectedPOI = poi
                             if let poi = poi {
                                 if poi.isDiscovered {
-                                    // Vai direttamente al diario!
                                     diaryPOI = poi
                                     showDiaryView = true
                                     showPhotoButton = false
@@ -55,7 +51,6 @@ struct MapTab: View {
                         .edgesIgnoringSafeArea(.top)
                 }
 
-                // ANIMAZIONE SCATTA (deve restare!)
                 if showPhotoButton, let poi = selectedPOI, !poi.isDiscovered {
                     VStack {
                         Spacer()
@@ -114,7 +109,6 @@ struct MapTab: View {
                     .animation(.easeInOut, value: showPhotoButton)
                 }
 
-                // ANIMAZIONE CARICAMENTO DOPO FOTO
                 if showDiaryLoading {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
@@ -136,7 +130,6 @@ struct MapTab: View {
                     .zIndex(11)
                 }
 
-                // NAVIGATION DIARY
                 NavigationLink(
                     destination: Group {
                         if let diaryPOI = diaryPOI {
@@ -169,7 +162,6 @@ struct MapTab: View {
                     }
                 }
             }
-            // ANIMAZIONE CARICAMENTO + NAVIGAZIONE
             .onChange(of: showCamera) { open in
                 if !open && shouldShowDiaryAfterCamera {
                     shouldShowDiaryAfterCamera = false

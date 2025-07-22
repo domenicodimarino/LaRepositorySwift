@@ -6,7 +6,6 @@ enum TransportMode {
     case driving
     
     static func forSpeed(_ speed: Double) -> TransportMode {
-        // Soglia in m/s: circa 25 km/h (6.9 m/s)
         return speed > 6.9 ? .driving : .walking
     }
 }
@@ -17,7 +16,6 @@ struct UserMovementState {
     var transportMode: TransportMode = .walking
     var speed: Double = 0.0
     
-    // Funzione statica per calcolare l'angolo relativo
     static func calculateRelativeAngle(heading: Double, cameraHeading: Double) -> Double {
         return (heading - cameraHeading + 360).truncatingRemainder(dividingBy: 360)
     }
@@ -34,7 +32,6 @@ struct UserMovementState {
         }
     }
     
-    // Nuova funzione che restituisce direttamente CarDirection
     func carDirection() -> CarDirection {
         let relativeAngle = Self.calculateRelativeAngle(heading: heading, cameraHeading: cameraHeading)
         return CarDirection.fromAngle(relativeAngle)
@@ -92,7 +89,6 @@ struct CustomMapView: UIViewRepresentable {
 
         mapView.delegate = context.coordinator
 
-        // Posiziona la camera inizialmente su userLocation, se disponibile
         let initialCoordinate: CLLocationCoordinate2D
         if let userLocation = userLocation {
             initialCoordinate = userLocation.coordinate
@@ -107,15 +103,12 @@ struct CustomMapView: UIViewRepresentable {
             mapView.addAnnotation(annotation)
         }
 
-        // 1. UPDATE TRACKING MODE INITIALIZATION
-            // Set initial tracking mode based on trackingState
             switch trackingState {
             case .follow:
                 mapView.setUserTrackingMode(.follow, animated: false)
-            case .followWithHeading:  // NEW CASE FOR HEADING MODE
+            case .followWithHeading:
                 mapView.setUserTrackingMode(.followWithHeading, animated: false)
             case .none:
-                // Explicitly set to none
                 mapView.setUserTrackingMode(.none, animated: false)
             }
 
@@ -123,12 +116,10 @@ struct CustomMapView: UIViewRepresentable {
     }
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
-        // Sincronizza sempre la modalità di tracking tra stato SwiftUI e mappa
-        // Sync tracking state
             switch trackingState {
             case .follow where mapView.userTrackingMode != .follow:
                 mapView.setUserTrackingMode(.follow, animated: true)
-            case .followWithHeading where mapView.userTrackingMode != .followWithHeading:  // New case
+            case .followWithHeading where mapView.userTrackingMode != .followWithHeading:
                 mapView.setUserTrackingMode(.followWithHeading, animated: true)
             case .none where mapView.userTrackingMode != .none:
                 mapView.setUserTrackingMode(.none, animated: true)
@@ -136,7 +127,6 @@ struct CustomMapView: UIViewRepresentable {
                 break
             }
 
-        // Aggiorna avatar se necessario
         if context.coordinator.lastAvatarHash != avatarViewModel.avatar.hashValue {
             context.coordinator.lastAvatarHash = avatarViewModel.avatar.hashValue
             context.coordinator.updateAvatarView(
@@ -197,7 +187,7 @@ struct CustomMapView: UIViewRepresentable {
                 case .follow:
                     parent.trackingState = .follow
                 case .followWithHeading:
-                    parent.trackingState = .followWithHeading  // Handle heading mode
+                    parent.trackingState = .followWithHeading
                 @unknown default:
                     break
                 }
@@ -300,7 +290,6 @@ struct CustomMapView: UIViewRepresentable {
         func recreateAvatarView(in annotationView: MKAnnotationView) {
             annotationView.subviews.forEach { $0.removeFromSuperview() }
             
-            // Dimensioni basate sulla modalità di visualizzazione
             let size: CGSize
             switch currentAvatarViewMode {
             case .fullBody:
@@ -314,16 +303,13 @@ struct CustomMapView: UIViewRepresentable {
             
             let avatarView: AnyView
             
-            // Verifica se deve essere mostrata l'auto o l'avatar
             if userState.transportMode == .driving {
-                // Usa carDirection() per ottenere le 8 direzioni
                     let carDir = userState.carDirection()
                     let carView = CarSpriteKitView(direction: userState.relativeDirection(), carDirection: carDir)
                         .withSize(width: size.width, height: size.height)
                     
                     avatarView = AnyView(carView)
             } else {
-                // Mostra l'avatar normale
                 switch currentAvatarViewMode {
                 case .fullBody:
                     let fullView = AvatarSpriteKitView(
@@ -358,14 +344,12 @@ struct CustomMapView: UIViewRepresentable {
                 let avatarView: AnyView
                 
                 if userState.transportMode == .driving {
-                    // Aggiungi il parametro carDirection qui
                     let carDir = userState.carDirection()
                     let carView = CarSpriteKitView(direction: userState.relativeDirection(), carDirection: carDir)
                         .withSize(width: 80, height: 80)
                     
                     avatarView = AnyView(carView)
                 } else {
-                    // Mostra l'avatar normale solo se in modalità fullBody
                     if case .fullBody = currentAvatarViewMode {
                         let fullView = AvatarSpriteKitView(
                             viewModel: avatarViewModel,
@@ -376,7 +360,7 @@ struct CustomMapView: UIViewRepresentable {
                         
                         avatarView = AnyView(fullView)
                     } else {
-                        return // Non aggiornare in modalità headOnly
+                        return
                     }
                 }
                 

@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-// Wrapper per HairSelectionView
 struct HairSelectionViewWrapper: View {
     @ObservedObject var viewModel: AvatarViewModel
     let onComplete: () -> Void
@@ -16,12 +15,10 @@ struct HairSelectionViewWrapper: View {
     
     var body: some View {
         ZStack {
-            // Usa HairSelectionView esistente
             HairSelectionView(viewModel: viewModel)
-                .allowsHitTesting(true) // Manteniamo attiva la selezione
+                .allowsHitTesting(true)
                 .navigationBarHidden(true)
             
-            // Pulsanti personalizzati del tutorial
             VStack {
                 Spacer()
                 HStack {
@@ -44,7 +41,6 @@ struct HairSelectionViewWrapper: View {
     }
 }
 
-// Wrapper per EyeColorView
 struct EyeColorViewWrapper: View {
     @ObservedObject var viewModel: AvatarViewModel
     let onComplete: () -> Void
@@ -52,12 +48,10 @@ struct EyeColorViewWrapper: View {
     
     var body: some View {
         ZStack {
-            // Usa EyeColorView esistente
             EyeColorView(viewModel: viewModel)
                 .allowsHitTesting(true)
                 .navigationBarHidden(true)
             
-            // Pulsanti personalizzati del tutorial
             VStack {
                 Spacer()
                 HStack {
@@ -80,7 +74,6 @@ struct EyeColorViewWrapper: View {
     }
 }
 
-// Wrapper per CarnagioneView
 struct CarnagioneViewWrapper: View {
     @ObservedObject var viewModel: AvatarViewModel
     let onComplete: () -> Void
@@ -88,12 +81,9 @@ struct CarnagioneViewWrapper: View {
     
     var body: some View {
         ZStack {
-            // Usa CarnagioneView esistente
             CarnagioneView(viewModel: viewModel)
                 .allowsHitTesting(true)
                 .navigationBarHidden(true)
-            
-            // Pulsanti personalizzati del tutorial
             VStack {
                 Spacer()
                 HStack {

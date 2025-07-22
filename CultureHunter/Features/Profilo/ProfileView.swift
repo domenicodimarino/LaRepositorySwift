@@ -5,11 +5,9 @@ struct ProfileView: View {
     @ObservedObject var viewModel: AvatarViewModel
     @EnvironmentObject var appState: AppState
     
-    // Keys for mission time (same as in MissionViewModel)
-        private let missionTimeHourKey = "missionTimeHourKey"
-        private let missionTimeMinuteKey = "missionTimeMinuteKey"
+    private let missionTimeHourKey = "missionTimeHourKey"
+    private let missionTimeMinuteKey = "missionTimeMinuteKey"
   
-  // Proprietà calcolata per il binding al nome
   private var nameBinding: Binding<String> {
     Binding<String>(
       get: { self.viewModel.avatar.name },
@@ -27,7 +25,6 @@ struct ProfileView: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 20) {
-          // Header
           Text("Il tuo profilo")
             .font(.largeTitle)
             .fontWeight(.bold)
@@ -36,7 +33,6 @@ struct ProfileView: View {
             .foregroundColor(.primary)
             .padding(.top)
 
-          // Avatar + background
           ZStack(alignment: .bottom) {
             Image("background")
               .resizable()
@@ -48,17 +44,14 @@ struct ProfileView: View {
               .frame(width: 128, height: 128)
           }
 
-          // Spacer to separate from form
           Spacer()
 
-          // Title2/Emphasized
           Text("Informazioni sul profilo")
             .font(.title)
             .fontWeight(.medium)
             .foregroundColor(.primary)
           Form {
             Section {
-              // Ora usiamo il binding al viewModel
                 LabeledContent {
                     TextField("Il tuo nome", text: nameBinding)
                 } label: {
@@ -67,7 +60,6 @@ struct ProfileView: View {
                         .foregroundColor(.blue)
                 }
 
-              // Link a schermata di personalizzazione avatar
               NavigationLink {
                 AvatarCustomizationView(viewModel: viewModel)
               } label: {
@@ -77,7 +69,6 @@ struct ProfileView: View {
                 }
               }
 
-              // Link a inventario
               NavigationLink {
                 InventoryView(viewModel: viewModel)
               } label: {
@@ -86,7 +77,6 @@ struct ProfileView: View {
                   Spacer()
                 }
               }
-              // Link a riavvio tutorial
                 Button {
                     appState.openTutorial()
                 } label: {
@@ -97,22 +87,15 @@ struct ProfileView: View {
                 }
             }
               Section {
-                                          // Mission time picker
-                                          DatePicker("Orario missione giornaliera",
-                                                    selection: Binding<Date>(
-                                                      get: {
-                                                          let hour = UserDefaults.standard.integer(forKey: self.missionTimeHourKey)
-                                                          let minute = UserDefaults.standard.integer(forKey: self.missionTimeMinuteKey)
-                                                          return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
-                                                      },
-                                                      set: { newValue in
-                                                          saveMissionTime(newValue)
-                                                      }
-                                                    ),
-                                                    displayedComponents: .hourAndMinute)
-                                      }
+                  DatePicker("Orario missione giornaliera", selection: Binding<Date>(get: {
+                            let hour = UserDefaults.standard.integer(forKey: self.missionTimeHourKey)
+                            let minute = UserDefaults.standard.integer(forKey: self.missionTimeMinuteKey)
+                            return Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date()) ?? Date()
+                            },
+                            set: { newValue in saveMissionTime(newValue)}),displayedComponents: .hourAndMinute)
+            }
           }
-          .frame(height: 350)  // regola in base al contenuto
+          .frame(height: 350)
           .cornerRadius(16)
         }
         .padding()
@@ -121,8 +104,4 @@ struct ProfileView: View {
     }
     .navigationTitle("Profilo")
   }
-}
-
-#Preview {
-  ProfileView(viewModel: AvatarViewModel())
 }

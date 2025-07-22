@@ -6,7 +6,6 @@
 //
 import Foundation
 
-// Modello per un articolo dello shop
 struct ShopItem: Identifiable, Equatable {
     let id = UUID()
     let assetName: String
@@ -14,12 +13,10 @@ struct ShopItem: Identifiable, Equatable {
     let type: ClothingType
     var isOwned: Bool
     
-    // Implementazione efficiente di Equatable
     static func == (lhs: ShopItem, rhs: ShopItem) -> Bool {
         lhs.id == rhs.id
     }
     
-    // Computed property per ottenere il nome visualizzabile
     var displayName: String {
         let components = assetName.components(separatedBy: " ")
         if components.count >= 3 {

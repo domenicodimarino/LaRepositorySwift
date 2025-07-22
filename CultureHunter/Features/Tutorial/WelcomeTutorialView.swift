@@ -8,8 +8,7 @@
 
 import SwiftUI
 import SDWebImageSwiftUI
-//40,70016° N, 14,70753° E
-// Schermata di benvenuto
+
 struct WelcomeTutorialView: View {
     let onNext: () -> Void
     
@@ -17,7 +16,6 @@ struct WelcomeTutorialView: View {
         VStack {
             Spacer()
             
-            // Puoi usare una GIF animata anche qui
             AnimatedImage(name: "welcome_page.gif", bundle: .main)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -26,7 +24,7 @@ struct WelcomeTutorialView: View {
             Text("Benvenuto!")
                 .font(.largeTitle.bold())
                     .padding(.top)
-                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2) // Ombra leggera
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 2)
                     .foregroundColor(.primary)
             
             Text("Scopri la città, esplora punti di interesse, ottieni badge e personalizza il tuo avatar divertendoti!")
@@ -35,9 +33,8 @@ struct WelcomeTutorialView: View {
             
             Spacer()
             
-            // Immagini edifici in basso (opzionale)
             HStack(spacing: 24) {
-                Image("church_icon") // Puoi mantenere immagini statiche dove preferisci
+                Image("church_icon")
                     .resizable()
                     .scaledToFit()
                     .frame(height: 150)
@@ -59,7 +56,6 @@ struct WelcomeTutorialView: View {
     }
 }
 
-// Pagine informative sull'app
 struct AppInfoTutorialView: View {
     let step: AppInfoStep
     let onNext: () -> Void
@@ -67,7 +63,6 @@ struct AppInfoTutorialView: View {
     
     var body: some View {
         VStack {
-            // Titolo e contenuto specifico per ogni passo
             switch step {
             case .map:
                 tutorialPage(
@@ -107,7 +102,6 @@ struct AppInfoTutorialView: View {
                 )
             }
             
-            // Navigazione
             HStack(spacing: 16) {
                 Button("Indietro", action: onPrevious)
                     .buttonStyle(SecondaryButtonStyle())
@@ -127,7 +121,6 @@ struct AppInfoTutorialView: View {
                 .font(.title.bold())
                 .padding(.top)
             
-            // Video player con bordo per garantire visibilità
             RoundedVideoContainer(videoName: videoName, cornerRadius: 0)
                 .frame(height: 450)
                 .clipShape(RoundedRectangle(cornerRadius: 40))
@@ -139,8 +132,6 @@ struct AppInfoTutorialView: View {
                 .padding(.horizontal)
             
             Spacer()
-            
-            // Indicatori pagina
             HStack(spacing: 8) {
                 ForEach(0..<AppInfoStep.allCases.count, id: \.self) { index in
                     Circle()
@@ -153,7 +144,6 @@ struct AppInfoTutorialView: View {
     }
 }
 
-// Schermata finale
 struct FinalTutorialView: View {
     let onComplete: () -> Void
     @ObservedObject var avatarViewModel: AvatarViewModel
@@ -162,19 +152,16 @@ struct FinalTutorialView: View {
         VStack {
             Spacer()
             
-            // Container for the avatar walking over the road
             ZStack(alignment: .bottom) {
-                // Road background
                 AnimatedImage(name: "road.gif", bundle: .main)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 250)
                 
-                // Walking avatar
                 AvatarSpriteKitView(viewModel: avatarViewModel)
                     .withAnimation(.walk, direction: .right)
                     .frame(width: 128, height: 128)
-                    .offset(x: -75, y: -50) // Adjust this to position avatar on the road
+                    .offset(x: -75, y: -50)
             }
             .frame(height: 250)
             
@@ -188,7 +175,6 @@ struct FinalTutorialView: View {
             
             Spacer()
             
-            // Building icons
             HStack(spacing: 24) {
                 Image("church_icon")
                     .resizable()

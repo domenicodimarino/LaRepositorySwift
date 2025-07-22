@@ -1,6 +1,6 @@
 import Foundation
 
-struct BadgeModel: Identifiable, Codable { // <--- AGGIUNGI Codable QUI
+struct BadgeModel: Identifiable, Codable {
     let id: UUID
     let cityName: String
     var totalPOI: Int
@@ -9,7 +9,6 @@ struct BadgeModel: Identifiable, Codable { // <--- AGGIUNGI Codable QUI
     var discoveredImageNames: [String] = []
     var cityStory: String
 
-    // MARK: - Init custom per id opzionale
     init(id: UUID = UUID(), cityName: String, totalPOI: Int, certifiedPOI: Int, unlockedDate: Date?, discoveredImageNames: [String] = [], cityStory: String) {
         self.id = id
         self.cityName = cityName

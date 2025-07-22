@@ -8,7 +8,6 @@
 import Foundation
 import CoreLocation
 
-// Modello di dati ampliato per un luogo
 struct Place: Identifiable {
     let id = UUID()
     let name: String
@@ -16,15 +15,13 @@ struct Place: Identifiable {
     let history: String
     let yearBuilt: String
     let location: String
-    let audioName: String? // Nuovo campo per riferimento al file audio
+    let audioName: String?
 
-    // Se non specifichi audioName, usa il nome del POI
     var effectiveAudioName: String {
         return audioName ?? name.lowercased().replacingOccurrences(of: " ", with: "_")
     }
 }
 
-// Database di luoghi con informazioni storiche
 class PlacesData {
     static let shared = PlacesData()
 
@@ -293,7 +290,6 @@ class PlacesData {
             location: "Salerno",
             audioName: "stadio_arechi"
         ),
-        //DA ELIMINARE SUCCESSIVAMENTE
         Place(
             name: "Casa del Dom",
             imageName: "poi_locked",

@@ -69,8 +69,8 @@ struct InventoryView: View {
     
     var body: some View {
         ZStack{
-            Color(UIColor.systemGroupedBackground)  // Sfondo grigio
-              .ignoresSafeArea()
+            Color(UIColor.systemGroupedBackground)
+                .ignoresSafeArea()
             ScrollView {
               VStack(spacing: 24) {
                 ZStack(alignment: .bottom) {
@@ -80,18 +80,15 @@ struct InventoryView: View {
                     .frame(width: 308, height: 205)
                     .clipped()
                     .cornerRadius(16)
-                  // Sostituiamo l'immagine statica con l'avatar dinamico
                   AvatarSpriteKitView(viewModel: viewModel)
                     .frame(width: 128, height: 128)
                 }
-                // Lista con sfondo bianco
                 VStack(spacing: 0) {
                   ForEach(options) { opt in
                     NavigationLink(destination: opt.destination) {
                       HStack(spacing: 16) {
 
                         if let dynamicImageProvider = opt.dynamicImage {
-                          // Usa l'immagine dinamica se disponibile
                           dynamicImageProvider()
                             .resizable()
                             .scaledToFit()
@@ -147,11 +144,5 @@ struct InventoryView: View {
             }
           }
         .navigationTitle("Il tuo inventario")
-    }
-}
-
-#Preview {
-    NavigationView {
-      InventoryView(viewModel: AvatarViewModel())
     }
 }

@@ -22,7 +22,6 @@ struct CameraPicker: UIViewControllerRepresentable {
                 } else {
                     finalImage = image
                 }
-                // Flip se la camera è frontale
                 if picker.cameraDevice == .front {
                     finalImage = finalImage.flippedHorizontally()
                 }
@@ -47,7 +46,6 @@ struct CameraPicker: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 }
 
-// UIImage extension for resizing
 extension UIImage {
     func resized(to targetSize: CGSize) -> UIImage {
         UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
@@ -56,7 +54,6 @@ extension UIImage {
         UIGraphicsEndImageContext()
         return result ?? self
     }
-    // Flip orizzontale per fix fotocamera frontale
     func flippedHorizontally() -> UIImage {
         UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
         let context = UIGraphicsGetCurrentContext()!

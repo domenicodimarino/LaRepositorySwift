@@ -16,7 +16,7 @@ struct RoundedVideoContainer: View {
 
     var body: some View {
         FullscreenVideoPlayer(videoName: videoName, cornerRadius: cornerRadius)
-            .aspectRatio(734.0 / 1530.0, contentMode: .fit) // proporzione reale del video
+            .aspectRatio(734.0 / 1530.0, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)

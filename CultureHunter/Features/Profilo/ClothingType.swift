@@ -9,7 +9,6 @@
 import Foundation
 import SwiftUI
 
-// Definizione di un tipo di vestito generico
 enum ClothingType {
     case shirt
     case pants
@@ -32,20 +31,18 @@ enum ClothingType {
     }
     var isMasculine: Bool {
             switch self {
-            case .pants: return true  // "pantaloni" è maschile
-            case .shirt, .shoes: return false  // "magliette" e "scarpe" sono femminili
+            case .pants: return true
+            case .shirt, .shoes: return false
             }
         }
 }
 
-// Modello generico per tutti i tipi di abbigliamento
 struct ClothingItem: Identifiable, Hashable {
     let id = UUID()
     let assetName: String
     let type: ClothingType
     let disponibile: Bool
     
-    // Funzione helper per ottenere il nome dell'asset completo
     var fullAssetName: String {
         return assetName
     }

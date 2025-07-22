@@ -13,13 +13,10 @@ class AvatarViewModel: ObservableObject {
             save()
         }
     }
-    
-    // Costruttore per Preview
+
     init(avatar: AvatarData) {
         self.avatar = avatar
     }
-    
-    // MARK: - Init e salvataggio
     
     init() {
         if let data = UserDefaults.standard.data(forKey: "avatar_data"),
@@ -36,35 +33,25 @@ class AvatarViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Aggiornamento del nome
-    
     func setName(_ name: String) {
         avatar.name = name
     }
-    
-    // MARK: - Aggiornamento dei vari layer
+
     
     func setHair(_ hair: String) {
         avatar.hair = hair
     }
     
     func setSkin(_ skin: String) {
-        // Mantieni il formato esistente dell'asset ma sostituisci solo il tono della pelle
-        
-        // Estrai il prefisso di genere
         let genderPrefix = avatar.gender == .male ? "male_" : "female_"
         
-        // Aggiorna il corpo (body)
         let bodyBaseName = "010 body Body_color"
         avatar.skin = "\(bodyBaseName) \(skin)"
         
-        // Aggiorna anche la testa con lo stesso tono di pelle
         let currentHead = avatar.head
         
-        // Determina il tipo di testa (Human_male, Human_female, ecc.)
         let headTypeComponents = currentHead.components(separatedBy: " ")
         if headTypeComponents.count >= 3 {
-            // Formato: "100 head Human_male light" -> estrai "Human_male"
             let headType = headTypeComponents[2]
             avatar.head = "100 head \(headType) \(skin)"
         }
@@ -93,16 +80,11 @@ class AvatarViewModel: ObservableObject {
     
     func setGender(_ gender: Gender) {
         avatar.gender = gender
-        // Puoi anche resettare qui i layer con asset di default per il nuovo gender, se necessario
     }
-    
-    // MARK: - Reset
     
     func resetAvatar() {
         avatar = AvatarViewModel.defaultAvatar()
     }
-    
-    // MARK: - Caricamento manuale
     
     func loadAvatar(_ newAvatar: AvatarData) {
         avatar = newAvatar
@@ -126,7 +108,7 @@ class AvatarViewModel: ObservableObject {
 
     static func defaultAvatar() -> AvatarData {
         return AvatarData(
-            name: "Visitatore",  // Nome default
+            name: "Visitatore",
             gender: .male,
             head: "100 head Human_male light",
             hair: "120 hair Plain black",
@@ -135,7 +117,7 @@ class AvatarViewModel: ObservableObject {
             pants: "020 legs Pants black",
             shoes: "015 shoes Basic_Shoes black",
             eyes: "105 eye_color Eye_Color blue",
-            coins: 40  // Monete di default
+            coins: 40
         )
     }
 }

@@ -7,7 +7,6 @@ class BadgeManager: ObservableObject {
     private var certifiedPOIIDs: Set<UUID> = []
     private let badgesKey = "badges_progress"
 
-    // Dizionario "fonte di verità" per cityStory
     private let cityStories: [String: String] = [
         "Salerno": "Salerno è una storica città campana affacciata sul mar Tirreno, nota per la sua posizione strategica tra la Costiera Amalfitana e il Cilento, ma soprattutto per il suo prestigioso passato. Nel Medioevo, Salerno fu capitale del Principato Longobardo (IX-XI sec.) e visse il suo massimo splendore con la Scuola Medica Salernitana, considerata la prima e più importante istituzione medica d’Europa, anticipando le università moderne. Dopo il periodo normanno, la città visse secoli alterni tra dominazioni sveve, angioine, aragonesi e spagnole, conservando un ruolo chiave nei traffici marittimi e nella vita religiosa e culturale. Nel XX secolo, Salerno ebbe un ruolo storico durante la Seconda guerra mondiale: nel 1943, dopo lo sbarco degli Alleati, divenne capitale d’Italia per alcuni mesi, ospitando il governo provvisorio. Oggi Salerno è una città dinamica e in continua trasformazione. È nota per il centro storico medievale, il lungomare, il Duomo di San Matteo (XI sec.), le Luci d’Artista invernali e il mix equilibrato tra storia, arte, mare e innovazione.",
         "Cetara": "Cetara è un affascinante borgo marinaro della Costiera Amalfitana, noto per la sua profonda identità legata al mare e alla pesca, in particolare del tonno e delle alici, da cui si ricava la celebre colatura di alici, prodotto tradizionale di origini antichissime. Il nome “Cetara” deriva dal latino cetaria, ovvero “luogo dove si lavorano i grossi pesci” (come i tonni). Le sue origini risalgono all’epoca medievale, quando fu fondata come colonia di pescatori saraceni, insediati qui probabilmente per la posizione strategica della costa. Nel Medioevo e nel Rinascimento, Cetara fu spesso bersaglio di attacchi pirateschi, per cui fu costruita una torre vicereale di difesa costiera (ancora visibile e ben conservata). Nel corso dei secoli, Cetara ha sempre mantenuto la sua vocazione marinara, diventando uno dei porti più attivi per la pesca del tonno rosso. Ancora oggi la pesca rappresenta una parte vitale dell’economia locale, insieme al turismo gastronomico. Oggi è un piccolo gioiello sospeso tra tradizione e bellezza naturale, famoso per il suo centro pittoresco, la spiaggia ai piedi del paese, la chiesa di San Pietro Apostolo e soprattutto per la colatura di alici, presidio Slow Food e simbolo della cultura cetarese.",
@@ -17,7 +16,6 @@ class BadgeManager: ObservableObject {
     init() {
         if let data = UserDefaults.standard.data(forKey: badgesKey),
            let saved = try? JSONDecoder().decode([BadgeModel].self, from: data) {
-            // Aggiorna le cityStory anche dopo il recupero
             badges = saved.map { badge in
                 var b = badge
                 b.cityStory = cityStories[badge.cityName] ?? b.cityStory

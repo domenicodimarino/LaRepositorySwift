@@ -27,9 +27,3 @@ struct PantsView: View {
         )
     }
 }
-
-#Preview {
-    NavigationView {
-        PantsView(viewModel: AvatarViewModel())
-    }
-}

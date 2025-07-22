@@ -24,13 +24,11 @@ struct MasterTutorialView: View {
         Group {
             switch viewModel.currentSection {
             case .welcome:
-                // Prima pagina di benvenuto
                 WelcomeTutorialView(onNext: {
                     viewModel.currentSection = .appInfo
                 })
                 
             case .appInfo:
-                // Pagine informative dell'app
                 AppInfoTutorialView(
                     step: viewModel.appInfoStep,
                     onNext: { viewModel.nextAppInfoStep() },
@@ -38,7 +36,6 @@ struct MasterTutorialView: View {
                 )
                 
             case .avatarCreation:
-                // Riutilizza i componenti esistenti per la creazione avatar
                 AvatarCreationFlowView(
                     viewModel: viewModel,
                     onNext: { viewModel.nextAvatarStep() },
@@ -46,7 +43,6 @@ struct MasterTutorialView: View {
                 )
                 
             case .final:
-                // Schermata finale
                 FinalTutorialView(onComplete: {
                                     viewModel.completeTutorial()
                                     isPresented = false

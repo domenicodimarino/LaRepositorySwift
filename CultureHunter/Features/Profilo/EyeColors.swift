@@ -7,7 +7,6 @@
 import SwiftUI
 
 struct EyeColors {
-    // Il modello per il colore degli occhi
     struct EyeColor: Identifiable, Hashable {
         let id = UUID()
         let assetName: String
@@ -17,7 +16,6 @@ struct EyeColors {
         }
     }
     
-    // Mappa colori degli occhi
     static let map: [String: Color] = [
         "blue": Color(red: 0.2, green: 0.5, blue: 0.8),
         "green": Color(red: 0.3, green: 0.6, blue: 0.3),
@@ -29,7 +27,6 @@ struct EyeColors {
         "yellow": Color(red: 0.9, green: 0.9, blue: 0.1),
     ]
     
-    // Lista di tutti i colori degli occhi
     static let all: [EyeColor] = [
         EyeColor(assetName: "blue"),
         EyeColor(assetName: "green"),

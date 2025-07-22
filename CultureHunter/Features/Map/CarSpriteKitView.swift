@@ -12,7 +12,7 @@ struct CarSpriteKitView: View {
     
     var body: some View {
         SpriteViewWrapper(direction: direction, carDirection: carDirection)
-            .background(Color.clear) // Esplicita il background trasparente
+            .background(Color.clear)
     }
 }
 

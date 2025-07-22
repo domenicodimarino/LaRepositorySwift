@@ -32,13 +32,11 @@ struct CarnagioneView: View {
                 .frame(maxWidth: .infinity)
                 
                 Spacer(minLength: 30)
-                
-                // Layout adattivo basato sulla larghezza dello schermo
+            
                 GeometryReader { proxy in
                     VStack(alignment: .center, spacing: 20) {
                         let width = proxy.size.width
                         
-                        // Determina la larghezza disponibile e crea le righe
                         AdaptiveComplexionGrid(
                             containerWidth: width,
                             complexions: allComplexions,
@@ -55,7 +53,7 @@ struct CarnagioneView: View {
                     .frame(width: proxy.size.width)
                 }
                 .padding(.horizontal)
-                .frame(minHeight: 350) // Altezza minima per contenere la griglia
+                .frame(minHeight: 350)
             }
         }
         .navigationTitle("Carnagione")
@@ -80,13 +78,11 @@ struct AdaptiveComplexionGrid: View {
     let selectedComplexion: ComplexionColors.Complexion?
     let onSelectComplexion: (ComplexionColors.Complexion) -> Void
     
-    // Costanti di layout
     let cardWidth: CGFloat = 73
     let minSpacing: CGFloat = 15
     
     var body: some View {
         VStack(spacing: 20) {
-            // Prima sezione (2 card)
             if complexions.count > 0 {
                 HStack(spacing: getOptimalSpacing(cardCount: 2)) {
                     ForEach(0..<min(2, complexions.count), id: \.self) { index in
@@ -100,7 +96,6 @@ struct AdaptiveComplexionGrid: View {
                 .frame(maxWidth: .infinity, alignment: .center)
             }
             
-            // Seconda sezione (3 card)
             if complexions.count > 2 {
                 HStack(spacing: getOptimalSpacing(cardCount: 3)) {
                     ForEach(2..<min(5, complexions.count), id: \.self) { index in
@@ -114,9 +109,8 @@ struct AdaptiveComplexionGrid: View {
                 .frame(maxWidth: .infinity, alignment: .center)
             }
             
-            // Terza sezione (2 card o il resto)
             if complexions.count > 5 {
-                let remainingCount = min(complexions.count - 5, 2) // Massimo 2 card nell'ultima riga
+                let remainingCount = min(complexions.count - 5, 2)
                 HStack(spacing: getOptimalSpacing(cardCount: remainingCount)) {
                     ForEach(5..<min(7, complexions.count), id: \.self) { index in
                         ComplexionCard(
@@ -131,18 +125,14 @@ struct AdaptiveComplexionGrid: View {
         }
     }
     
-    // Calcola lo spazio ottimale tra le card in base alla larghezza disponibile
     private func getOptimalSpacing(cardCount: Int) -> CGFloat {
-        // Spazio disponibile dopo aver sottratto la larghezza di tutte le card
         let totalCardWidth = cardWidth * CGFloat(cardCount)
         let availableSpace = containerWidth - totalCardWidth
-        
-        // Se non c'è abbastanza spazio, usa lo spazio minimo
+    
         if availableSpace < minSpacing * CGFloat(cardCount - 1) {
             return minSpacing
         }
         
-        // Calcola lo spazio equidistante
         let spacing = availableSpace / CGFloat(cardCount + 1)
         return max(spacing, minSpacing)
     }
