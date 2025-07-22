@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+//
+//  ShopView.swift
+//  CultureHunter
+//
+//  Created by Domenico Di Marino on 07/07/25.
+//
+
+import SwiftUI
+
 struct ShopView: View {
     // MARK: - Properties
     @ObservedObject var avatarViewModel: AvatarViewModel
-        @ObservedObject var missionViewModel: MissionViewModel
-        @StateObject private var shopViewModel: ShopViewModel
+    @ObservedObject var missionViewModel: MissionViewModel
+    @StateObject private var shopViewModel: ShopViewModel
     
     @State private var showAlert = false
     @State private var showConfirmation = false
@@ -121,7 +130,7 @@ struct ShopView: View {
             .fontWeight(.bold)
             .kerning(0.4)
             .multilineTextAlignment(.center)
-            .foregroundColor(.primary)
+            .foregroundColor(.primary) // Maintains adaptive color
             .padding(.top)
     }
     
@@ -143,8 +152,10 @@ struct ShopView: View {
                 .frame(width: 131, height: 186)
                 .clipped()
                 .cornerRadius(16)
+                .accessibilityLabel("Shop background")
             AvatarSpriteKitView(viewModel: avatarViewModel)
                 .frame(width: 128, height: 128)
+                .accessibilityLabel("Avatar preview")
         }
     }
     
@@ -153,14 +164,19 @@ struct ShopView: View {
             Text("Le tue monete: ")
                 .font(.body)
                 .fontWeight(.semibold)
+                .foregroundColor(.primary) // Adaptive text color
+            
             Image("coin")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 19, height: 15)
                 .clipped()
+                .accessibilityLabel("Coin icon")
+            
             Text("\(shopViewModel.coins)")
                 .font(.body)
                 .fontWeight(.semibold)
+                .foregroundColor(.primary) // Adaptive text color
         }
     }
     
@@ -177,11 +193,11 @@ struct ShopView: View {
             Text(title)
                 .font(.title)
                 .fontWeight(.bold)
+                .foregroundColor(.primary) // Adaptive text color
                 .padding(.horizontal)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    // Ordina gli elementi: prima quelli non posseduti, poi quelli posseduti
                     ForEach(shopViewModel.items(ofType: type).sorted { !$0.isOwned && $1.isOwned }) { item in
                         ShopItemCard(
                             item: item,
@@ -202,7 +218,6 @@ struct ShopView: View {
     private func buySelectedItem() {
         guard let item = selectedItem else { return }
         
-        // Verifica con l'InventoryManager
         let clothingItem = ClothingItem(
             assetName: item.assetName,
             type: item.type,
@@ -228,10 +243,7 @@ struct ShopView: View {
         guard let item = selectedItem else { return }
         
         if shopViewModel.buyItem(item) {
-            // Forza l'aggiornamento dello stato
             shopViewModel.updateOwnedStatus()
-            
-            // Salva l'item appena acquistato e mostra l'alert per indossarlo
             justPurchasedItem = item
             showWearConfirmation = true
         } else {
@@ -240,11 +252,9 @@ struct ShopView: View {
         }
     }
     
-    // Nuova funzione per indossare l'articolo
     private func wearItem() {
         guard let item = justPurchasedItem else { return }
         
-        // Indossa l'articolo in base al suo tipo
         switch item.type {
         case .shirt:
             avatarViewModel.setShirt(item.assetName)
@@ -254,9 +264,4 @@ struct ShopView: View {
             avatarViewModel.setShoes(item.assetName)
         }
     }
-}
-
-// Preview per la vista principale
-#Preview {
-    ShopView(avatarViewModel: AvatarViewModel(), missionViewModel: MissionViewModel())
 }
