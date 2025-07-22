@@ -161,6 +161,7 @@ struct MapTab: View {
                         if let reward = missionViewModel.tryCompleteMission(poiVisited: true) {
                             avatarViewModel.addCoins(reward)
                         }
+                        avatarViewModel.addCoins(50)
                         if let aggiornato = viewModel.mappedPOIs.first(where: { $0.id == poi.id }) {
                             diaryPOI = aggiornato
                             shouldShowDiaryAfterCamera = true
