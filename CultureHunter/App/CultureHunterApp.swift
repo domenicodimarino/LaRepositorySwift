@@ -27,6 +27,8 @@ struct CultureHunterApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var avatarViewModel = AvatarViewModel()
     
+    let persistenceController = PersistenceController.shared
+    
     init() {
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
@@ -35,8 +37,10 @@ struct CultureHunterApp: App {
         WindowGroup {
             ContentView(avatarViewModel: avatarViewModel)
                 .environmentObject(appState)
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .onAppear {
                     appState.checkFirstLaunch()
+                    
                 }
                 .sheet(isPresented: $appState.showingTutorial) {
                     MasterTutorialView(

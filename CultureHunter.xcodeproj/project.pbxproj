@@ -8,10 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		C04642822E2BFB2800386A97 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = C04642812E2BFB2800386A97 /* SDWebImageSwiftUI */; };
+		C0FC54102E3101070034E7DF /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FC540F2E3101060034E7DF /* PersistenceController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		C03878042E054947009AADAA /* CultureHunter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CultureHunter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0FC540F2E3101060034E7DF /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,6 +52,7 @@
 		C03877FB2E054946009AADAA = {
 			isa = PBXGroup;
 			children = (
+				C0FC540F2E3101060034E7DF /* PersistenceController.swift */,
 				C03878062E054947009AADAA /* CultureHunter */,
 				C03878052E054947009AADAA /* Products */,
 			);
@@ -141,6 +144,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0FC54102E3101070034E7DF /* PersistenceController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

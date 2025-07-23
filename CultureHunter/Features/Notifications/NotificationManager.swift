@@ -29,8 +29,8 @@ class NotificationManager: ObservableObject {
         
         let content = UNMutableNotificationContent()
         if let poi = poi {
-            content.title = "Sei vicino a \(poi.title)"
-            content.body = "Scatta una foto per scoprire di più su \(poi.title) e guadagnare crediti!"
+            content.title = "Sei vicino a \(poi.diaryPlaceName)"
+            content.body = "Scatta una foto per scoprire di più su \(poi.diaryPlaceName) e guadagnare crediti!"
         } else {
             content.title = "Nuovo punto di interesse nei dintorni!"
             content.body = "Apri l'app e scatta una foto per conoscerne le informazioni e guadagnare crediti"
