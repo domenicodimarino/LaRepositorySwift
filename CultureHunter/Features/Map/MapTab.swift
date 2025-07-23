@@ -8,7 +8,7 @@ struct MapTab: View {
     @ObservedObject var missionViewModel: MissionViewModel
 
     @State private var trackingState: TrackingState = .none
-    @StateObject private var locationManager = LocationManager()
+    @EnvironmentObject var locationManager: LocationManager
     @State private var hasCenteredOnUser = false
 
     @State private var selectedPOI: MappedPOI?
@@ -191,6 +191,6 @@ struct MapTab: View {
     private func shouldShowPhotoButton(for poi: MappedPOI) -> Bool {
         guard let userLoc = locationManager.lastLocation else { return false }
         let poiLoc = CLLocation(latitude: poi.coordinate.latitude, longitude: poi.coordinate.longitude)
-        return userLoc.distance(from: poiLoc) < 30
+        return userLoc.distance(from: poiLoc) < 100
     }
 }

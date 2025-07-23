@@ -43,7 +43,6 @@ struct AvatarSpriteKitView: UIViewRepresentable {
     
     func updateUIView(_ uiView: SKView, context: Context) {
         if let scene = uiView.scene as? AvatarScene {
-            print("🎭 AvatarSpriteKitView - Animation: \(initialAnimation), Direction: \(initialDirection)")
             
             let currentAvatar = context.coordinator.scene?.avatar
             let newAvatar = viewModel.avatar
@@ -56,17 +55,14 @@ struct AvatarSpriteKitView: UIViewRepresentable {
                currentAvatar?.pants != newAvatar.pants ||
                currentAvatar?.shoes != newAvatar.shoes ||
                currentAvatar?.eyes != newAvatar.eyes {
-                print("👕 Aggiornamento avatar")
                 context.coordinator.scene?.updateAvatar(newAvatar)
             }
             
             if scene.currentAnimation != initialAnimation {
-                print("🔄 Cambio animazione da \(scene.currentAnimation) a \(initialAnimation)")
                 scene.changeAnimation(to: initialAnimation)
             }
             
             if scene.currentDirection != initialDirection {
-                print("🧭 Cambio direzione da \(scene.currentDirection) a \(initialDirection)")
                 scene.changeDirection(to: initialDirection)
             }
         } else {

@@ -24,7 +24,7 @@ struct ContentView: View {
             city: "Cetara",
             province: "Salerno",
             diaryPlaceName: "Torre di Cetara",
-            isDiscovered: true,
+            isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -38,7 +38,7 @@ struct ContentView: View {
             city: "Salerno",
             province: "Salerno",
             diaryPlaceName: "Castello di Arechi",
-            isDiscovered: true,
+            isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -52,7 +52,7 @@ struct ContentView: View {
             city: "Salerno",
             province: "Salerno",
             diaryPlaceName: "Giardino della Minerva",
-            isDiscovered: true,
+            isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
@@ -548,7 +548,7 @@ struct ContentView: View {
                 poiViewModel.geocodeAll(pois: poiList)
             }
             .onReceive(poiViewModel.$mappedPOIs) { mapped in
-                locationManager.startMonitoringPOIs(pois: mapped)
+                locationManager.setAllPOIs(mapped)
             }
         }
 }
