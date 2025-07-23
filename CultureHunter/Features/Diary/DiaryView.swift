@@ -4,6 +4,7 @@ import AVFoundation
 struct DiaryView: View {
     let poi: MappedPOI
     @ObservedObject var viewModel: POIViewModel
+    @Environment(\.managedObjectContext) private var context
     @State private var errorMessage: String? = nil
     @State private var showError: Bool = false
     @State private var isReading: Bool = false
@@ -138,7 +139,7 @@ struct DiaryView: View {
             }
 
             // PATCH: Carica la storia persistente, oppure genera SOLO SE NON ESISTE!
-            if let savedHistory = viewModel.persistenceManager.loadPOIHistory(id: poi.id) {
+            if let savedHistory = viewModel.persistenceManager.loadPOIHistory(id: poi.id, context: context) {
                 localHistory = savedHistory
             } else if let history = poi.history, !history.isEmpty {
                 localHistory = history
@@ -150,7 +151,7 @@ struct DiaryView: View {
                         if let storia = storia, !storia.isEmpty {
                             localHistory = storia
                             viewModel.updateHistory(for: poi.id, history: storia)
-                            viewModel.persistenceManager.savePOIHistory(id: poi.id, history: storia)
+                            viewModel.persistenceManager.savePOIHistory(id: poi.id, history: storia, context: context)
                         }
                     }
                 }
