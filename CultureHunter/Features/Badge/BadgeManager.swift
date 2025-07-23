@@ -27,9 +27,9 @@ class BadgeManager: ObservableObject {
             }
         } else {
             badges = [
-                BadgeModel(cityName: "Salerno", totalPOI: 16, certifiedPOI: 16, unlockedDate: nil, discoveredImageNames: ["castello_arechi","chiesa_monte_morti","chiesa_sangiorgio","chiesa_ssannunziata","duomo_salerno","giardino_minerva","museo_archeologico","museo_diocesano_salerno","museo_sbarco","museo_virtuale","piazza_liberta","porto_salerno","saragnano","stadio_arechi","teatro_verdi","velia"], cityStory: ""),
-                BadgeModel(cityName: "Cetara", totalPOI: 5, certifiedPOI: 5, unlockedDate: nil, discoveredImageNames: ["chiesa_sanpietro","costantinopoli","fabbrica_nettuno","piazza_sanfra","torre_di_cetara"], cityStory: ""),
-                BadgeModel(cityName: "Cava de' Tirreni", totalPOI: 11, certifiedPOI: 11, unlockedDate: nil, discoveredImageNames: ["caduti", "abbazia","chiesa_avvocatella","chiesa_sanlo","duomo_cava","giardini_sangio","madonna_olmo","purgatorio","santuario","villa_comunale","chiesa_sanrocco"], cityStory: ""),
+                BadgeModel(cityName: "Salerno", totalPOI: 16, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["castello_arechi","chiesa_monte_morti","chiesa_sangiorgio","chiesa_ssannunziata","duomo_salerno","giardino_minerva","museo_archeologico","museo_diocesano_salerno","museo_sbarco","museo_virtuale","piazza_liberta","porto_salerno","saragnano","stadio_arechi","teatro_verdi","velia"], cityStory: ""),
+                BadgeModel(cityName: "Cetara", totalPOI: 5, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["chiesa_sanpietro","costantinopoli","fabbrica_nettuno","piazza_sanfra","torre_di_cetara"], cityStory: ""),
+                BadgeModel(cityName: "Cava de' Tirreni", totalPOI: 11, certifiedPOI: 0, unlockedDate: nil, discoveredImageNames: ["caduti", "abbazia","chiesa_avvocatella","chiesa_sanlo","duomo_cava","giardini_sangio","madonna_olmo","purgatorio","santuario","villa_comunale","chiesa_sanrocco"], cityStory: ""),
             ]
             // PATCH: imposta la data per tutti i badge già sbloccati
             for i in badges.indices {
@@ -88,6 +88,7 @@ class BadgeManager: ObservableObject {
             badges[i].cityStory = ""
         }
         certifiedPOIIDs.removeAll()
+        saveBadgesProgress()
     }
 
     // Funzione per chiamare Groq e generare la storia della città
