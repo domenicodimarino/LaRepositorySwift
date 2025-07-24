@@ -23,9 +23,12 @@ struct MappedPOI: Identifiable, Hashable {
     var history: String?       // Storia generata (opzionale)
 
     var photo: UIImage? {
-        guard let photoPath else { return nil }
-        return UIImage(contentsOfFile: photoPath)
-    }
+            guard let fileName = photoPath else { return nil }
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = documentsDirectory.appendingPathComponent("POIPhotos/\(fileName)")
+            print("Cerco immagine in: \(fileURL.path)")
+            return UIImage(contentsOfFile: fileURL.path)
+        }
     
     static func == (lhs: MappedPOI, rhs: MappedPOI) -> Bool {
         lhs.id == rhs.id &&

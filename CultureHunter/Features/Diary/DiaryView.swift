@@ -34,7 +34,7 @@ struct DiaryView: View {
                                     .frame(width: geometry.size.width / 2 - 4, height: imageHeight)
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                                if poi.isDiscovered, let photoPath = poi.photoPath, let img = UIImage(contentsOfFile: photoPath) {
+                                if poi.isDiscovered, let img = poi.photo {
                                     Divider()
                                     Image(uiImage: img)
                                         .resizable()

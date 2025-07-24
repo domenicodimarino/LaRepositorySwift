@@ -33,7 +33,8 @@ class POIPersistenceManager {
         var photoPath: String? = nil
         if let photo = photo {
             let fileName = "\(id.uuidString).jpg"
-            photoPath = savePhotoToFileSystem(photo: photo, fileName: fileName)
+            photoPath = fileName
+            _ = savePhotoToFileSystem(photo: photo, fileName: fileName)
         }
         poi.photoPath = photoPath
 
@@ -120,17 +121,23 @@ class POIPersistenceManager {
             }
         }
 
+        // --- SALVA IMMAGINE ---
         if let imageData = photo.jpegData(compressionQuality: 0.7) {
             do {
                 try imageData.write(to: fileURL)
                 print("✅ Immagine salvata in: \(fileURL.path)")
+
+                // --- SALVA FILE DI TESTO ---
+                let testFileURL = documentsDirectory.appendingPathComponent("test.txt")
+                try "ciao!".write(to: testFileURL, atomically: true, encoding: .utf8)
+                print("✅ File di testo salvato in: \(testFileURL.path)")
+
                 return fileURL.path
             } catch {
-                print("❌ Errore nel salvataggio dell'immagine: \(error)")
+                print("❌ Errore nel salvataggio dell'immagine o file di testo: \(error)")
                 return nil
             }
         }
-
         return nil
     }
     func bootstrapInitialPOIsIfNeeded(context: NSManagedObjectContext) {

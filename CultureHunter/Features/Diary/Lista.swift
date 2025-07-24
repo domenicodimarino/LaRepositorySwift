@@ -83,7 +83,7 @@ struct PlacesListRow: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            if place.isDiscovered, let photoPath = place.photoPath, let img = UIImage(contentsOfFile: photoPath) {
+            if place.isDiscovered, let img = place.photo {
                 Image(uiImage: img)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
