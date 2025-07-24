@@ -18,6 +18,7 @@ struct POI: Identifiable, Hashable {
     var latitude: Double?
     var longitude: Double?
     let imageName: String
+    let yearBuilt: String?
     
     var id: UUID {
         let uniqueString = "\(diaryPlaceName)_\(latitude ?? 0)_\(longitude ?? 0)"
@@ -61,7 +62,8 @@ struct POI: Identifiable, Hashable {
         latitude: Double? = nil,
         longitude: Double? = nil,
         discoveredDate: Date? = nil,
-        imageName: String
+        imageName: String,
+        yearBuilt: String? = nil
     ) {
         self.street = street
         self.streetNumber = streetNumber
@@ -76,6 +78,7 @@ struct POI: Identifiable, Hashable {
         self.longitude = longitude
         self.discoveredDate = discoveredDate
         self.imageName = imageName
+        self.yearBuilt = yearBuilt
     }
 }
 

@@ -292,12 +292,6 @@ class MissionViewModel: ObservableObject {
             self.saveMission()
             self.objectWillChange.send()
         }
-        if let mission = activeMission {
-                    notificationManager.sendMissionNotification(
-                        description: mission.description,
-                        reward: mission.reward
-                    )
-                }
     }
     
     private func saveMission() {

@@ -17,6 +17,9 @@ class POIViewModel: ObservableObject {
     func fetchAllPOIs() {
         let entities = persistenceManager.getAllPOIs(context: context)
         self.mappedPOIs = entities.compactMap { $0.asMappedPOI() }
+        for poi in mappedPOIs {
+                print("POI: \(poi.diaryPlaceName) - yearBuilt: \(poi.yearBuilt)")
+            }
         print("📍 Caricati \(mappedPOIs.count) POI da CoreData, di cui \(mappedPOIs.filter { $0.isDiscovered }.count) scoperti")
     }
 
@@ -71,7 +74,8 @@ class POIViewModel: ObservableObject {
             discoveredTitle: nuovoTitolo,
             photoPath: photoPath,
             discoveredDate: now,
-            imageName: oldPOI.imageName
+            imageName: oldPOI.imageName,
+            yearBuilt: oldPOI.yearBuilt,
         )
 
         mappedPOIs[index] = updatedPOI
@@ -133,7 +137,7 @@ extension POIEntity {
             photoPath: photoPath,
             discoveredDate: discoveredDate,
             imageName: imageName,
-            yearBuilt: nil,
+            yearBuilt: yearBuilt,
             history: history
         )
     }

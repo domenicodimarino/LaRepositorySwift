@@ -140,6 +140,7 @@ class POIPersistenceManager {
             if count == 0 {
                 print("🌱 Primo avvio: inserisco tutti i POI iniziali in CoreData")
                 for poi in POIDefaults.all {
+                    print("Inserisco \(poi.diaryPlaceName) - yearBuilt: \(poi.yearBuilt)")
                     let entity = POIEntity(context: context)
                     entity.id = poi.id
                     entity.city = poi.city
@@ -154,6 +155,7 @@ class POIPersistenceManager {
                     entity.discoveredDate = poi.discoveredDate
                     entity.history = nil
                     entity.imageName = poi.imageName
+                    entity.yearBuilt = poi.yearBuilt
                 }
                 try? context.save()
             }

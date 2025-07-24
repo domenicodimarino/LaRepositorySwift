@@ -57,27 +57,6 @@ class NotificationManager: ObservableObject {
             }
         }
     }
-    
-    func sendMissionNotification(description: String, reward: Int) {
-        let content = UNMutableNotificationContent()
-        content.title = "Nuova missione disponibile!"
-        content.body = "💰 \(description) - Ricompensa: \(reward) monete"
-        content.sound = .default
-        
-        let identifier = "mission_notification"
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-        
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            } else {
-                DispatchQueue.main.async {
-                    self.lastNotificationSent = Date()
-                }
-            }
-        }
-    }
 
     private func createImageAttachment(image: UIImage, identifier: String) -> UNNotificationAttachment? {
         let tempDir = FileManager.default.temporaryDirectory

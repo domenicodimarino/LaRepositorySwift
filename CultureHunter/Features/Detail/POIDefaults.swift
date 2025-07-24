@@ -21,7 +21,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.70355755997264,
             longitude: 14.690757149236486,
-            imageName: "casa_mia"
+            imageName: "casa_mia",
+            yearBuilt: "1551-1565",
         ),
         POI(
             street: "Via Lannio",
@@ -35,7 +36,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.646993,
             longitude: 14.703472,
-            imageName: "torre_di_cetara"
+            imageName: "torre_di_cetara",
+            yearBuilt: "1551-1565",
         ),
         POI(
             street: "Castello di Arechi, Fossato degli Aragonesi",
@@ -49,7 +51,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.684072,
             longitude: 14.755469,
-            imageName: "castello_arechi"
+            imageName: "castello_arechi",
+            yearBuilt: "VII-IX secolo, ampliamenti successivi",
         ),
         POI(
             street: "Giardino della Minerva",
@@ -63,7 +66,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.681106,
             longitude: 14.753674,
-            imageName: "giardino_minerva"
+            imageName: "giardino_minerva",
+            yearBuilt: "XIII secolo",
         ),
         POI(
             street: "Porto di Salerno, Molo Manfredi",
@@ -77,7 +81,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.671686,
             longitude: 14.73752,
-            imageName: "porto_salerno"
+            imageName: "porto_salerno",
+            yearBuilt: "Epoca romana, ampliamenti recenti nel XX secolo",
         ),
         POI(
             street: "Chiesa di San Giorgio, Via Duomo",
@@ -91,7 +96,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.678821,
             longitude: 14.758956,
-            imageName: "chiesa_sangiorgio"
+            imageName: "chiesa_sangiorgio",
+            yearBuilt: "Origini paleocristiane, ricostruita tra X e XVII secolo",
         ),
         POI(
             street: "Piazza della Libertà",
@@ -105,7 +111,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.676276,
             longitude: 14.753785,
-            imageName: "piazza_liberta"
+            imageName: "piazza_liberta",
+            yearBuilt: "2011-2021",
         ),
         POI(
             street: "Museo Diocesano San Matteo, Largo Plebiscito",
@@ -119,7 +126,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.680618,
             longitude: 14.760391,
-            imageName: "museo_diocesano_salerno"
+            imageName: "museo_diocesano_salerno",
+            yearBuilt: "Sede XVII secolo, collezioni dal XII secolo",
         ),
         POI(
             street: "Cattedrale di Salerno - Duomo, Via Nicola Monterisi",
@@ -133,7 +141,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.680203,
             longitude: 14.759559,
-            imageName: "duomo_salerno"
+            imageName: "duomo_salerno",
+            yearBuilt: "1076-1085",
         ),
         POI(
             street: "Chiesa di Saragnano",
@@ -147,7 +156,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.68074,
             longitude: 14.73872,
-            imageName: "saragnano"
+            imageName: "saragnano",
+            yearBuilt: "Origini medievali, ristrutturazioni successive"
         ),
         POI(
             street: "Chiesa del Monte dei Morti",
@@ -161,7 +171,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.680833,
             longitude: 14.760699,
-            imageName: "chiesa_monte_morti"
+            imageName: "chiesa_monte_morti",
+            yearBuilt: "XVII secolo",
         ),
         POI(
             street: "Teatro Verdi, Piazza Matteo Luciani",
@@ -175,7 +186,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.67921,
             longitude: 14.75267,
-            imageName: "teatro_verdi"
+            imageName: "teatro_verdi",
+            yearBuilt: "1863-1872",
         ),
         POI(
             street: "Via Velia",
@@ -189,7 +201,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.679625,
             longitude: 14.764848,
-            imageName: "velia"
+            imageName: "velia",
+            yearBuilt: "IX secolo",
         ),
         POI(
             street: "Museo dello Sbarco e Salerno Capitale",
@@ -203,7 +216,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.64696,
             longitude: 14.817397,
-            imageName: "museo_sbarco"
+            imageName: "museo_sbarco",
+            yearBuilt: "2012",
         ),
         POI(
             street: "Museo virtuale della scuola medica salernitana",
@@ -217,7 +231,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.679046,
             longitude: 14.760005,
-            imageName: "museo_virtuale"
+            imageName: "museo_virtuale",
+            yearBuilt: "2009",
         ),
         POI(
             street: "Museo Archeologico Provinciale, Via San Benedetto",
@@ -231,7 +246,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.678984,
             longitude: 14.762344,
-            imageName: "museo_archeologico"
+            imageName: "museo_archeologico",
+            yearBuilt: "1939 (sede nell’ex convento di San Benedetto)",
         ),
         POI(
             street: "Chiesa della Santissima Annunziata, Via Luigi Einaudi",
@@ -245,7 +261,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.679349,
             longitude: 14.753966,
-            imageName: "chiesa_ssannunziata"
+            imageName: "chiesa_ssannunziata",
+            yearBuilt: "XIV secolo (restauri XVII-XVIII sec.)",
         ),
         POI(
             street: "Parrocchia di San Pietro Apostolo, Corso Garibaldi",
@@ -259,7 +276,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.647154,
             longitude: 14.701637,
-            imageName: "chiesa_sanpietro"
+            imageName: "chiesa_sanpietro",
+            yearBuilt: "IX-X secolo (aspetto attuale XVII-XVIII secolo)",
         ),
         POI(
             street: "Chiesa di Santa Maria di Costantinopoli, Corso di Cetara",
@@ -273,7 +291,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.651264,
             longitude: 14.697518,
-            imageName: "costantinopoli"
+            imageName: "costantinopoli",
+            yearBuilt: "XVII secolo",
         ),
         POI(
             street: "Piazza San Francesco",
@@ -287,7 +306,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.647333,
             longitude: 14.700893,
-            imageName: "piazza_sanfra"
+            imageName: "piazza_sanfra",
+            yearBuilt: "XVII secolo",
         ),
         POI(
             street: "Fabbrica Nettuno, Corso Umberto I",
@@ -301,7 +321,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.646787,
             longitude: 14.700531,
-            imageName: "fabbrica_nettuno"
+            imageName: "fabbrica_nettuno",
+            yearBuilt: "1950",
         ),
         POI(
             street: "Piazza Eugenio Abbro",
@@ -315,7 +336,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.700247,
             longitude: 14.706409,
-            imageName: "caduti"
+            imageName: "caduti",
+            yearBuilt: "1925",
         ),
         POI(
             street: "Via Alfonso Balzico",
@@ -329,7 +351,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.700062,
             longitude: 14.707315,
-            imageName: "duomo_cava"
+            imageName: "duomo_cava",
+            yearBuilt: "XI secolo (rifacimenti XVII-XVIII secolo)",
         ),
         POI(
             street: "Via Armando Diaz",
@@ -343,7 +366,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.700954,
             longitude: 14.707278,
-            imageName: "chiesa_sanrocco"
+            imageName: "chiesa_sanrocco",
+            yearBuilt: "XVI secolo",
         ),
         POI(
             street: "Giardini di San Giovanni, Via Antonio Nigro",
@@ -357,7 +381,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.698777,
             longitude: 14.709424,
-            imageName: "giardini_sangio"
+            imageName: "giardini_sangio",
+            yearBuilt: "XVII secolo (riqualificati in epoca recente)",
         ),
         POI(
             street: "Via Canonico Aniello Avallone",
@@ -371,7 +396,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.698125,
             longitude: 14.709047,
-            imageName: "purgatorio"
+            imageName: "purgatorio",
+            yearBuilt: "XVII secolo",
         ),
         POI(
             street: "Via Canale",
@@ -385,7 +411,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.695865,
             longitude: 14.71005,
-            imageName: "santuario"
+            imageName: "santuario",
+            yearBuilt: "XVI secolo",
         ),
         POI(
             street: "Via Enrico de Marinis",
@@ -399,7 +426,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.695771,
             longitude: 14.711024,
-            imageName: "madonna_olmo"
+            imageName: "madonna_olmo",
+            yearBuilt: "Medioevo (aspetto attuale XVII-XVIII secolo)",
         ),
         POI(
             street: "Via Antonio d'Amico",
@@ -413,7 +441,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.682057,
             longitude: 14.691142,
-            imageName: "abbazia"
+            imageName: "abbazia",
+            yearBuilt: "XI secolo",
         ),
         POI(
             street: "Strada Provinciale 75",
@@ -427,7 +456,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.685062,
             longitude: 14.703943,
-            imageName: "chiesa_avvocatella"
+            imageName: "chiesa_avvocatella",
+            yearBuilt: "XVII secolo",
         ),
         POI(
             street: "Via Orilia",
@@ -441,7 +471,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.701055,
             longitude: 14.714703,
-            imageName: "chiesa_sanlo"
+            imageName: "chiesa_sanlo",
+            yearBuilt: "Medioevo (successivi rifacimenti)",
         ),
         POI(
             street: "Viale Francesco Crispi",
@@ -455,7 +486,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.700793,
             longitude: 14.70529,
-            imageName: "villa_comunale"
+            imageName: "villa_comunale",
+            yearBuilt: "XX secolo",
         ),
         POI(
             street: "Via Eduardo de Filippis",
@@ -469,7 +501,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.70847523801939,
             longitude: 14.709200325060241,
-            imageName: "villa_comunale"
+            imageName: "villa_comunale",
+            yearBuilt: "2018",
         ),
         POI(
             street: "Piazzale Alberto Piccinini",
@@ -483,7 +516,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.645228,
             longitude: 14.822551,
-            imageName: "stadio_arechi"
+            imageName: "stadio_arechi",
+            yearBuilt: "1988-1990",
         ),
         POI(
             street: "Via del Diritto",
@@ -497,7 +531,8 @@ struct POIDefaults {
             photoPath: nil,
             latitude: 40.77252,
             longitude: 14.79116,
-            imageName: "villa_comunale"
+            imageName: "villa_comunale",
+            yearBuilt: "1860",
         )
     ]
 }

@@ -62,6 +62,13 @@ struct DiaryView: View {
                                     .foregroundColor(.secondary)
                                 Text(poi.address)
                                     .font(.headline)
+                                
+                                Text("Anno di costruzione")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Text(poi.yearBuilt ?? "--")
+                                        .font(.headline)
+                                
                             }
                         }
                         .padding(.vertical, 5)
