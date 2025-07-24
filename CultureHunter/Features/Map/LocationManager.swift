@@ -58,12 +58,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             region.notifyOnExit = false
             manager.startMonitoring(for: region)
         }
-        print("Regioni monitorate ora: \(manager.monitoredRegions.count)")
-        for region in manager.monitoredRegions {
-            if let circular = region as? CLCircularRegion {
-                print(" - \(circular.identifier) center: \(circular.center) radius: \(circular.radius)")
-            }
-        }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
