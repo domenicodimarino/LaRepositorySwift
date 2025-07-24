@@ -267,7 +267,7 @@ struct POIDefaults {
             city: "Cetara",
             province: "Salerno",
             diaryPlaceName: "Chiesa di Santa Maria di Costantinopoli",
-            isDiscovered: true,
+            isDiscovered: false,
             discoveredTitle: nil,
             photo: nil,
             photoPath: nil,
