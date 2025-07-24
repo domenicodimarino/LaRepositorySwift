@@ -9,7 +9,6 @@ import Foundation
 
 func fetchHistoryForPOI(poi: MappedPOI, completion: @escaping (String?) -> Void) {
     fetchBestWikipediaPageName(for: poi) { bestWikiName in
-        
         if let nameToUse = bestWikiName,
            isAcceptableWikiPage(for: poi, wikiTitle: nameToUse) {
             fetchWikipediaHistorySection(for: nameToUse) { wikiHistory in
@@ -25,26 +24,35 @@ func fetchHistoryForPOI(poi: MappedPOI, completion: @escaping (String?) -> Void)
                         ["role": "user", "content": userPrompt]
                     ]
                     groqChat(messagesPayload: messagesPayload, completion: completion)
-                    return
+                } else {
+                    // Se la pagina esiste ma la sezione "Storia" o il summary sono vuoti, usa Groq
+                    print("Prendo non da wikipedia (storia/summary vuoto)")
+                    generateGroqText(poi: poi, completion: completion)
                 }
             }
+        } else {
+            // Se la pagina Wikipedia non è accettabile o non esiste, usa Groq
+            print("Prendo non da wikipedia (pagina non accettabile o non trovata)")
+            generateGroqText(poi: poi, completion: completion)
         }
-        // Se non accettabile (pagina generica o non trovata), usa subito Groq!
-        print("Prendo non da wikipedia")
-        let systemPrompt = "Scrivi una breve storia sull'origine di questo luogo e sull'utilizzo che ne è stato fatto nel tempo, fino ai giorni nostri, senza aggiungere informazioni non fornite né fare riferimento alla città in cui si trova."
-        let userPrompt = """
-        Luogo: \(poi.diaryPlaceName)
-        Città: \(poi.city)
-        Provincia: \(poi.province)
-        Anno di costruzione: \(poi.yearBuilt ?? "dato non disponibile")
-        Indirizzo: \(poi.address)
-        """
-        let messagesPayload = [
-            ["role": "system", "content": systemPrompt],
-            ["role": "user", "content": userPrompt]
-        ]
-        groqChat(messagesPayload: messagesPayload, completion: completion)
     }
+}
+
+// Funzione di generazione testo Groq
+private func generateGroqText(poi: MappedPOI, completion: @escaping (String?) -> Void) {
+    let systemPrompt = "Scrivi una breve storia sull'origine di questo luogo e sull'utilizzo che ne è stato fatto nel tempo, fino ai giorni nostri, senza aggiungere informazioni non fornite né fare riferimento alla città in cui si trova."
+    let userPrompt = """
+    Luogo: \(poi.diaryPlaceName)
+    Città: \(poi.city)
+    Provincia: \(poi.province)
+    Anno di costruzione: \(poi.yearBuilt ?? "dato non disponibile")
+    Indirizzo: \(poi.address)
+    """
+    let messagesPayload = [
+        ["role": "system", "content": systemPrompt],
+        ["role": "user", "content": userPrompt]
+    ]
+    groqChat(messagesPayload: messagesPayload, completion: completion)
 }
 
 // Controlla che il titolo wikipedia trovato sia accettabile come POI e NON solo città/provincia
