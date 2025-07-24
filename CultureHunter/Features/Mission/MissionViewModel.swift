@@ -273,8 +273,8 @@ class MissionViewModel: ObservableObject {
         activeMission = nil
         
         let possibleMissions = [
-            (description: "Visita un punto di interesse entro 120 minuti per ottenere 100 monete", reward: 100, duration: 120 * 60.0),
-            (description: "Scopri un nuovo POI entro 45 minuti e ottieni 200 monete", reward: 200, duration: 45 * 60.0),(description: "Scopri un nuovo POI entro 15 minuti e ottieni 200 monete", reward: 300, duration: 15 * 60.0),
+            (description: "Scopri un nuovo punto entro 120 minuti per ottenere 100 monete", reward: 100, duration: 120 * 60.0),
+            (description: "Scopri un nuovo punto entro 45 minuti e ottieni 200 monete", reward: 200, duration: 45 * 60.0),(description: "Scopri un nuovo punto entro 15 minuti e ottieni 200 monete", reward: 300, duration: 15 * 60.0),
         ]
         
         let selectedMission = possibleMissions.randomElement()!

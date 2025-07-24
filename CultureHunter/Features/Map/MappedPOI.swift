@@ -26,7 +26,6 @@ struct MappedPOI: Identifiable, Hashable {
             guard let fileName = photoPath else { return nil }
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let fileURL = documentsDirectory.appendingPathComponent("POIPhotos/\(fileName)")
-            print("Cerco immagine in: \(fileURL.path)")
             return UIImage(contentsOfFile: fileURL.path)
         }
     
